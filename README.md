@@ -6,7 +6,7 @@ Network Prerequisites are:
 - [x] Network DHCP server is `192.168.1.5`
 
 Other Prerequisites are:
-- [x] Synology NAS, including NFS, is fully configured as [synobuild](https://github.com/ahuacate/synobuild)
+- [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
 
 Tasks to be performed are:
 - [ ] Create the required Synology shared folders and NFS shares
