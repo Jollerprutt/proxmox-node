@@ -23,8 +23,8 @@ Disk two (sdb) I recommend a 250Gb SSD as minimum - preferably 500Gb.
 Create your proxmox installation USB media, set your nodes bios boot order to USB first (so you can boot off your proxmox installation USB media), and install proxmox. Configure your nodes as follows:
 | Option | Node 1 Value | Node 2 Value | Node 3 Value 
 | :---  | :---: | :---: | :---: |
-| `Filesystem` |ext4|ext4|ext4
-| `Disk(s)` |sda|sda|sda
+| `Filesystem` |ext4|ext4|ext4|
+| `Disk(s)` |sda|sda|sda|
 | `Country` |"select"|"select"|"select"
 | `Timezone` |"select"|"select"|"select"
 | `Keymap` |en-us|en-us|en-us
