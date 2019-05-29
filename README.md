@@ -50,6 +50,7 @@ Next install turnkeylinux container templates use the web interface CLI `shell` 
 
 ### 2. Create Disk Two
 Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
+
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
 | `Name` |typhoon-share-01|typhoon-share-02|typhoon-share-03
@@ -57,6 +58,7 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 | `Compression` |on|on|on
 | `ashift` |12|12|12
 | `Device` |/dev/sdb|/dev/sdb|/dev/sdb
+
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
 ## LXC Installs
