@@ -17,9 +17,9 @@ Tasks to be performed are:
 - [ ] Configure Synology NAS SSH Key-based authentication for the above users.
 
 ## Proxmox Installation
-For each proxmox node each installation requires two hard disks.
-Disk one (sda) is the for proxmox OS so a small 30Gb disk is adequate. Use a sata or USB dom if you like.
-Disk two (sdb) I recommend a 250Gb SSD as minimum - preferably 500Gb.
+Each proxmox node installation requires two hard disks.
+Disk one (sda) is for proxmox OS so a small 30Gb disk is adequate. Use a sata or USB dom if you like.
+Disk two (sdb) I recommend a 500Gb SSD (minimum 250Gb SSD).
 Create your proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot order to USB first (so you can boot off your proxmox installation USB media), and install proxmox. Remember to remove your USB media on reboot. Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
@@ -41,11 +41,11 @@ Please use your supplied password.
 ## Configure your Proxmox server
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://youripaddress:8006). Default login is "root" (realm PAM) and the root password was defined during the installation process.
 
-### 1. Update the Proxmox OS and turnkeylinux templates
-Using the web interface `updates` > `refresh` to search for all the latest required updates.
-Next install the updates using the web interface `updates` > `_upgrade` and a pop up terminal will show installing all your required updates.
+### 1. Update Proxmox OS and turnkeylinux templates
+Using the web interface `updates` > `refresh` search for all the latest required updates.
+Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates.
 
-Next install turnkeylinux container templates use the web interface CLI `shell` and type
+Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
 ### 2. Create Disk Two
