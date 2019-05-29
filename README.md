@@ -76,7 +76,7 @@ Deploy an LXC container with the CentOS7 template image:
 | `Memory (MiB)` |1024|
 | `Swap (MiB)` |512|
 | `IPv4/CIDR` |192.168.1.253/24|
-| `Gateway` |192.168.1.253|
+| `Gateway` |192.168.1.5|
 
 When at the console for the CentOS7 LXC instance:
 Install pihole..
