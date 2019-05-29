@@ -20,7 +20,7 @@ Tasks to be performed are:
 For each proxmox node each installation requires two hard disks.
 Disk one (sda) is the for proxmox OS so a small 30Gb disk is adequate. Use a sata or USB dom if you like.
 Disk two (sdb) I recommend a 250Gb SSD as minimum - preferably 500Gb.
-Create your proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot order to USB first (so you can boot off your proxmox installation USB media), and install proxmox. Remember to remove your USB media on reboot. Configure your nodes as follows:
+Create your proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot order to USB first (so you can boot off your proxmox installation USB media), and install proxmox. Remember to remove your USB media on reboot. Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
@@ -38,7 +38,7 @@ Create your proxmox installation USB media (instructions [here](https://pve.prox
 | `DNS` |192.168.1.5|192.168.1.5|192.168.1.5
 Please use your supplied password.
 
-## Update your Proxmox server
+## Configure your Proxmox server
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://youripaddress:8006). Default login is "root" (realm PAM) and the root password was defined during the installation process.
 
 ### 1. Update the Proxmox OS and turnkeylinux templates
@@ -49,7 +49,7 @@ Next install turnkeylinux container templates use the web interface CLI `shell` 
 `pveam update`
 
 ### 2. Create Disk Two
-Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure as follows:
+Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
 | `Name` |typhoon-share-01|typhoon-share-02|typhoon-share-03
@@ -59,11 +59,16 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 | `Device` |/dev/sdb|/dev/sdb|/dev/sdb
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
-PiHole LXC Container Proxmox CentOS7
+## LXC Installs
 
-Deploy an LXC container with the CentOS7 image.. 2G RAM, 8G storage, 2 CPU cores.
+### 1. PiHole LXC Container - CentOS7
+Deploy an LXC container with the CentOS7 template image.. 512Mb RAM, 8G storage, 1 CPU cores.
 I added a DHCP reservation for a static IP.
 
 When at the console for the CentOS7 LXC instance:
 Install pihole..
 curl -sSL https://install.pi-hole.net | bash
+
+Open VPN Gateway
+
+
