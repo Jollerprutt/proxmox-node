@@ -62,10 +62,21 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
 ## LXC Installs
-
 ### 1. PiHole LXC Container - CentOS7
-Deploy an LXC container with the CentOS7 template image.. 512Mb RAM, 8G storage, 1 CPU cores.
-I added a DHCP reservation for a static IP.
+Deploy an LXC container with the CentOS7 template image:
+
+| Option | Node 1 Value |
+| :---  | :---: |
+| `Hostname` |pihole|
+| `Unprivileged container` | ☑ |
+| `Template` |centos-7-default_****_amd|
+| `Storage` |typhoon-share-01|
+| `Disk Size` |8 GiB|
+| `CPU Cores` |2|
+| `Memory (MiB)` |1024|
+| `Swap (MiB)` |512|
+| `IPv4/CIDR` |192.168.1.253/24|
+| `Gateway` |192.168.1.253|
 
 When at the console for the CentOS7 LXC instance:
 Install pihole..
