@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 
 # Flush
 iptables -t nat -F
