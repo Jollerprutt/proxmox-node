@@ -4,8 +4,6 @@ iptables -t nat -F
 iptables -t mangle -F
 iptables -F
 iptables -X
-
-
 # Block All
 iptables -P OUTPUT DROP
 iptables -P INPUT DROP
