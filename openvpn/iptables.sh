@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Flush
 iptables -t nat -F
 iptables -t mangle -F
@@ -48,7 +49,7 @@ iptables -A FORWARD -j DROP
 #iptables -A logging -j DROP
 
 #echo "saving"
-#iptables-save > /etc/iptables.rules
+iptables-save > /etc/iptables.rules
 #echo "done"
 #echo 'openVPN - Rules successfully applied, we start "watch" to verify IPtables in realtime (you can cancel it as usual CTRL + c)'
 #sleep 3
