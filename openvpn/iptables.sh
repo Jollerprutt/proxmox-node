@@ -48,9 +48,9 @@ iptables -A FORWARD -j DROP
 #iptables -A logging -m limit --limit 2/min -j LOG --log-prefix "IPTables general: " --log-level 7
 #iptables -A logging -j DROP
 
-#echo "saving"
+echo "saving"
 iptables-save > /etc/sysconfig/iptables
-#echo "done"
+echo "done"
 #echo 'openVPN - Rules successfully applied, we start "watch" to verify IPtables in realtime (you can cancel it as usual CTRL + c)'
 #sleep 3
 #watch -n 0 "sudo iptables -nvL"
