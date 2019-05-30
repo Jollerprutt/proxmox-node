@@ -49,7 +49,7 @@ iptables -A FORWARD -j DROP
 #iptables -A logging -j DROP
 
 #echo "saving"
-iptables-save > /etc/iptables.rules
+iptables-save > /etc/sysconfig/iptables
 #echo "done"
 #echo 'openVPN - Rules successfully applied, we start "watch" to verify IPtables in realtime (you can cancel it as usual CTRL + c)'
 #sleep 3
