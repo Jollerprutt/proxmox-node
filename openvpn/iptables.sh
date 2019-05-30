@@ -20,8 +20,10 @@ iptables -A INPUT -s 255.255.255.255 -j ACCEPT
 
 
 # Make sure that you can communicate within your own network
-iptables -A INPUT -s 192.168.0.0/24 -d 192.168.0.0/24 -j ACCEPT
-iptables -A OUTPUT -s 192.168.0.0/24 -d 192.168.0.0/24 -j ACCEPT
+#iptables -A INPUT -s 192.168.0.0/24 -d 192.168.0.0/24 -j ACCEPT
+#iptables -A OUTPUT -s 192.168.0.0/24 -d 192.168.0.0/24 -j ACCEPT
+iptables -A INPUT -s 192.168.0.0/24 -j ACCEPT
+iptables -A OUTPUT -d 192.168.0.0/24 -j ACCEPT
 
 
 # Allow established sessions to receive traffic:
