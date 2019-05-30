@@ -1,11 +1,7 @@
 #!/bin/ash
 
 # Flush
-iptables -t nat -F
-iptables -t mangle -F
-iptables -F
-iptables -X
-
+iptables --flush
 
 # Block All
 iptables -P OUTPUT DROP
