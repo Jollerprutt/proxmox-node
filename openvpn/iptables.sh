@@ -50,13 +50,11 @@ iptables -A FORWARD -j DROP
 
 
 # Log all dropped packages, debug only.
-
-
-iptables -N logging
-iptables -A INPUT -j logging
-iptables -A OUTPUT -j logging
-iptables -A logging -m limit --limit 2/min -j LOG --log-prefix "IPTables general: " --log-level 7
-iptables -A logging -j DROP
+#iptables -N logging
+#iptables -A INPUT -j logging
+#iptables -A OUTPUT -j logging
+#iptables -A logging -m limit --limit 2/min -j LOG --log-prefix "IPTables general: " --log-level 7
+#iptables -A logging -j DROP
 
 
 echo "saving"
