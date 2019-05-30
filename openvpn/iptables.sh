@@ -34,7 +34,7 @@ iptables -t nat -A POSTROUTING -o tun+ -j MASQUERADE
 iptables -A OUTPUT -o tun+ -j ACCEPT
 
 # allow VPN connection
-iptables -I OUTPUT 1 -p udp --destination-port 1195 -m comment --comment "Allow VPN connection" -j ACCEPT
+#iptables -I OUTPUT 1 -p udp --destination-port 1195 -m comment --comment "Allow VPN connection" -j ACCEPT
 
 # Block All
 iptables -A OUTPUT -j DROP
