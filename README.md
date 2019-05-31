@@ -9,12 +9,8 @@ Other Prerequisites are:
 - [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
 
 Tasks to be performed are:
-- [ ] Create the required Synology shared folders and NFS shares
-- [ ] Create a new user group `homelab`
-- [ ] Create two new Synology users;
-  * first user named: `storm`
-  * second user named: `gituser`
-- [ ] Configure Synology NAS SSH Key-based authentication for the above users.
+- [ ] Proxmox Installation
+- [ ] Update Proxmox OS and turnkeylinux templates
 
 ## Proxmox Installation
 Each proxmox node installation requires two hard disks.
@@ -60,28 +56,3 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 | `Device` |/dev/sdb|/dev/sdb|/dev/sdb
 
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
-
-## LXC Installs
-### 1. PiHole LXC Container - CentOS7
-Deploy an LXC container with the CentOS7 template image:
-
-| Option | Node 1 Value |
-| :---  | :---: |
-| `Hostname` |pihole|
-| `Unprivileged container` | ☑ |
-| `Template` |centos-7-default_****_amd|
-| `Storage` |typhoon-share-01|
-| `Disk Size` |8 GiB|
-| `CPU Cores` |2|
-| `Memory (MiB)` |1024|
-| `Swap (MiB)` |512|
-| `IPv4/CIDR` |192.168.1.253/24|
-| `Gateway` |192.168.1.5|
-
-When at the console for the CentOS7 LXC instance:
-Install pihole..
-curl -sSL https://install.pi-hole.net | bash
-
-Open VPN Gateway
-
-
