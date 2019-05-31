@@ -1,4 +1,4 @@
-# Your Proxmox Build
+# Your Proxmox Node Build
 The following is for a hard metal proxmox node(s) build. Modify accordingly for your own NAS or NFS server setup.
 Network Prerequisites are:
 - [x] Network Gateway is `192.168.1.5`
@@ -9,8 +9,8 @@ Other Prerequisites are:
 - [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
 
 Tasks to be performed are:
-- [ ] Proxmox Installation
-- [ ] Update Proxmox OS and turnkeylinux templates
+- [ ] Proxmox OS Installation
+- [ ] Update Proxmox OS and enable turnkeylinux templates
 
 ## Proxmox Installation
 Each proxmox node installation requires two hard disks.
@@ -37,7 +37,7 @@ Please use your supplied password.
 ## Configure your Proxmox server
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://youripaddress:8006). Default login is "root" (realm PAM) and the root password was defined during the installation process.
 
-### 1. Update Proxmox OS and turnkeylinux templates
+### 1. Update Proxmox OS and enable turnkeylinux templates
 Using the web interface `updates` > `refresh` search for all the latest required updates.
 Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates.
 
