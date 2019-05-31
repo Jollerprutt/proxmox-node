@@ -16,7 +16,7 @@ Tasks to be performed are:
 Each proxmox node installation requires two hard disks.
 Disk one (sda) is for proxmox OS so a small 30Gb disk is adequate. Use a sata or USB dom if you like.
 Disk two (sdb) I recommend a 500Gb SSD (minimum 250Gb SSD).
-Create your proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot order to USB first (so you can boot off your proxmox installation USB media), and install proxmox. Remember to remove your USB media on reboot. Configure each node as follows:
+Create your proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox. Remember to remove your USB media on reboot. Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
