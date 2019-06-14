@@ -21,7 +21,7 @@ Create your proxmox installation USB media (instructions [here](https://pve.prox
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
 | `Filesystem` |ext4 |ext4|ext4
-| `Disk(s)` |sda|sda|sda
+| `Disk(s)` |sdx|sdx|sdx
 | `Country` |"select"|"select"|"select"
 | `Timezone` |"select"|"select"|"select"
 | `Keymap` |en-us|en-us|en-us
@@ -53,6 +53,6 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 | `RAID Level` |Single Disk|Single Disk|Single Disk
 | `Compression` |on|on|on
 | `ashift` |12|12|12
-| `Device` |/dev/sdb|/dev/sdb|/dev/sdb
+| `Device` |/dev/sdx|/dev/sdx|/dev/sdx
 
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
