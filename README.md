@@ -36,7 +36,7 @@ For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructio
 Please use your supplied password.
 
 ## Configure your Proxmox server
-Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://youripaddress:8006). Default login is "root" (realm PAM) and the root password was defined during the installation process.
+Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 ### 1. Update Proxmox OS and enable turnkeylinux templates
 Using the web interface `updates` > `refresh` search for all the latest required updates.
