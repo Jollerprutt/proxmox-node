@@ -50,7 +50,7 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
-| `Name` |typhoon-share-01|typhoon-share-02|typhoon-share-03
+| `Name` |typhoon-share|typhoon-share|typhoon-share
 | `RAID Level` |Single Disk|Single Disk|Single Disk
 | `Compression` |on|on|on
 | `ashift` |12|12|12
