@@ -17,7 +17,7 @@ Each proxmox node installation requires two hard disks.
 Disk one (subject to hardware so not always sda, so we refer to them all as sdx) is for the Proxmox OS so a small 120 Gb disk is adequate. Even USB dom if you like.
 Disk two (sdx) I recommend a 500 Gb SSD which will be used as Proxmox ZFS shared storage disk for the cluster. But for my installation I use a 250 Gb SSD.
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
-For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild). Remember to remove your USB media on reboot on the hard metal hardware. Configure each node as follows:
+For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild## Install & Configure Synology Virtual Machine Manager). Remember to remove your USB media on reboot on the hard metal hardware. Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
