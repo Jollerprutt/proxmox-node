@@ -2,7 +2,7 @@
 The following is for a hard metal proxmox node(s) build. Modify accordingly for your own NAS or NFS server setup.
 Network Prerequisites are:
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: set DNS server: primary DNS `1.1.1.1` ; secondary DNS `192.168.1.254`)
+- [x] Network DNS server is `192.168.1.5` (Note: set DNS server: primary DNS `192.168.1.254` which is your PiHole server IP address; secondary DNS `1.1.1.1`)
 - [x] Network DHCP server is `192.168.1.5`
 
 Other Prerequisites are:
