@@ -6,7 +6,7 @@ Network Prerequisites are:
 - [x] Network DHCP server is `192.168.1.5`
 
 Other Prerequisites are:
-- [x] Synology NAS, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
+- [x] Synology NAS, Synology Virtual Machine Manager, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
 
 Tasks to be performed are:
 - [ ] Proxmox OS Installation
@@ -14,9 +14,10 @@ Tasks to be performed are:
 
 ## Proxmox Installation
 Each proxmox node installation requires two hard disks.
-Disk one (sda) is for proxmox OS so a small 30Gb disk is adequate. Use a sata or USB dom if you like.
-Disk two (sdb) I recommend a 500Gb SSD (minimum 250Gb SSD).
-Create your proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox. Remember to remove your USB media on reboot. Configure each node as follows:
+Disk one (subject to hardware so not always sda, so we refer to them all as sdx) is for the Proxmox OS so a small 120 Gb disk is adequate. Even USB dom if you like.
+Disk two (sdx) I recommend a 500 Gb SSD which will be used as Proxmox ZFS shared storage disk for the cluster. But for my installation I use a 250 Gb SSD.
+Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
+For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild). Remember to remove your USB media on reboot on the hard metal hardware. Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
