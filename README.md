@@ -2,7 +2,7 @@
 The following is for a hard metal proxmox node(s) build. Modify accordingly for your own NAS or NFS server setup.
 Network Prerequisites are:
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: on your DNS server 192.168.1.5, like a UniFi USG set the following: primary DNS `192.168.1.254` which is your PiHole server IP address; secondary DNS `1.1.1.1` which is a Cloudfare DNS server)
+- [x] Network DNS server is `192.168.1.5` (Note: on your DNS server 192.168.1.5, like a UniFi USG Gateway, set the following: primary DNS `192.168.1.254` which is your PiHole server IP address; secondary DNS `1.1.1.1` which is a Cloudfare DNS server)
 - [x] Network DHCP server is `192.168.1.5`
 
 Other Prerequisites are:
