@@ -13,7 +13,6 @@ Tasks to be performed are:
 - [ ] Update Proxmox OS and enable turnkeylinux templates
 
 ## Proxmox Installation
-## Proxmox Installation
 Each proxmox node requires two hard disks.
 SCSi and SATA controllers device file name is sda,sdb,sdc and so on. So disk one is often device sda but this is subject to types of hardware. So we refer to SATA disk devices as sdx. The Proxmox OS disk requires 120 Gb SSD disk. You can use a USB dom if you want to.
 Disk two (sdx) I recommend a 500 Gb SSD which will be used as Proxmox ZFS shared storage disk for the cluster. But for my installation I use a 250 Gb SSD.
@@ -58,3 +57,6 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 | `Device` |/dev/sdx|/dev/sdx|/dev/sdx
 
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
+
+### 3. NFS mounts to NAS
+Each Proxmox node will mount NFS shares on your NAS as per instructions available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The  NAS nfs shares are: `proxmox` | `video` | `music` | `docker` |
