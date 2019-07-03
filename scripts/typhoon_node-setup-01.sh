@@ -5,6 +5,8 @@ pveam update
 apt-get update
 apt-get upgrade -y
 
+apt-get install lm-sensors
+
 # Cyclone-01 NFS Mounts
 echo -e "nfs: cyclone-01-backup
         export /volume1/proxmox/backup
@@ -90,6 +92,9 @@ shutdown -r 0
 mount -t nfs -o vers=3 serverip:/Backup /mnt/pve/Backup
 
 
-
+mount -t nfs -o vers=3,tcp 192.168.1.10:/volume1/public /mnt/pve/public
 /.ssh/authorized_keys
-ssh-add -K [path/to/private SSH key]
+ssh-add /mnt/pve/public/id_rsa.githubdeploy
+cp /mnt/pve/public/id_rsa.githubdeploy ~/.ssh
+ssh-add ~/.ssh/id_rsa.githubdeploy
+cd /var/lib/vz/template/iso
