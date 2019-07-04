@@ -5,6 +5,7 @@ pveam update
 apt-get update
 apt-get upgrade -y
 
+# Install lm sensors (CPU Temp)
 apt-get install lm-sensors
 
 # Cyclone-01 NFS Mounts
