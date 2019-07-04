@@ -35,7 +35,7 @@ For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructio
 | `DNS` |192.168.1.5|192.168.1.5|192.168.1.5
 Please use your supplied password.
 
-## Configure your Proxmox server
+## Configure your Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 ### 1. Update Proxmox OS and enable turnkeylinux templates
@@ -58,5 +58,7 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
+## Configure Proxmox OS
+Here 
 ### 3. NFS mounts to NAS
 Each Proxmox node will mount NFS shares on your NAS as per instructions available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The  NAS nfs shares are: `proxmox` | `video` | `music` | `docker` |
