@@ -59,6 +59,65 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
 ## Configure Proxmox OS
-Here 
-### 3. NFS mounts to NAS
-Each Proxmox node will mount NFS shares on your NAS as per instructions available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The  NAS nfs shares are: `proxmox` | `video` | `music` | `docker` |
+We have two configuration options subject to hardware types:
+   * Node 1 - Qotom Mini PC Q500G6-S05 a 6 Gigabit NIC Router (6 LAN ports). This node will also host OPENVPN Gateways.
+   * Node 2 & 3 - Various single NIC machines including Vm's.
+You have two options to configure a Proxmox node - use a automated recipe script or manually.
+
+### 1. Automated Recipe Scripts
+You have two options to configure a Proxmox node -automated script or manually.
+
+### 2. Manual Configuration
+1.  NFS mounts to NAS
+Each Proxmox node needs to mount NFS shares on your NAS. Your Synology NFS instructions are available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The required nfs mounts are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
+Configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
+Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` and configure as per following:
+
+| Cyclone-01-backup | Value |
+| :---  | :---: |
+| `ID` |cyclone-01-backup|
+| `Server` |192.168.1.10|
+| `Export` |/volume1/proxmox/backup|
+| `Content` |VZDump backup file|
+| `Nodes` |leave as default|
+| `Enable` |leave as default|
+|||
+| **Cyclone-01-docker** | **Value** |
+| `ID` |cyclone-01-docker|
+| `Server` |192.168.1.10|
+| `Export` |/volume1/docker|
+| `Content` |Disk image|
+| `Nodes` |leave as default|
+| `Enable` |leave as default|
+|||
+| **Cyclone-01-music** | **Value** |
+| `ID` |cyclone-01-music|
+| `Server` |192.168.1.10|
+| `Export` |/volume1/music|
+| `Content` |Disk image|
+| `Nodes` |leave as default|
+| `Enable` |leave as default|
+|||
+| **Cyclone-01-photo** | **Value** |
+| `ID` |cyclone-01-photo|
+| `Server` |192.168.1.10|
+| `Export` |/volume1/photo|
+| `Content` |Disk image|
+| `Nodes` |leave as default|
+| `Enable` |leave as default|
+|||
+| **Cyclone-01-public** | **Value** |
+| `ID` |cyclone-01-public|
+| `Server` |192.168.1.10|
+| `Export` |/volume1/public|
+| `Content` |Disk image|
+| `Nodes` |leave as default|
+| `Enable` |leave as default|
+|||
+| **Cyclone-01-video** | **Value** |
+| `ID` |cyclone-01-video|
+| `Server` |192.168.1.10|
+| `Export` |/volume1/video|
+| `Content` |Disk image|
+| `Nodes` |leave as default|
+| `Enable` |leave as default|
