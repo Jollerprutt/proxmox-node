@@ -71,7 +71,7 @@ You have two options to configure a Proxmox node -automated script or manually.
 1.  NFS mounts to NAS
 Each Proxmox node needs to mount NFS shares on your NAS. Your Synology NFS instructions are available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The required nfs mounts are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
 Configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
-Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` and configure as per following:
+Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as follows:
 
 | Cyclone-01-backup | Value |
 | :---  | :---: |
@@ -121,3 +121,4 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` and configure a
 | `Content` |Disk image|
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
+
