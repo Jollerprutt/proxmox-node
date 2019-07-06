@@ -122,3 +122,9 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
 
+Qotom Build
+In order to create VLANs within a VM, you need to have a Linux bridge. Go to create, Linux Bridge, and at a minimum fill out the name and bridge port as shown below. Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
+
+| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
+| :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
+|**Linux Bridge ID** | `vmbr1` | `vmbr2` |`vmbr3` | `vmbr4` |`vmbr5` | `vmbr0` |
