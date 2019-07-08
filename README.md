@@ -123,11 +123,11 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 | `Enable` |leave as default|
 
 ## Qotom Build
-Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S05 a 6x port Gigabit NIC PC router.
+Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has multiple network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S05, a 6x port Gigabit NIC PC router.
 
 If you are using a Qotom 4x Gigabit NIC model then you cannot create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
 
-In order to create VLANs within a Virtual Machine (VM) for Docker or a LXC container, you need to have a Linux bridge. Because we have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches.
+In order to create VLANs within a Virtual Machine (VM) for clients like Docker or a LXC container, you need to have a Linux Bridge. Because we use a Qotom and have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad.
 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
@@ -141,11 +141,14 @@ This example is based on UniFi US-24 port switch. Just transpose the settings to
 |**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
 |**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
 |**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
+|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (VLAN2) |  | All | All |
 ||||||||||||
 |**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
 |**Proxmox Linux Bond** |  |  | |  | |  |  | `bond0` | `bond1` |  |  |  |
 |**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
 |**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
+
+Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch. See ??
 
 ### 2. Configure Proxmox node typhoon-01 (Qotom)
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
@@ -247,4 +250,9 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 
 Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
 
-Reboot the Proxmox node to invoke the changes.
+Reboot the Proxmox node to invoke the system changes.
+
+### 3. Install pfsense
+We need to create two OpenVPN Gateways for the whole network. These will be accessible from all devices including WiFi clients using corresponding SSID's on different VLANs. The two OpenVPN Gateways and VLAN networks are:
+   * `vpngate-world` - This is a random selecting VPN server connection pipe outside of your residing country. Truly a safe zone.
+   * `vpngate-local` - This is a local incountry or within region short distance VPN server connection pipe of your choosing to reclaim some anonymity back.
