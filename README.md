@@ -180,7 +180,7 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | `Hash policy` |layer2|
 | `Comment` |Proxmox LAN Bond|
 |||
-| `Name` |bond0|
+| `Name` |bond1|
 | `IP address` |leave blank|
 | `Subnet mask` |leave blank|
 | `Gateway` |leave blank|
@@ -188,7 +188,7 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | `Prefix length` |leave blank|
 | `Gateway` |leave blank|
 | `Autostart` |[x]|
-| `Slaves` |enp13s0 enp4s0|
+| `Slaves` |enp3s0 enp4s0|
 | `Mode` |LACP (802.3ad)|
 | `Hash policy` |layer2|
 | `Comment` |VPN-egress Bond|
@@ -246,3 +246,5 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | `Comment` |vpngate-local|
 
 Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
+
+Reboot the Proxmox node to invoke the changes.
