@@ -123,7 +123,9 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 | `Enable` |leave as default|
 
 Qotom Build
-In order to create VLANs within a VM, you need to have a Linux bridge. Go to create, Linux Bridge, and at a minimum fill out the name and bridge port as shown below. Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
+The proxmox build on Qotom hardware is unlike other hardware like Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC Q500G6-S05 a 6x Gigabit NIC PC router.
+
+In order to create VLANs within a Virtual Machine (VM)such as Docker or a LXC container, you need to have a Linux bridge. Go to create, Linux Bridge, and at a minimum fill out the name and bridge port as shown below. Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
 | :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
