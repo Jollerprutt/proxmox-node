@@ -123,18 +123,18 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 | `Enable` |leave as default|
 
 ## Qotom Build
-A proxmox configuration on Qotom hardware is unlike other hardware such as a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC Q500G6-S05 a 6x port Gigabit NIC PC router.
+Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S05 a 6x port Gigabit NIC PC router.
 
-If you are using the Qotom 4x Gigabit NIC model then you cannot create LAGS/Bonds. Simply configure straight forward Proxmox bridges.
+If you are using a Qotom 4x Gigabit NIC model then you cannot create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
 
 In order to create VLANs within a Virtual Machine (VM) for Docker or a LXC container, you need to have a Linux bridge. Because we have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches.
 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
-The first step is to setup your switch and Qotom Hardware.
+The next steps will setup your network switch and Qotom Hardware.
 
 ### 1. Configure your switch
-This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 a LAG Bond or Link Aggregation for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom. Configure your switch LAGs as per following table.
+This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 a LAG Bond or Link Aggregation for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom. Configure your network switch LAG groups as per following table.
 
 | 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -147,15 +147,15 @@ This example is based on UniFi US-24 port switch. Just transpose the settings to
 |**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
 |**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
 
-### 2. Configure Proxmox node (qotom)
-The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. If you are using the 4x Gigabit NIC model then you cannot create LAGS - not enough NICs because we require 4 NIC connections. 
+### 2. Configure Proxmox node typhoon-01 (Qotom)
+The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
 | :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
 |**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
 |**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-If you using a Qotom 4x Gigabit NIC PC router the configuration would be as follows.
+If you are using the 4x Gigabit NIC model then you cannot create LAGS - not enough NICs because we require 4 NIC connections. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
 | :--- | :---:  | :---: | :---:  | :---: |
