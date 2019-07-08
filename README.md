@@ -60,17 +60,17 @@ Note: If your choose to use a ZFS Raid change accordingly per node but retain th
 
 ## Configure Proxmox OS
 We have two configuration options subject to hardware types:
-   * Node 1 - Qotom Mini PC Q500G6-S05 a 6 Gigabit NIC Router (6 LAN ports). This node will also host OPENVPN Gateways.
    * Node 2 & 3 - Various single NIC machines including Vm's.
+   * Node 1 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports). This node will also host OPENVPN Gateways.
 You have two options to configure a Proxmox node - use a automated recipe script or manually.
 
 ### 1. Automated Recipe Scripts
-You have two options to configure a Proxmox node -automated script or manually.
+You have two options to configure a Proxmox node - automated script or manually.
 
 ### 2. Manual Configuration
 1.  NFS mounts to NAS
-Each Proxmox node needs to mount NFS shares on your NAS. Your Synology NFS instructions are available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The required nfs mounts are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
-Configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
+Every Proxmox node must use NFS to mount data stored on your NAS. Your Synology NFS instructions are available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The nfs mounts are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
+Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as follows:
 
 | Cyclone-01-backup | Value |
@@ -122,10 +122,16 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
 
-Qotom Build
-The proxmox build on Qotom hardware is unlike other hardware like Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC Q500G6-S05 a 6x Gigabit NIC PC router.
+## Qotom Build
+A proxmox configuration on Qotom hardware is unlike other hardware such as a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC Q500G6-S05 a 6x Gigabit NIC PC router.
 
-In order to create VLANs within a Virtual Machine (VM)such as Docker or a LXC container, you need to have a Linux bridge. Go to create, Linux Bridge, and at a minimum fill out the name and bridge port as shown below. Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
+In order to create VLANs within a Virtual Machine (VM) including Docker or a LXC container, you need to have a Linux bridge. Because we have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches.
+
+We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
+
+The first step is to setup your switch and Qotom Hardware. 
+
+Go to create, Linux Bridge, and at a minimum fill out the name and bridge port as shown below. Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
 | :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
