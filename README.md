@@ -253,6 +253,7 @@ Note the bridge port corresponds to a physical interface identified above. The n
 Reboot the Proxmox node to invoke the system changes.
 
 ### 3. Install pfsense
-We need to create two OpenVPN Gateways for the whole network. These will be accessible from all devices including WiFi clients using corresponding SSID's on different VLANs. The two OpenVPN Gateways and VLAN networks are:
-   * `vpngate-world` - This is a random selecting VPN server connection pipe outside of your residing country. Truly a safe zone.
-   * `vpngate-local` - This is a local incountry or within region short distance VPN server connection pipe of your choosing to reclaim some anonymity back.
+We need to create two OpenVPN Gateways servers for the whole network using pfSense. These two OpenVPN Gateways will be accessible by all connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
+   * `vpngate-world` - VLAN30 - This is a random selecting VPN server connection pipe outside of your residing country. Truly a safe zone.
+   * `vpngate-local` - VLAN40 - This is a local incountry or within region short distance VPN server connection pipe of your choosing to reclaim some anonymity back.
+
