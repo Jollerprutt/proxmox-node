@@ -125,14 +125,116 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 ## Qotom Build
 A proxmox configuration on Qotom hardware is unlike other hardware such as a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because Qotom hardware has multiple network NICs. In the following setup we use a Qotom Mini PC Q500G6-S05 a 6x Gigabit NIC PC router.
 
-In order to create VLANs within a Virtual Machine (VM) including Docker or a LXC container, you need to have a Linux bridge. Because we have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches.
+If you are using the Qotom 4x Gigabit NIC model then you cannot create LAGS/Bonds. Simply configure straight forward Proxmox bridges.
+
+In order to create VLANs within a Virtual Machine (VM) for Docker or a LXC container, you need to have a Linux bridge. Because we have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches.
 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
-The first step is to setup your switch and Qotom Hardware. 
+The first step is to setup your switch and Qotom Hardware.
 
-Go to create, Linux Bridge, and at a minimum fill out the name and bridge port as shown below. Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
+### 1. Configure your switch
+This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 a LAG Bond or Link Aggregation for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom. Configure your switch LAGs as per following table.
+
+| 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
+|**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
+|**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
+|
+|**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
+|**Proxmox Linux Bond** |  |  | |  | |  |  | bond0 | bond1 |  |  |  |
+|**Proxmox Bridge** |  |  | |  | |  |  | vmbr0 | vmbr1 | vmbr2/vmbr3|  |  |
+|**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
+
+### 2. Configure Proxmox node (qotom)
+The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. If you are using the 4x Gigabit NIC model then you cannot create LAGS - not enough NICs.
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
 | :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
-|**Linux Bridge ID** | `vmbr1` | `vmbr2` |`vmbr3` | `vmbr4` |`vmbr5` | `vmbr0` |
+|**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
+|**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
+
+Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bond` and fill out the details as shown below (must be in order). Here we are going to create two LAGs/Bonds.
+
+| Description | Value |
+| :---  | :---: |
+| `Name` |bond0|
+| `IP address` |leave blank|
+| `Subnet mask` |leave blank|
+| `Gateway` |leave blank|
+| `IPv6 address` |leave blank|
+| `Prefix length` |leave blank|
+| `Gateway` |leave blank|
+| `Autostart` |[x]|
+| `Slaves` |enp1s0 enp2s0|
+| `Mode` |LACP (802.3ad)|
+| `Hash policy` |layer2|
+| `Comment` |Proxmox LAN Bond|
+|||
+| `Name` |bond0|
+| `IP address` |leave blank|
+| `Subnet mask` |leave blank|
+| `Gateway` |leave blank|
+| `IPv6 address` |leave blank|
+| `Prefix length` |leave blank|
+| `Gateway` |leave blank|
+| `Autostart` |[x]|
+| `Slaves` |enp13s0 enp4s0|
+| `Mode` |LACP (802.3ad)|
+| `Hash policy` |layer2|
+| `Comment` |VPN-egress Bond|
+
+Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bridge` and fill out the details as shown below (must be in order) but note vmbr0 will be a edit, not create.
+
+| Description | Value |
+| :---  | :---: |
+| `Name` |vmbr0|
+| `IP address` |192.168.1.101|
+| `Subnet mask` |255.255.255.0|
+| `Gateway` |192.168.1.5|
+| `IPv6 address` |leave blank|
+| `Prefix length` |leave blank|
+| `Gateway` |leave blank|
+| `Autostart` |[x]|
+| `VLAN aware` |[x]|
+| `Bridge ports` |bond0|
+| `Comment` |Proxmox LAN Bridge/Bond|
+|||
+| `Name` |vmbr1|
+| `IP address` |leave blank|
+| `Subnet mask` |leave blank|
+| `Gateway` |leave blank|
+| `IPv6 address` |leave blank|
+| `Prefix length` |leave blank|
+| `Gateway` |leave blank|
+| `Autostart` |[x]|
+| `VLAN aware` |[x]|
+| `Bridge ports` |bond1|
+| `Comment` |VPN-egress Bridge/Bond|
+|||
+| `Name` |vmbr2|
+| `IP address` |leave blank|
+| `Subnet mask` |leave blank|
+| `Gateway` |leave blank|
+| `IPv6 address` |leave blank|
+| `Prefix length` |leave blank|
+| `Gateway` |leave blank|
+| `Autostart` |[x]|
+| `VLAN aware` |[x]|
+| `Bridge ports` |enp5s0|
+| `Comment` |vpngate-world|
+|||
+| `Name` |vmbr3|
+| `IP address` |leave blank|
+| `Subnet mask` |leave blank|
+| `Gateway` |leave blank|
+| `IPv6 address` |leave blank|
+| `Prefix length` |leave blank|
+| `Gateway` |leave blank|
+| `Autostart` |[x]|
+| `VLAN aware` |[x]|
+| `Bridge ports` |enp6s0|
+| `Comment` |vpngate-local|
+
+Note the bridge port corresponds to a physical interface identified above. The name for bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. I chose to have the bridge number the same as the physical interface number to help maintain my sanity. Last but not least, you also need to click ‘VLAN aware’ on the bridge. 
