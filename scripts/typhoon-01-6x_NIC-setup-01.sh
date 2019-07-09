@@ -168,7 +168,7 @@ iface vmbr3 inet manual
         bridge-fd 0
         bridge-vlan-aware yes
         bridge-vids 2-4094
-#vpngate-local"  >  /etc/network/interfaces
+#vpngate-local"  >  /etc/network/interfaces.new
 
 
 cat /home/james/.ssh/id_rsa.pub | ssh [USER]@[SERVER] "cat >> ~/.ssh/authorized_keys"
