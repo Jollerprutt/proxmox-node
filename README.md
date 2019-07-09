@@ -256,4 +256,23 @@ Reboot the Proxmox node to invoke the system changes.
 We need to create two OpenVPN Gateways servers for the whole network using pfSense. These two OpenVPN Gateways will be accessible by all connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or nation. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
+   * 
+
+qm create 251 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio=AA:EE:88:D4:26:E4,bridge=vmbr0,firewall=1 --net1 virtio=6E:C1:23:F4:1A:7D,bridge=vmbr1,firewall=1 --net2 virtio=92:10:6F:1E:B8:BD,bridge=vmbr2,firewall=1,tag=30 --net3 virtio=72:E8:93:32:7B:D3,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --smbios1 uuid=a386d1df-b3ab-4694-9f1c-e002e7eb30c5 --sockets 1 --virtio0 local-lvm:vm-251-disk-0,size=32G --vmgenid 3cc5ea9e-670e-4571-b45c-7c97f0a27ade
+
+
+Copyright and distribution notice | Accept
+Welcome to pfSense / Install pfSense | <OK>
+Keymap Selection / >>> Continue with default keymap | <Select>
+Partitioning / Auto (UFS) - Guided Disk Setup | <OK>
+Manual Configuration | <No>
+Complete | <Reboot>
+The reboot phase
+Should VLANs be setup now? | n
+Enter the WAN interface name or 'a' for auto-detection: vtnet1
+Enter the LAN interface name or 'a' for auto-detection: vtnet0
+Enter the Optional 1 Interface name or 'a' for auto-detection: vtnet2
+Enter the Optional 2 Interface name or 'a' for auto-detection: vtnet3
+Do you want to proceed [y:n] | y
+
 
