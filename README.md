@@ -158,7 +158,7 @@ The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs.
 |**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
 |**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-If you are using the 4x Gigabit NIC model then you cannot create LAGS - not enough NICs because we require 4 NIC connections. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
+If you are using the Qotom 4x Gigabit NIC model version then you dont have enough NIC ports to create LAGS because we require 4x connection addresses. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
 | :--- | :---:  | :---: | :---:  | :---: |
