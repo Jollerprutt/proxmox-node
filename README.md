@@ -254,6 +254,6 @@ Reboot the Proxmox node to invoke the system changes.
 
 ### 3. Install pfsense
 We need to create two OpenVPN Gateways servers for the whole network using pfSense. These two OpenVPN Gateways will be accessible by all connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
-   * `vpngate-world` - VLAN30 - This is a random selecting VPN server connection pipe outside of your residing country. Truly a safe zone.
-   * `vpngate-local` - VLAN40 - This is a local incountry or within region short distance VPN server connection pipe of your choosing to reclaim some anonymity back.
+   * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or nation. A safer zone.
+   * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
 
