@@ -84,6 +84,11 @@ pveum passwd storm@pam
 # Add User to homelab group
 pveum usermod storm@pam -group homelab
 
+# Download ISO Template images
+wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso
+gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
+
+
 cat /home/james/.ssh/id_rsa.pub | ssh [USER]@[SERVER] "cat >> ~/.ssh/authorized_keys"
 
 /etc/pve/storage.cfg
