@@ -204,7 +204,7 @@ In this example network switch ingress port 19 is associated with vpngate-world 
 | :---  | :---: | :--- |
 | `Name` |**Port 19**|  |
 | `Switch Port Profile` |LAN-vpngate-world (30)| This will put switch port 19 on VLAN30 |
-|
+|||
 | `Name` |**Port 20**|  |
 | `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
 
@@ -219,7 +219,7 @@ In this example two VPN secure WiFI SSIDs are created. and all traffic on these 
 | `Security Key` | password | Your choosing |
 | `VLAN` |30| Must be set as 30 |
 | `Other Settings` | Just leave as default| |
-|
+|||
 | `Name/SSID` |**hello-vpngate-local**| Call it whatever you like |
 | `Enabled` |[x]| |
 | `Security` | WPA Personal | Wouldnt recommend anything less |
@@ -381,11 +381,11 @@ Now using the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `Hardware` 
 | `Bridge` | **vmbr1** |
 | `VLAN Tag` | no VLAN |
 | `Model` | VirtIO (paravirtualized) |
-|
+|||
 | `Bridge` | **vmbr2** |
 | `VLAN Tag` | no VLAN |
 | `Model` | VirtIO (paravirtualized) |
-|
+|||
 | `Bridge` | **vmbr3** |
 | `VLAN Tag` | no VLAN |
 | `Model` | VirtIO (paravirtualized) |
