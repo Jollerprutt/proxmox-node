@@ -68,18 +68,19 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
 ## 2. Configure Proxmox OS
-In this build 3x Proxmox nodes are running to form a qorum. But one node, typhoon-01, will also provide a OpenVPN Gateway service for the whole network running a instance of pfSense (no redundancy for this service as its deemed non critical).
+In this build three Proxmox nodes are running to form a cluster and quorum. But one node, typhoon-01, will also host a pfSense VM managing two OpenVPN Gateway services for the whole network (no redundancy for these OpenVPN services as its deemed non critical).
 
-The two common configuration options subject to hardware types:
-   * Node 1 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports). This node is typhoon-01.
-   * Node 2 & 3 - Various single NIC x86 machines including VM's.
+The two configuration options determined by hardware types:
+   * Node 1 - typhoon-01 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports).
+   * Node 2 - typhoon-02 - A single NIC x86 machine.
+   * Node 3 - typhoon-03 - Synology VM
 
-First complete the commonsteps on all your hardware.
+#### 2.1  NFS mounts to NAS
+All Proxmox nodes use NFS to mount data stored on your NAS so these instructions are applicable for all proxmox nodes. Your Synology NFS instructions are available [HERE](https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares).
 
-### 1. Manual Configuration
-#### 1.1  NFS mounts to NAS
-Every Proxmox node must use NFS to mount data stored on your NAS. Your Synology NFS instructions are available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The nfs mounts are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
+The nfs mounts to be configured are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
 Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
+
 Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as follows:
 
 | Cyclone-01-backup | Value |
@@ -131,26 +132,28 @@ Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as fo
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
 
-## Qotom Build
-Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has multiple network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S05, a 6x port Gigabit NIC PC router.
+## 3. Qotom Build - Typhoon-01
+Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
 
-If you are using a Qotom 4x Gigabit NIC model then you cannot create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
+If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
 
-In order to create VLANs within a Virtual Machine (VM) for clients like Docker or a LXC container, you need to have a Linux Bridge. Because we use a Qotom and have 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad.
+In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad.
 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
 The next steps will setup your network switch and Qotom Hardware.
 
-### 1. Configure your Network Switch
-This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 a LAG Bond or Link Aggregation for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom and pfSense OpenVPN Gateways. Configure your network switch LAG groups as per following table.
+### 3.1. Configure your Network Switch
+This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom / typhoon-01 hosting the pfSense OpenVPN Gateways.
+
+Configure your network switch LAG groups as per following table.
 
 | 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 |**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
 |**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
 |**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
-|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (VLAN2) | LAN-vpngate-world (30) / LAN-vpngate-local (40) | All | All |
+|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (2) | LAN-vpngate-world (30) / LAN-vpngate-local (40) | All | All |
 |**LAN CAT6A cable connected to** |  |  | |  | |  | Port14 -> typhoon-02 | Port15+16 -> typhoon-01 (NIC1+2) | Port17+18 -> typhoon-01 (NIC3+4) | Port19 -> typhoon-01 (NIC5) : Port20 -> typhoon-01 (NIC6)  |  |  |
 ||||||||||||
 |**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
@@ -158,10 +161,10 @@ This example is based on UniFi US-24 port switch. Just transpose the settings to
 |**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
 |**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
 
-Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch. The above table, based on a UniFi US-24 model, shows port 15+16 are link agreegated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are use the Qotom.
+Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch. The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
 
 Steps to configuring your network switch:
-#### 1.1 Create VLANs
+#### 3.1.1 Create VLANs
 In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The below instructions are for the UniFi controller `Settings` > `Networks` > `Create New Network`
 *  Create a new network to be used for Egress of encypted traffic out of network to your VPN servers.
 
@@ -190,7 +193,7 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 | `IGMP Snooping` |Disabled|  |
 | `DHCP Guarding` |Disabled|  |
 
-#### 1.2 Setup network switch ports
+#### 3.1.2 Setup network switch ports
 In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and edit and `apply` as follows:
 
 | Description | Value | Notes |
@@ -201,7 +204,7 @@ In this example network switch ingress port 19 is associated with vpngate-world 
 | `Name` |**Port 20**|  |
 | `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
 
-#### 1.3 Setup secure VPN WiFi SSiDs
+#### 3.1.3 Setup secure VPN WiFi SSiDs
 In this example two VPN secure WiFI SSIDs are created. and all traffic on these WiFi connections will exit to the internet via VPN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network`  as follows:
 
 | Description | Value | Notes |
@@ -220,7 +223,7 @@ In this example two VPN secure WiFI SSIDs are created. and all traffic on these 
 | `VLAN` |40| Must be set as 40 |
 | `Other Settings` | Just leave as default| |
 
-### 2. Configure Proxmox node typhoon-01 (Qotom)
+### 3.2 Configure Proxmox nodes networking
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
