@@ -12,12 +12,12 @@ Tasks to be performed are:
 - [ ] Proxmox OS Installation
 - [ ] Update Proxmox OS and enable turnkeylinux templates
 
-## Proxmox Installation
+## 1. Proxmox OS Installation
 Each proxmox node requires two hard disks.
 
-SCSi and SATA controllers device file name is sda,sdb,sdc and so on. So disk one is often device sda but this is subject to types of hardware. So we refer to SATA disk devices as sdx. The Proxmox OS disk requires 120 Gb SSD disk. You can use a USB dom if you want to.
+SCSi and SATA controllers device file name are sda,sdb,sdc and so on. So disk one is often device sda but this is subject to types of hardware so best check. Here we refer to SATA disk devices as sdx. The Proxmox OS disk requires a 120 Gb SSD disk. You can use a USB dom if you want to.
 
-Disk two (sdx) I recommend a 500 Gb SSD which will be used as Proxmox ZFS shared storage disk for the cluster. But for my installation I use a 250 Gb SSD.
+Disk two (sdx) I recommend a 500 Gb SSD which will be used as Proxmox ZFS shared storage disk for the cluster. But my installation uses a 250 Gb SSD.
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
@@ -39,7 +39,7 @@ For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructio
 | `DNS` |192.168.1.5|192.168.1.5|192.168.1.5
 Please use your supplied password.
 
-## Configure your Proxmox Hardware
+### 1.1 Configure the Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 ### 1. Update Proxmox OS and enable turnkeylinux templates
@@ -63,16 +63,16 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
 ## Configure Proxmox OS
-We have two configuration options subject to hardware types:
-   * Node 2 & 3 - Various single NIC machines including Vm's.
-   * Node 1 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports). This node will also host OPENVPN Gateways.
-You have two options to configure a Proxmox node - use a automated recipe script or manually.
+In this build 3x Proxmox nodes are running to form a qorum. But one node, typhoon-01, will also provide a OpenVPN Gateway service for the whole network running a instance of pfSense (no redundancy for this service as its deemed non critical).
 
-### 1. Automated Recipe Scripts
-You have two options to configure a Proxmox node - automated script or manually.
+The two common configuration options subject to hardware types:
+   * Node 1 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports). This node is typhoon-01.
+   * Node 2 & 3 - Various single NIC x86 machines including VM's.
 
-### 2. Manual Configuration
-1.  NFS mounts to NAS
+First complete the commonsteps on all your hardware.
+
+### 1. Manual Configuration
+#### 1.1  NFS mounts to NAS
 Every Proxmox node must use NFS to mount data stored on your NAS. Your Synology NFS instructions are available [HERE}(https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares). The nfs mounts are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
 Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as follows:
