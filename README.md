@@ -186,11 +186,29 @@ In this example network switch ingress port 19 is associated with vpngate-world 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
 | `Name` |**Port 19**|  |
-| `Switch Port Profile` |**LAN-vpngate-world (30)**| This will put switch port 19 on VLAN30 |
+| `Switch Port Profile` |LAN-vpngate-world (30)| This will put switch port 19 on VLAN30 |
 |
 | `Name` |**Port 20**|  |
-| `Switch Port Profile` |**LAN-vpngate-local (40)**| This will put switch port 20 on VLAN30 |
+| `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
 
+#### 1.3 Setup secure VPN WiFi SSiDs
+In this example two VPN secure WiFI SSIDs are created. and all traffic on these WiFi connections will exit to the internet via VPN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network`  as follows:
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name/SSID` |**hello-vpngate-world**| Call it whatever you like |
+| `Enabled` |[x]| |
+| `Security` | WPA Personal | Wouldnt recommend anything less |
+| `Security Key` | password | Your choosing |
+| `VLAN` |30| Must be set as 30 |
+| `Other Settings` | Just leave as default| |
+|
+| `Name/SSID` |**hello-vpngate-local**| Call it whatever you like |
+| `Enabled` |[x]| |
+| `Security` | WPA Personal | Wouldnt recommend anything less |
+| `Security Key` | password | Your choosing |
+| `VLAN` |40| Must be set as 40 |
+| `Other Settings` | Just leave as default| |
 
 ### 2. Configure Proxmox node typhoon-01 (Qotom)
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
@@ -295,10 +313,10 @@ Note the bridge port corresponds to a physical interface identified above. The n
 Reboot the Proxmox node to invoke the system changes.
 
 ### 3. Install pfsense
-In this step you will create two OpenVPN Gateways servers for the whole network using pfSense. These two OpenVPN Gateways will be accessible by all connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
+In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or nation. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
-   * 
+
 
 # Download ISO Template images
 wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso
