@@ -1,5 +1,10 @@
 # Your Proxmox Node Build
-The following is for a hard metal proxmox node(s) build. Modify accordingly for your own NAS or NFS server setup.
+The following is for two hard metal proxmox nodes and one Synology VM proxmox container - total of three so we have a quorum. Hardmetal includes 1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, 1x Intel i3 NUC and 1x Synology DS1515+ with 4x NICs. Most important is all the hardware CPUs are Intel x86 installed and each unit has 16Gb's of RAM.
+
+This is all built on Ubiquiti Networks gear. 
+
+Obviously you can modify accordingly for your own hardware, NAS or NFS server setup.
+
 Network prerequisites are:
 - [x] Network Gateway is `192.168.1.5`
 - [x] Network DNS server is `192.168.1.5` (Note: on your DNS server 192.168.1.5, like a UniFi USG Gateway, set the following: primary DNS `192.168.1.254` which is your PiHole server IP address; secondary DNS `1.1.1.1` which is a Cloudfare DNS server)
@@ -13,11 +18,11 @@ Tasks to be performed are:
 - [ ] Update Proxmox OS and enable turnkeylinux templates
 
 ## 1. Proxmox OS Installation
-Each proxmox node requires two hard disks.
+Each proxmox node requires two hard disks. Basically one for OS and one as a Proxmox ZFS shared storage disk.
 
-SCSi and SATA controllers device file name are sda,sdb,sdc and so on. So disk one is often device sda but this is subject to types of hardware so best check. Here we refer to SATA disk devices as sdx. The Proxmox OS disk requires a 120 Gb SSD disk. You can use a USB dom if you want to.
+SCSi and SATA controllers device file names are sda,sdb,sdc and so on. So disk one is often device sda but in some hardware its not so best check. So here we refer to SATA disk devices as sdx. The Proxmox OS disk requires a minimum of 60 Gb but a 120 Gb SSD disk is about the smallest these days. You can use a USB dom if you want to but a stock USB thumbdrive or SDcard is not recommended because Proxmox has a fair amount of Read/Write activity.
 
-Disk two (sdx) I recommend a 500 Gb SSD which will be used as Proxmox ZFS shared storage disk for the cluster. But my installation uses a 250 Gb SSD.
+Disk two (sdx) we recommend a 500 Gb SSD which will be used as a Proxmox ZFS shared storage disk for the cluster. But my installation uses a 250 Gb SSD.
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
@@ -145,7 +150,8 @@ This example is based on UniFi US-24 port switch. Just transpose the settings to
 |**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
 |**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
 |**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
-|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (VLAN2) |  | All | All |
+|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (VLAN2) | LAN-vpngate-world (30) / LAN-vpngate-local (40) | All | All |
+|**LAN CAT6A cable connected to** |  |  | |  | |  | Port14 -> typhoon-02 | Port15+16 -> typhoon-01 (NIC1+2) | Port17+18 -> typhoon-01 (NIC3+4) | Port19 -> typhoon-01 (NIC5) : Port20 -> typhoon-01 (NIC6)  |  |  |
 ||||||||||||
 |**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
 |**Proxmox Linux Bond** |  |  | |  | |  |  | `bond0` | `bond1` |  |  |  |
