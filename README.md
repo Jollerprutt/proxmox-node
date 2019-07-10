@@ -133,8 +133,8 @@ We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your swi
 
 The next steps will setup your network switch and Qotom Hardware.
 
-### 1. Configure your switch
-This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 a LAG Bond or Link Aggregation for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom. Configure your network switch LAG groups as per following table.
+### 1. Configure your Network Switch
+This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 a LAG Bond or Link Aggregation for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom and pfSense OpenVPN Gateways. Configure your network switch LAG groups as per following table.
 
 | 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -148,7 +148,49 @@ This example is based on UniFi US-24 port switch. Just transpose the settings to
 |**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
 |**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
 
-Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch. See ??
+Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch. The above table, based on a UniFi US-24 model, shows port 15+16 are link agreegated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are use the Qotom.
+
+Steps to configuring your network switch:
+#### 1.1 Create VLANs
+In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The below instructions are for the UniFi controller `Settings` > `Networks` > `Create New Network`
+*  Create a new network to be used for Egress of encypted traffic out of network to your VPN servers.
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name` |VPN-egress| This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit). |
+| `Purpose` |Guest|  Network Guest security policies. |
+| `VLAN` |2| A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies. |
+| `Gateway/Subnet` |192.168.2.1/28| Only 2 addresses on this subnet so /29 is ideal |
+| `DHCP Server` | Enabled | Just use default range 192.168.2.2 -- 192.168.2.14 |
+| `Other Settings` | Just leave as Default | |
+
+* Create **two** new VLAN only networks to be used as gateways to connect to OpenVPN clients running on the Qotom and pfSense router.
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name` |**LAN-vpngate-world**| This is the network where LAN clients will be restricted to the vpngate-world server |
+| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| `VLAN` |30|  |
+| `IGMP Snooping` |Disabled|  |
+| `DHCP Guarding` |Disabled|  |
+|
+| `Name` |**LAN-vpngate-local**| This is the network where LAN clients will be restricted to the vpngate-world server |
+| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| `VLAN` |40|  |
+| `IGMP Snooping` |Disabled|  |
+| `DHCP Guarding` |Disabled|  |
+
+#### 1.2 Setup network switch ports
+In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and edit and `apply` as follows:
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name` |**Port 19**|  |
+| `Switch Port Profile` |**LAN-vpngate-world (30)**| This will put switch port 19 on VLAN30 |
+|
+| `Name` |**Port 20**|  |
+| `Switch Port Profile` |**LAN-vpngate-local (40)**| This will put switch port 20 on VLAN30 |
+
 
 ### 2. Configure Proxmox node typhoon-01 (Qotom)
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
@@ -253,10 +295,14 @@ Note the bridge port corresponds to a physical interface identified above. The n
 Reboot the Proxmox node to invoke the system changes.
 
 ### 3. Install pfsense
-We need to create two OpenVPN Gateways servers for the whole network using pfSense. These two OpenVPN Gateways will be accessible by all connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
+In this step you will create two OpenVPN Gateways servers for the whole network using pfSense. These two OpenVPN Gateways will be accessible by all connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or nation. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
    * 
+
+# Download ISO Template images
+wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso
+gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
 
 qm create 251 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio=AA:EE:88:D4:26:E4,bridge=vmbr0,firewall=1 --net1 virtio=6E:C1:23:F4:1A:7D,bridge=vmbr1,firewall=1 --net2 virtio=92:10:6F:1E:B8:BD,bridge=vmbr2,firewall=1,tag=30 --net3 virtio=72:E8:93:32:7B:D3,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --smbios1 uuid=a386d1df-b3ab-4694-9f1c-e002e7eb30c5 --sockets 1 --virtio0 local-lvm:vm-251-disk-0,size=32G --vmgenid 3cc5ea9e-670e-4571-b45c-7c97f0a27ade
 
