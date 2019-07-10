@@ -336,15 +336,66 @@ In this step you will create two OpenVPN Gateways for the whole network using pf
 
 #### 3.3.1 Download the latest pfSense ISO
 You can use the Proxmox web gui or simply use proxmox typhoon-01 cli `>Shell` and type the following:
-`wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso &&
-gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz`
+```
+wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso &&
+gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
+```
 
-# Download ISO Template images
+#### 3.3.2 Create a pfSense VM
+You can create a pfSense VM by either using CLI or by the webgui.
 
+Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `Create VM` and fill out the details as shown below (whats not shown below leave as default)
 
+| Description | Value |
+| :---  | :---: |
+| `Node` |typhoon-01|
+| `VM ID` | 251 |
+| `Name` | pfsense |
+| `Start at Boot` | Enabled |
+| `Resource Pool` | Leave blank |
+| `Use CD/DVD disc image file (ISO)` | pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso |
+| `Guest OS` | Other |
+| `Graphic card` | Default |
+| `Qemu Agent` | Disabled |
+| `SCSI Controller` | VirtIO SCSI |
+| `BIOS` | Default (SeaBIOS) |
+| `Machine` | Default (i440fx) |
+| `Bus/Device` | VirtIO Block 0 |
+| `Storage` | local-lvm |
+| `Disk size (GiB)` | 32 |
+| `Cache` | Default (No Cache) |
+| `Sockers` | 1 |
+| `Cores` | 2 |
+| `Type` | host |
+| `Memory (MiB)` | 2048 |
+| ` Minimum Memory (MiB)` | 2048 |
+| `Ballooning Device` | Enabled |
+| `Bridge` | vmbr0 |
+| `Model` | VirtIO (paravirtualized) |
+| `Start after created` | Disabled |
+
+Now using the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `Hardware` > `Add` > `Network Device` create the following additional network bridges as shown below:
+
+| Description | Value |
+| :---  | :---: |
+| `Bridge` | **vmbr1** |
+| `VLAN Tag` | no VLAN |
+| `Model` | VirtIO (paravirtualized) |
+|
+| `Bridge` | **vmbr2** |
+| `VLAN Tag` | no VLAN |
+| `Model` | VirtIO (paravirtualized) |
+|
+| `Bridge` | **vmbr3** |
+| `VLAN Tag` | no VLAN |
+| `Model` | VirtIO (paravirtualized) |
+
+Or if you prefer you can simply use Proxmox typhoon-01 cli `>Shell` and type the following to achieve the same thing (Note: the below script is for a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs ONLY):
+```
 qm create 251 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio=AA:EE:88:D4:26:E4,bridge=vmbr0,firewall=1 --net1 virtio=6E:C1:23:F4:1A:7D,bridge=vmbr1,firewall=1 --net2 virtio=92:10:6F:1E:B8:BD,bridge=vmbr2,firewall=1,tag=30 --net3 virtio=72:E8:93:32:7B:D3,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --smbios1 uuid=a386d1df-b3ab-4694-9f1c-e002e7eb30c5 --sockets 1 --virtio0 local-lvm:vm-251-disk-0,size=32G --vmgenid 3cc5ea9e-670e-4571-b45c-7c97f0a27ade
+```
 
-
+#### 3.3.3 Install pfSense
 Copyright and distribution notice | Accept
 Welcome to pfSense / Install pfSense | <OK>
 Keymap Selection / >>> Continue with default keymap | <Select>
