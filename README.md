@@ -42,14 +42,14 @@ Please use your supplied password.
 ### 1.1 Configure the Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
-### 1. Update Proxmox OS and enable turnkeylinux templates
+### 1.2 Update Proxmox OS and enable turnkeylinux templates
 Using the web interface `updates` > `refresh` search for all the latest required updates.
 Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates.
 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
-### 2. Create Disk Two
+### 1.3. Create Disk Two
 Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
@@ -62,7 +62,7 @@ Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and conf
 
 Note: If your choose to use a ZFS Raid change accordingly per node but retain the `Name` ID
 
-## Configure Proxmox OS
+## 2. Configure Proxmox OS
 In this build 3x Proxmox nodes are running to form a qorum. But one node, typhoon-01, will also provide a OpenVPN Gateway service for the whole network running a instance of pfSense (no redundancy for this service as its deemed non critical).
 
 The two common configuration options subject to hardware types:
