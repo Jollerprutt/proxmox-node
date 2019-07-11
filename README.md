@@ -335,7 +335,7 @@ In this step you will create two OpenVPN Gateways for the whole network using pf
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
 
 #### 3.3.1 Download the latest pfSense ISO
-You can use the Proxmox web gui or simply use proxmox typhoon-01 cli `>Shell` and type the following:
+You can use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
 ```
 wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso &&
 gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
@@ -344,7 +344,7 @@ gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
 #### 3.3.2 Create a pfSense VM
 You can create a pfSense VM by either using CLI or by the webgui.
 
-Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `Create VM` and fill out the details as shown below (whats not shown below leave as default)
+For the webgui method go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `Create VM` and fill out the details as shown below (whats not shown below leave as default)
 
 | Description | Value |
 | :---  | :---: |
@@ -396,18 +396,33 @@ qm create 251 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-C
 ```
 
 #### 3.3.3 Install pfSense
-Copyright and distribution notice | Accept
-Welcome to pfSense / Install pfSense | <OK>
-Keymap Selection / >>> Continue with default keymap | <Select>
-Partitioning / Auto (UFS) - Guided Disk Setup | <OK>
-Manual Configuration | <No>
-Complete | <Reboot>
-The reboot phase
-Should VLANs be setup now? | n
-Enter the WAN interface name or 'a' for auto-detection: vtnet1
-Enter the LAN interface name or 'a' for auto-detection: vtnet0
-Enter the Optional 1 Interface name or 'a' for auto-detection: vtnet2
-Enter the Optional 2 Interface name or 'a' for auto-detection: vtnet3
-Do you want to proceed [y:n] | y
+The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`  and click on the  `>_Console` tab and you should see the installation script running. Next fill out the details as shown below:
 
+| Installation Step | Value | Notes
+| :---  | :---: | :--- |
+Copyright and distribution notice | `Accept` |
+Welcome to pfSense / Install pfSense | `<OK>` |
+Keymap Selection / >>> Continue with default keymap | `<Select>` |
+Partitioning / Auto (UFS) - Guided Disk Setup | `<OK>` |
+Manual Configuration | `<No>` |
+Complete | `<Reboot>` |
+***The reboot phase*** |
+Should VLANs be setup now? | `n` |
+Enter the WAN interface name or 'a' for auto-detection | `vtnet1` | *This a 2Gb LAG WAN exit for pfSense*
+Enter the LAN interface name or 'a' for auto-detection| `vtnet0` |
+Enter the Optional 1 Interface name or 'a' for auto-detection| `vtnet2` | *This is Proxmox Linux Bridge vmbr2, VLAN30 - a 1Gb vpngate-world gateway connection*
+Enter the Optional 2 Interface name or 'a' for auto-detection| `vtnet3` | *This is Proxmox Linux Bridge vmbr3, VLAN40 - a 1Gb vpngate-local gateway connection*
+Do you want to proceed [y:n] |`y` |
+***Installation Phase*** |
+***Welcome to pfSense (amd64) on pfSense*** | | *pfSense boot screen has 16 options for further configuration*
+Enter an option| `2` | *Type 2 to Set interface(s) IP address*
+Enter the number of the interface you wish to configure| `2` | *Type 2 to configure LAN (vtnet0 - static)*
+Enter the new LAN IPv4 address| `192.168.1.253` | *This will be the new pfSense webgui interface IP address*
+Enter the new LAN IPv4 subnet bit count| `24` | 
+For a WAN / For a LAN, press <ENTER> for none| `Press ENTER` | *Hit the <ENTER> key*
+Enter the new LAN IPv6 address, press <ENTER> for none| `Press ENTER` | *Hit the <ENTER> key*
+Do you want to enable the DHCP server on LAN? (y/n)| `n` 
+Do you want to revert to HTTP as the webConfigurator protocol? (y/n)| `y`
+
+You can now access the webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
 
