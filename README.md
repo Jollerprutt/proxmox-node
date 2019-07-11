@@ -336,9 +336,14 @@ In this step you will create two OpenVPN Gateways for the whole network using pf
 
 #### 3.3.1 Download the latest pfSense ISO
 You can use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
+
+For the Stable pfSense 2.4:
 ```
-wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso &&
-gzip -d pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
+wget https://sgpfiles.pfsense.org/mirror/downloads/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso.gz
+```
+For the Development pfSense version 2.5:
+```
+wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
 ```
 
 #### 3.3.2 Create a pfSense VM
@@ -352,8 +357,9 @@ For the webgui method go to Proxmox web interface of your Qotom node (should be 
 | `VM ID` | 251 |
 | `Name` | pfsense |
 | `Start at Boot` | Enabled |
+| `Start/Shutdown order` | 1 |
 | `Resource Pool` | Leave blank |
-| `Use CD/DVD disc image file (ISO)` | pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso |
+| `Use CD/DVD disc image file (ISO)` | pfSense-CE-2.4.4-RELEASE-p3-amd64.iso |
 | `Guest OS` | Other |
 | `Graphic card` | Default |
 | `Qemu Agent` | Disabled |
@@ -391,14 +397,20 @@ Now using the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `Hardware` 
 | `Model` | VirtIO (paravirtualized) |
 
 Or if you prefer you can simply use Proxmox typhoon-01 cli `>Shell` and type the following to achieve the same thing (Note: the below script is for a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs ONLY):
+
+For the Stable pfSense 2.4:
 ```
-qm create 251 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio=AA:EE:88:D4:26:E4,bridge=vmbr0,firewall=1 --net1 virtio=6E:C1:23:F4:1A:7D,bridge=vmbr1,firewall=1 --net2 virtio=92:10:6F:1E:B8:BD,bridge=vmbr2,firewall=1,tag=30 --net3 virtio=72:E8:93:32:7B:D3,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --smbios1 uuid=a386d1df-b3ab-4694-9f1c-e002e7eb30c5 --sockets 1 --virtio0 local-lvm:vm-251-disk-0,size=32G --vmgenid 3cc5ea9e-670e-4571-b45c-7c97f0a27ade
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1,tag=30 --net3 virtio,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
+```
+For the Development pfSense version 2.5:
+```
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1,tag=30 --net3 virtio,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
 #### 3.3.3 Install pfSense
 The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`  and click on the  `>_Console` tab and you should see the installation script running. Next fill out the details as shown below:
 
-| Installation Step | Value | Notes
+| pfSense Installation Step | Value | Notes
 | :---  | :---: | :--- |
 Copyright and distribution notice | `Accept` |
 Welcome to pfSense / Install pfSense | `<OK>` |
