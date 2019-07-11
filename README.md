@@ -444,6 +444,48 @@ You can now access pfSense webConfigurator by opening the following URL in your 
 #### 4.4.1 Change Your Password
 Now using the pfSense web interface `System` > `User Manager` > `click on the admin pencil icon` and change your password to something more secure. Remember to hit the `Save` button at the bottom of the page.
 
+#### 4.4.2 Add DHCP Servers to OPT1 and OPT2
+Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
+
+| Interfaces/OPT1 (vtnet2) | Value | Notes
+| :---  | :---: | :--- |
+| Enable | `[x]` | *Check the box*
+| Description | `OPT1`
+| IPv4 Configuration Type | `Static IPv4`
+| Ipv6 Configuration Type | `None`
+| MAC Address | Leave blank
+| MTU | Leave blank
+| MSS | Leave blank
+| Speed and  Duplex | `Default (no preference, typically autoselect)`
+| **Static IPv4 Configuration**
+| IPv4 Address | `192.168.30.5/24`
+| IPv4 Upstream gateway | `None`
+| **Reserved Networks**
+| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
+| Block bogon networks | `[x]` | *Check the box*
+
+Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuration form, then fill up the necessary fields as follows:
+
+| Interfaces/OPT2 (vtnet3) | Value | Notes
+| :---  | :---: | :--- |
+| Enable | `[x]` | *Check the box*
+| Description | `OPT1`
+| IPv4 Configuration Type | `Static IPv4`
+| Ipv6 Configuration Type | `None`
+| MAC Address | Leave blank
+| MTU | Leave blank
+| MSS | Leave blank
+| Speed and  Duplex | `Default (no preference, typically autoselect)`
+| **Static IPv4 Configuration**
+| IPv4 Address | `192.168.30.5/24`
+| IPv4 Upstream gateway | `None`
+| **Reserved Networks**
+| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
+| Block bogon networks | `[x]` | *Check the box*
+
+#### 4.4.3 Setup DHCP Servers for OPT1 and OPT2
+Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` to open a configuration form, then fill up the necessary fields as follows:
+
 #### 4.4.2 Add your OpenVPN Client Servers
 Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your account server details handy. The following example uses ExpressVPN values.
 
@@ -485,7 +527,7 @@ Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configur
 | Proxy port | Leave blank
 | Proxy authentication… | leave default
 | Server host name resolution | leave default (none)
-| Description | `vpngate-world`
+| Description | `vpngate-world` | *Simply change to vpngate-local for that connection service*
 | **User Authentication Settings**
 | Username | `insert your account username`
 | Password | `insert your account password`
@@ -498,10 +540,10 @@ Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configur
 | Peer Certificate Authority | `ExpressVPN` | *Select the “ExpressVPN” entry that you created previously in the Cert. Manager steps*
 | Client Certificate | `ExpressVPN Cert` | *Select the “ExpressVPN Cert” entry that you created previously in the Cert. Manager steps*
 | Encryption Algorithm | `AES-256-CBC` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for the text cipher. In this example, the OpenVPN configuration is listed as “cipher AES-256-CBC,” so we will select “AES-256-CBC (256-bit key, 128-bit block) from the drop-down*
-| Enable NCP | `[x] Enable Negotiable Cryptographic Parameters` 
+| Enable NCP | `[ ] Enable Negotiable Cryptographic Parameters` | *Uncheck the box*
 | NCP Algorithms | `AES-256-CBC` | Only use/add AES-256-CBC
 | Auth digest algorithm | `SHA512 (512-bit)`| *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for the text auth followed by the algorithm after. In this example, we saw “auth SHA512,” so we will select “SHA512 (512-bit)” from the dropdown*
-| Hardware Crypto
+| Hardware Crypto | `Intel RDRAND engine - RAND` | *Thats what shows on a Qotom Mini PC Q500G6-S05 which has a AES-NI ready Intel i5-7300U CPU*
 | **Tunnel Settings**
 | IPv4 Tunnel Network | Leave blank
 | IPv6 Tunnel Network | Leave blank
@@ -520,6 +562,7 @@ Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configur
 | Gateway creation  | `IPv4 Only`
 | Verbosity level | `3 (recommended)`
 
+Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world should show `up`
 
 
 
