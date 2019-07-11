@@ -329,12 +329,12 @@ Note the bridge port corresponds to a physical interface identified above. The n
 
 Reboot the Proxmox node to invoke the system changes.
 
-### 3.3 Install pfsense
+## 4 Install pfsense
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or nation. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
 
-#### 3.3.1 Download the latest pfSense ISO
+### 4.1 Download the latest pfSense ISO
 You can use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
 
 For the Stable pfSense 2.4:
@@ -346,7 +346,7 @@ For the Development pfSense version 2.5:
 wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
 ```
 
-#### 3.3.2 Create a pfSense VM
+### 4.2 Create a pfSense VM
 You can create a pfSense VM by either using CLI or by the webgui.
 
 For the webgui method go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `Create VM` and fill out the details as shown below (whats not shown below leave as default)
@@ -398,7 +398,7 @@ Now using the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `Hardware` 
 
 Or if you prefer you can simply use Proxmox typhoon-01 cli `>Shell` and type the following to achieve the same thing (Note: the below script is for a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs ONLY):
 
-For the Stable pfSense 2.4:
+For the Stable pfSense 2.4.4:
 ```
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1,tag=30 --net3 virtio,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
@@ -407,7 +407,7 @@ For the Development pfSense version 2.5:
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1,tag=30 --net3 virtio,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
-#### 3.3.3 Install pfSense
+### 4.3 Install pfSense
 The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`  and click on the  `>_Console` tab and you should see the installation script running. Next fill out the details as shown below:
 
 | pfSense Installation Step | Value | Notes
@@ -436,5 +436,102 @@ Enter the new LAN IPv6 address, press <ENTER> for none| `Press ENTER` | *Hit the
 Do you want to enable the DHCP server on LAN? (y/n)| `n` 
 Do you want to revert to HTTP as the webConfigurator protocol? (y/n)| `y`
 
-You can now access the webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
+You can now access the pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
+
+### 4.4 Setup pfSense
+You can now access pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/ . In the pfSense webConfigurator we are going to setup two OpenVPN Gateways, namely vpngate-world and vpngate-local. Your default login details are User > admin | Pwd > pfsense
+
+#### 4.4.1 Change Your Password
+Now using the pfSense web interface `System` > `User Manager` > `click on the admin pencil icon` and change your password to something more secure. Remember to hit the `Save` button at the bottom of the page.
+
+#### 4.4.2 Add your OpenVPN Client Servers
+Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your account server details handy. The following example uses ExpressVPN values.
+
+Have your vpn server provider OVPN configuration file open in a text editor so you can copy the certificate details. Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
+
+| Create/Edit CA | Value | Notes
+| :---  | :---: | :--- |
+| Descriptive name | `ExpressVPN` | *Or whatever your providers name is, ExpressVPN, PIA etc*
+| Method | `Import an existing Certificate Authority`
+| **Existing Certificate Authority**
+| Certificate data | `Insert your key data` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for the text that is wrapped within the <ca> portion of the file. Copying the entire string from —–BEGIN CERTIFICATE—– to —–END CERTIFICATE—–* |
+| Certificate Private Key (optional) | Leave this blank
+| Serial for next certificate | Leave this blank
+
+Click `Save`. Stay on this page and click `Certificates` at the top. Click `Add`enter the following:
+
+| Add/Sign a New Certificate | Value | Notes
+| :---  | :---: | :--- |
+| Descriptive name | `ExpressVPN Cert` | *Or whatever your providers name is, PIA Cert etc*
+| **Import Certificate**
+| Certificate data | `Insert your key data` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for the text that is wrapped within the <cert> portion of the file. Copy the entire string from —–BEGIN CERTIFICATE—– to —–END CERTIFICATE—–*
+| Private key data | `Insert your key data` | *With your text editor still open, look for the text that is wrapped within the <key> portion of the file. Copy the entire string from —–BEGIN RSA PRIVATE KEY—– to —-END RSA PRIVATE KEY—-*
+
+Click `Save`.
+
+Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configuration form, then fill up the necessary fields as follows:
+
+| General Information | Value | Notes
+| :---  | :---: | :--- |
+| Disabled | Leave this box unchecked
+|Server Mode | `Peer to Peer (SSL/TLS)`
+| Protocol | `UDP on IPv4 only`
+| Device mode | `tun - Layer 3 Tunnel Mode`
+| Interface | `WAN`
+| Local port | Leave blank
+| Server host or address | `netherlands-amsterdam-ca-version-2.expressnetw.com` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for text that starts with remote, followed by a server name. Copy the server name string into this field (e.g., netherlands-amsterdam-ca-version-2.expressnetw.com )*
+| Server port | `1195`
+| Proxy host or address | Leave blank
+| Proxy port | Leave blank
+| Proxy authentication… | leave default
+| Server host name resolution | leave default (none)
+| Description | `vpngate-world`
+| **User Authentication Settings**
+| Username | `insert your account username`
+| Password | `insert your account password`
+| Authentication Retry | Leave disabled/default
+| **Cryptographic Settings**
+| TLS Configuration | `[x] Use a TLS Key` | *Check the box*
+| TLS Configuration | `[ ] Automatically generate a TLS Key.` | *Uncheck the box*
+| TLS Key | `Insert your key data` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for text that is wrapped within the <tls-auth> portion of the file. Ignore the “2048 bit OpenVPN static key” entries and start copying from —–BEGIN OpenVPN Static key V1—– to —–END OpenVPN Static key V1—–*
+| TLS Key Usage Mode | `TLS Authentication`
+| Peer Certificate Authority | `ExpressVPN` | *Select the “ExpressVPN” entry that you created previously in the Cert. Manager steps*
+| Client Certificate | `ExpressVPN Cert` | *Select the “ExpressVPN Cert” entry that you created previously in the Cert. Manager steps*
+| Encryption Algorithm | `AES-256-CBC` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for the text cipher. In this example, the OpenVPN configuration is listed as “cipher AES-256-CBC,” so we will select “AES-256-CBC (256-bit key, 128-bit block) from the drop-down*
+| Enable NCP | `[x] Enable Negotiable Cryptographic Parameters` 
+| NCP Algorithms | `AES-256-CBC` | Only use/add AES-256-CBC
+| Auth digest algorithm | `SHA512 (512-bit)`| *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for the text auth followed by the algorithm after. In this example, we saw “auth SHA512,” so we will select “SHA512 (512-bit)” from the dropdown*
+| Hardware Crypto
+| **Tunnel Settings**
+| IPv4 Tunnel Network | Leave blank
+| IPv6 Tunnel Network | Leave blank
+| IPv4 Remote network(s) | Leave blank
+| IPv6 Remote network(s) | Leave blank
+| Limit outgoing bandwidth | Leave blank
+| Compression | `Adaptive LZO Compression`
+| Topology | `Leave the default` | *Subnet — One IP address per client in a common subnet*
+| Type-of-Service |  [ ] Leave unchecked
+| Don't pull routes | [x] | *Check the box*
+| Don't add/remove routes | [ ] | *Uncheck the box*
+| **Advanced Configuration**
+| Custom options | `fast-io;persist-key;persist-tun;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously*
+| UDP Fast I/O | `[x] Use fast I/O operations with UDP writes to tun/tap. Experimental.` | *Check the box*
+| Send/Receive Buffer | `512`
+| Gateway creation  | `IPv4 Only`
+| Verbosity level | `3 (recommended)`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
