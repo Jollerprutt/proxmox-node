@@ -638,9 +638,11 @@ If you have Automatic NAT enabled you want to enable Manual Outbound NAT and cli
 But first you must find any rules that allows the devices you wish to tunnel, with a `Source` value of `192.168.30.0/24` and `192.168.40.0/24` and delete them and click `Save`. These are most likely have `Description` valies `Auto created rule – ***` and will directing traffic to the default WAN which is NOT want we want. **DO NOT DELETE** the `Mappings` with `Source` values like `127.0.0.0/8, ::1/128, 192.168.1.0/24`
 
 Now create new mappings by `Firewall` > `NAT` > `Outband Tab` > `Add` to open a configuration form, then fill up the necessary fields as follows (creating one each for `VLAN30 to vpngate-world` and `VLAN40 to vpngate-local`):
+
 | |Interface|Source|Source Port|Destination|Destination Port|NAT Address|NAT Port|Static Port|Description|
 |:--- | :---  | :--- | :--- | :---  | :--- | :--- | :---  | :--- | :--- |
 |[]|VPNGATEWORLD|192.168.30.0/24|*|*|*|VPNGATEWORLD address|*|:heavy_check_mark:|VLAN30 to vpngate-world
+|[]|VPNGATELOCAL|192.168.40.0/24|*|*|*|VPNGATELOCAL address|*|:heavy_check_mark:|VLAN30 to vpngate-local
 
 
 
