@@ -1,7 +1,7 @@
-# Your Proxmox Node Build
+## Your Proxmox Node Builds
 The following build is for two hard metal proxmox nodes and one Synology VM proxmox container - total of three so we have a quorum.
 
-Hardware includes 1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, 1x Intel i3 NUC model nuc5i3ryh and 1x Synology DS1515+ with 4x NICs. Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, CPU's are  2x core / 4x thread Intel CPUs, support Intel AES-ni instruction sets (for OpenVPN), support HD 4K GPU, Intel NIC's, and have at least 2x SATA 6.0 Gb/s Ports each to install two SSD's.
+Hardware includes 1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, 1x Intel i3 NUC model nuc5i3ryh and 1x Synology DS1515+ with 4x NICs. Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, CPU's are all 2x core / 4x thread Intel CPUs, support Intel AES-ni instruction sets (for OpenVPN), support HD 4K GPU, Intel NIC's, and have at least 2x SATA 6.0 Gb/s Ports each to support SSD's.
 
 Each node is installed with 16Gb of RAM. 
 
@@ -639,10 +639,101 @@ But first you must find any rules that allows the devices you wish to tunnel, wi
 
 Now create new mappings by `Firewall` > `NAT` > `Outband Tab` > `Add` to open a configuration form, then fill up the necessary fields as follows (creating one each for `VLAN30 to vpngate-world` and `VLAN40 to vpngate-local`):
 
+| Edit Advanced Outbound NAT Entry | Value | Value
+| :---  | :--- | :--- |
+| Disabled | `[]` Disable this rule
+| Do not NAT | `[]` Enabling this option will .....
+| Interface | `VPNGATEWORLD`
+|Address Family | `IPv4+IPv6`
+| Protocol | `any`
+| Source | `Network` | `192.168.30.0/24`
+| Destination | `Any` | Leave blank
+| **Translation**
+| Address | `Interface Address`
+| Port or Range | Leave blank
+| **Misc**
+| No XMLRPC Sync | []
+| Description | `VLAN30 to vpngate-world`
+
+And click `Save`. 
+
+Repeat the above steps for `VLAN40 to vpngate-local` changing to the values as follows:
+
+| Edit Advanced Outbound NAT Entry | Value | Value
+| :---  | :--- | :--- |
+| Disabled | `[]` Disable this rule
+| Do not NAT | `[]` Enabling this option will .....
+| Interface | `VPNGATELOCAL`
+|Address Family | `IPv4+IPv6`
+| Protocol | `any`
+| Source | `Network` | `192.168.40.0/24`
+| Destination | `Any` | Leave blank
+| **Translation**
+| Address | `Interface Address`
+| Port or Range | Leave blank
+| **Misc**
+| No XMLRPC Sync | []
+| Description | `VLAN40 to vpngate-local`
+
+And click `Save`. 
+
+Now your first two mappings for the new gateways show look like this:
+
 | |Interface|Source|Source Port|Destination|Destination Port|NAT Address|NAT Port|Static Port|Description|
 |:--- | :---  | :--- | :--- | :---  | :--- | :--- | :---  | :--- | :--- |
 |[]|VPNGATEWORLD|192.168.30.0/24|*|*|*|VPNGATEWORLD address|*|:heavy_check_mark:|VLAN30 to vpngate-world
-|[]|VPNGATELOCAL|192.168.40.0/24|*|*|*|VPNGATELOCAL address|*|:heavy_check_mark:|VLAN30 to vpngate-local
+|[]|VPNGATELOCAL|192.168.40.0/24|*|*|*|VPNGATELOCAL address|*|:heavy_check_mark:|VLAN40 to vpngate-local
+
+#### 4.4.8 Adding the Firewall Rules
+This is simple because we are going to send all the traffic in a subnet(s) (VLAN30 > vpngate-world / VLAN40 > vpngate-local) through the openVPN tunnel. 
+
+So first lets do OPT1 / vpngate-world so go `Firewall` > `Rules` > `OPT1 tab` and `Add` a new rule:
+
+| Edit Firewall Rule / OPT1 | Value | Notes|
+| :---  | :--- | :--- |
+| Action | `Pass`
+| Disabled | [] disable this rule
+| Interface | `OPT1`
+| Addresss Family | `IPv4+IPv6`
+| Protocol | `Any`
+| **Extra Options**
+| Log | [] Log packets that are handled by this rule
+| Description | `VLAN30 Traffic to vpngate-world`
+| Advanced Options | Click `Display Advanced` | *This is a important step. You only want to edit one value in `Advanced`!!!!
+| **Advanced Options**
+| Gateway | `VPNGATEWORLD_VPNV$-x.x.x.x-Interface VPNGATEWORLD_VPNV4 Gateway` | `MUST Change to this gateway!
+
+Click `Save`.
+
+Now do OPT2 / vpngate-local so go `Firewall` > `Rules` > `OPT2 tab` and `Add` a new rule:
+
+| Edit Firewall Rule / OPT2 | Value | Notes|
+| :---  | :--- | :--- |
+| Action | `Pass`
+| Disabled | [] disable this rule
+| Interface | `OPT2`
+| Addresss Family | `IPv4+IPv6`
+| Protocol | `Any`
+| **Extra Options**
+| Log | [] Log packets that are handled by this rule
+| Description | `VLAN40 Traffic to vpngate-local`
+| Advanced Options | Click `Display Advanced` | *This is a important step. You only want to edit one value in `Advanced`!!!!*
+| **Advanced Options**
+| Gateway | `VPNGATELOCAL_VPNV$-x.x.x.x-Interface VPNGATELOCAL_VPNV4 Gateway` | *MUST Change to this gateway!*
+
+Click `Save` and `Apply`.
+
+The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
+
+#### 4.4.9 Finish Up
+After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period byt dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
+
+Once you’re done head over to any client PC or mobile on the WiFi SSID on either `vpngate-world` VLAN30 or `vpngate-local` VLAN40 networks and use IP checker to if its all working https://wtfismyip.com
+
+Success! (hopefully)
+
+
+
 
 
 
