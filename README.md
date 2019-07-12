@@ -400,11 +400,11 @@ Or if you prefer you can simply use Proxmox typhoon-01 cli `>Shell` and type the
 
 For the Stable pfSense 2.4.4:
 ```
-qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1,tag=30 --net3 virtio,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 For the Development pfSense version 2.5:
 ```
-qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1,tag=30 --net3 virtio,bridge=vmbr3,firewall=1,tag=40 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
 ### 4.3 Install pfSense
@@ -443,6 +443,18 @@ You can now access pfSense webConfigurator by opening the following URL in your 
 
 #### 4.4.1 Change Your Password
 Now using the pfSense web interface `System` > `User Manager` > `click on the admin pencil icon` and change your password to something more secure. Remember to hit the `Save` button at the bottom of the page.
+
+#### 4.4.2 Enable AES-NI 
+If your CPU supports AES-NI CPU Crypto best enable it.
+
+Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` and scroll down to the section `Cryptographic & Thermal Hardware` and change the details as shown below:
+
+| Cryptographic & Thermal Hardware | Value | Notes
+| :---  | :---: | :--- |
+| Cryptographic Hardware | `AES-NI CPU-based Accelleration` | *This works for the Qotom Mini PC Q500G6-S05 series and modern hardware*
+| Thermal Sensors | `Intel Core* CPU on-die thermal sensor` | *If you have a Intel CPU*
+
+Remember to hit the `Save` button at the bottom of the page.
 
 #### 4.4.2 Add DHCP Servers to OPT1 and OPT2
 Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
@@ -554,9 +566,9 @@ Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configur
 | Topology | `Leave the default` | *Subnet — One IP address per client in a common subnet*
 | Type-of-Service |  [ ] Leave unchecked
 | Don't pull routes | [x] | *Check the box*
-| Don't add/remove routes | [ ] | *Uncheck the box*
+| Don't add/remove routes | [x] | *Check the box*
 | **Advanced Configuration**
-| Custom options | `fast-io;persist-key;persist-tun;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously*
+| Custom options | `route-nopull;fast-io;persist-key;persist-tun;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously. Note, the addition of `route-nopull`.*
 | UDP Fast I/O | `[x] Use fast I/O operations with UDP writes to tun/tap. Experimental.` | *Check the box*
 | Send/Receive Buffer | `512`
 | Gateway creation  | `IPv4 Only`
