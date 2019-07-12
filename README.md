@@ -447,7 +447,7 @@ Now using the pfSense web interface `System` > `User Manager` > `click on the ad
 #### 4.4.2 Enable AES-NI 
 If your CPU supports AES-NI CPU Crypto best enable it.
 
-Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` and scroll down to the section `Cryptographic & Thermal Hardware` and change the details as shown below:
+Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` scroll down to the section `Cryptographic & Thermal Hardware` and change the details as shown below:
 
 | Cryptographic & Thermal Hardware | Value | Notes
 | :---  | :---: | :--- |
@@ -456,7 +456,7 @@ Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` 
 
 Remember to hit the `Save` button at the bottom of the page.
 
-#### 4.4.2 Add DHCP Servers to OPT1 and OPT2
+#### 4.4.3 Add DHCP Servers to OPT1 and OPT2
 Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
 
 | Interfaces/OPT1 (vtnet2) | Value | Notes
@@ -481,7 +481,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | Interfaces/OPT2 (vtnet3) | Value | Notes
 | :---  | :---: | :--- |
 | Enable | `[x]` | *Check the box*
-| Description | `OPT1`
+| Description | `OPT2`
 | IPv4 Configuration Type | `Static IPv4`
 | Ipv6 Configuration Type | `None`
 | MAC Address | Leave blank
@@ -489,19 +489,33 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | MSS | Leave blank
 | Speed and  Duplex | `Default (no preference, typically autoselect)`
 | **Static IPv4 Configuration**
-| IPv4 Address | `192.168.30.5/24`
+| IPv4 Address | `192.168.40.5/24`
 | IPv4 Upstream gateway | `None`
 | **Reserved Networks**
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
 | Block bogon networks | `[x]` | *Check the box*
 
-#### 4.4.3 Setup DHCP Servers for OPT1 and OPT2
-Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` to open a configuration form, then fill up the necessary fields as follows:
+#### 4.4.4 Setup DHCP Servers for OPT1 and OPT2
+Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `OPT2 Tab` to open a configuration form, then fill up the necessary fields as follows:
 
-#### 4.4.2 Add your OpenVPN Client Servers
-Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your account server details handy. The following example uses ExpressVPN values.
+| General Options | OPT 1 Value | OPT2 Value | Notes |
+| :---  | :---: | :---: | :---
+| Enable | `[x]` |  `[x]` | *Opt1&2 Check the box*
+| BOOTP | `[ ]` | [ ] | *Disable*
+| Deny unknown clients | `[ ]` | [ ] | *Disable*
+| Ignore denied clients | `[ ]` | [ ] | *Disable*
+| Ignore client identifiers | `[ ]` | [ ] | *Disable*
+| Subnet | 192.168.30.0 | 192.168.40.0 |
+| Subnet mask |255.255.255.0 | 255.255.255.0 | 
+| Available range  192.168.30.1 - 192.168.30.254 | 192.168.40.1 - 192.168.40.254 |
+| Range | `192.168.30.150 - 192.168.30.250` | `192.168.40.150 - 192.168.40.250` |
 
-Have your vpn server provider OVPN configuration file open in a text editor so you can copy the certificate details. Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
+Remember to hit the `Save` button at the bottom of the page.
+
+#### 4.4.5 Add your OpenVPN Client Server details
+Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your VPN account server username and password details handy. Also best have your vpn server provider OVPN configuration file open in a text editor so you can copy the various certificate and key details.
+
+Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
 
 | Create/Edit CA | Value | Notes
 | :---  | :---: | :--- |
@@ -523,7 +537,7 @@ Click `Save`. Stay on this page and click `Certificates` at the top. Click `Add`
 
 Click `Save`.
 
-Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configuration form, then fill up the necessary fields as follows:
+Now using the pfSense web interface `VPN` > `OpenVPN` > `Clients Tab` > `Add` to open a configuration form, then fill up the necessary fields as follows (creating one each for vpngate-world and vpngate-local):
 
 | General Information | Value | Notes
 | :---  | :---: | :--- |
@@ -533,13 +547,14 @@ Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configur
 | Device mode | `tun - Layer 3 Tunnel Mode`
 | Interface | `WAN`
 | Local port | Leave blank
-| Server host or address | `netherlands-amsterdam-ca-version-2.expressnetw.com` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for text that starts with remote, followed by a server name. Copy the server name string into this field (e.g., netherlands-amsterdam-ca-version-2.expressnetw.com )*
+| Server host or address : vpngate-world | `netherlands-amsterdam-ca-version-2.expressnetw.com`| *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for text that starts with remote, followed by a server name. Copy the server name string into this field (e.g., if you are in USA maybe you wnat to use servers outside of your jurisdiction like netherlands-amsterdam-ca-version-2.expressnetw.com )*
+| Server host or address : vpngate-local | `thailand-ca-version-2.expressnetw.com` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for text that starts with remote, followed by a server name. Copy the server name string into this field (e.g., if you are in South East Asia maybe you wnat to use servers near your region like thailand-ca-version-2.expressnetw.com )*
 | Server port | `1195`
 | Proxy host or address | Leave blank
 | Proxy port | Leave blank
 | Proxy authentication… | leave default
 | Server host name resolution | leave default (none)
-| Description | `vpngate-world` | *Simply change to vpngate-local for that connection service*
+| Description | `vpngate-world` or `vpngate-local` | *Simply type vpngate-world or vpngate-local for the connection service you are creating*
 | **User Authentication Settings**
 | Username | `insert your account username`
 | Password | `insert your account password`
@@ -568,7 +583,8 @@ Now using the pfSense web interface `VPN` > `Clients` > `Add` to open a configur
 | Don't pull routes | [x] | *Check the box*
 | Don't add/remove routes | [x] | *Check the box*
 | **Advanced Configuration**
-| Custom options | `route-nopull;fast-io;persist-key;persist-tun;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously. Note, the addition of `route-nopull`.*
+| Custom options : vpngate-world| `route-nopull;fast-io;persist-key;persist-tun;remote sweden-2-ca-version-2.expressnetw.com 1195;remote singapore-cbd-ca-version-2.expressnetw.com 1195;remote germany-frankfurt-1-ca-version-2.expressnetw.com 1195;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously. Note, the addition of `route-nopull`. Also, for redundancy we add other remote servers in the event the primary server fails*
+| Custom options : vpngate-local| `route-nopull;fast-io;persist-key;persist-tun;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously. Note, the addition of `route-nopull`.*
 | UDP Fast I/O | `[x] Use fast I/O operations with UDP writes to tun/tap. Experimental.` | *Check the box*
 | Send/Receive Buffer | `512`
 | Gateway creation  | `IPv4 Only`
