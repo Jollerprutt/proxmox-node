@@ -507,13 +507,13 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 | Ignore client identifiers | `[ ]` | [ ] | *Disable*
 | Subnet | 192.168.30.0 | 192.168.40.0 |
 | Subnet mask |255.255.255.0 | 255.255.255.0 | 
-| Available range  192.168.30.1 - 192.168.30.254 | 192.168.40.1 - 192.168.40.254 |
+| Available range | 192.168.30.1 - 192.168.30.254 | 192.168.40.1 - 192.168.40.254 |
 | Range | `192.168.30.150 - 192.168.30.250` | `192.168.40.150 - 192.168.40.250` |
 
 Remember to hit the `Save` button at the bottom of the page.
 
 #### 4.4.5 Add your OpenVPN Client Server details
-Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your VPN account server username and password details handy. Also best have your vpn server provider OVPN configuration file open in a text editor so you can copy the various certificate and key details.
+Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your VPN account server username and password details handy. Also best have your vpn server provider OVPN configuration file open in a text editor so you can copy the various certificate and key details. Remember the methods for this will vary across different providers but there should be a tutorial showing you how to do this somewhere out there. 
 
 Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
 
@@ -590,11 +590,57 @@ Now using the pfSense web interface `VPN` > `OpenVPN` > `Clients Tab` > `Add` to
 | Gateway creation  | `IPv4 Only`
 | Verbosity level | `3 (recommended)`
 
-Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world should show `up`
+Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world and vpngate-local should show `up`. This means we are connected to the provider.
 
+#### 4.4.6 Add two new Gateways
+Next we need to add an interface for each new OpenVPN connection and then a gateway for each interface. Now using the pfSense web interface `Interfaces` > `Assignments` the configuration form will show two available network ports which can be added, ovpnc1 (vpngate-world) and ovpnc2 (vpngate-local). Now `Add` both and remember to click `Save`.
 
+Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (doing one each for for OPT3 and OPT4):
 
+The first edit will be `OPT3`:
+| Interfaces/OPT3 (ovpnc1) | Value | Notes
+| :---  | :---: | :--- |
+| Enable | `[x]` Enable interface | *Check the box*
+| Description | `vpngateworld`
+| IPv4/IPv6 Configuration | This interface type does not support manual address configuration on this page.
+| MAC Address | `None`
+| MTU | Leave blank
+| MTU | Leave blank
+| MSS | Leave blank
+| **Reserved Networks**
+| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
+| Block bogon networks | `[ ]` | *Uncheck the box*
 
+Now edit `OPT4`:
+
+| Interfaces/OPT4 (ovpnc2) | Value | Notes
+| :---  | :---: | :--- |
+| Enable | `[x]` Enable interface | *Check the box*
+| Description | `vpngatelocal`
+| IPv4/IPv6 Configuration | This interface type does not support manual address configuration on this page.
+| MAC Address | `None`
+| MTU | Leave blank
+| MTU | Leave blank
+| MSS | Leave blank
+| **Reserved Networks**
+| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
+| Block bogon networks | `[ ]` | *Uncheck the box*
+
+Click `Save`.
+
+At this point you are ready to create the firewall rules. Now I would **highly recommend a reboot** here as this was the only thing that made the next few steps work. So do a reboot `Diagnostics` > `Reboot` and perform a `Reboot`. If you dont things might get not work in the steps ahead.
+
+#### 4.4.7 Adding NAT Rules
+Next we need to add the NAT rules to allow for traffic to go out of the  VPN encrypted gateway(s), this is done from `Firewall` > `NAT` > `Outbound Tab`. 
+
+If you have Automatic NAT enabled you want to enable Manual Outbound NAT and click `Save`. Now you will see and be able to edit the NAT Mappings configuration form.
+
+But first you must find any rules that allows the devices you wish to tunnel, with a `Source` value of `192.168.30.0/24` and `192.168.40.0/24` and delete them and click `Save`. These are most likely have `Description` valies `Auto created rule – ***` and will directing traffic to the default WAN which is NOT want we want. **DO NOT DELETE** the `Mappings` with `Source` values like `127.0.0.0/8, ::1/128, 192.168.1.0/24`
+
+Now create new mappings by `Firewall` > `NAT` > `Outband Tab` > `Add` to open a configuration form, then fill up the necessary fields as follows (creating one each for `VLAN30 to vpngate-world` and `VLAN40 to vpngate-local`):
+| |Interface|Source|Source Port|Destination|Destination Port|NAT Address|NAT Port|Static Port|Description|
+|:--- | :---  | :--- | :--- | :---  | :--- | :--- | :---  | :--- | :--- |
+|[]|VPNGATEWORLD|192.168.30.0/24|*|*|*|VPNGATEWORLD address|*|:heavy_check_mark:|VLAN30 to vpngate-world
 
 
 
