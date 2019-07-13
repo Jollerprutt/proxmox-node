@@ -730,7 +730,7 @@ Click `Save` and `Apply`.
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
 #### 4.4.9 Setup pfSense DNS
-Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configurw DNS over TLS. In addition to Cloudflare DNS servers, the following guide also applies to Quad9 DNS service. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
+Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure DNS over TLS. In addition to Cloudflare DNS servers, the following guide also applies to Quad9 DNS service. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
 
 | DNS Server Settings | Value | Value |
 | :---  | :--- | :--- |
