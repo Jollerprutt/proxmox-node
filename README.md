@@ -1,4 +1,4 @@
-## Your Proxmox Node Builds
+# Your Proxmox Node Builds
 The following build is for two hard metal proxmox nodes and one Synology VM proxmox container - total of three so we have a quorum.
 
 Hardware includes 1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, 1x Intel i3 NUC model nuc5i3ryh and 1x Synology DS1515+ with 4x NICs. Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, CPU's are all 2x core / 4x thread Intel CPUs, support Intel AES-ni instruction sets (for OpenVPN), support HD 4K GPU, Intel NIC's, and have at least 2x SATA 6.0 Gb/s Ports each to support SSD's.
@@ -509,6 +509,10 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 | Subnet mask |255.255.255.0 | 255.255.255.0 | 
 | Available range | 192.168.30.1 - 192.168.30.254 | 192.168.40.1 - 192.168.40.254 |
 | Range | `192.168.30.150 - 192.168.30.250` | `192.168.40.150 - 192.168.40.250` |
+| **Servers**
+| WINS servers | Leave blank
+| DNS servers | `85.203.37.1` | `85.203.37.1` | *DNS Server 1: Use the DNS IP supplied by your VPN provider (the ones shown are ExpressVPN's). If you dont have any leave blank. Note, for you to use your VPN providers DNS servers you generally need DDNS configured to report to your VPN provider your public IP address on a device on your network such as your router or NAS etc*
+|  | `85.203.37.2` | `85.203.37.2` | *DNS Server 2: Use the DNS IP supplied by your VPN provider (the ones shown are ExpressVPN's). If you dont have any leave blank*
 
 Remember to hit the `Save` button at the bottom of the page.
 
@@ -719,16 +723,40 @@ Now do OPT2 / vpngate-local so go `Firewall` > `Rules` > `OPT2 tab` and `Add` a 
 | Description | `VLAN40 Traffic to vpngate-local`
 | Advanced Options | Click `Display Advanced` | *This is a important step. You only want to edit one value in `Advanced`!!!!*
 | **Advanced Options**
-| Gateway | `VPNGATELOCAL_VPNV$-x.x.x.x-Interface VPNGATELOCAL_VPNV4 Gateway` | *MUST Change to this gateway!*
+| Gateway | `VPNGATELOCAL_VPNV4-x.x.x.x-Interface VPNGATELOCAL_VPNV4 Gateway` | *MUST Change to this gateway!*
 
 Click `Save` and `Apply`.
 
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
-#### 4.4.9 Finish Up
-After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period byt dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
+#### 4.4.9 Setup pfSense DNS
+Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configurw DNS over TLS. In addition to Cloudflare DNS servers, the following guide also applies to Quad9 DNS service. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
 
-Once you’re done head over to any client PC or mobile on the WiFi SSID on either `vpngate-world` VLAN30 or `vpngate-local` VLAN40 networks and use IP checker to if its all working https://wtfismyip.com
+| DNS Server Settings | Value | Value |
+| :---  | :--- | :--- |
+| DNS Servers | `1.1.1.1` | `WAN_DHCP - wan-xxxx`
+| DNS Servers | `1.0.0.1` | `WAN_DHCP - wan-xxxx`
+
+After entering the DNS IP addresses, scroll down to the bottom of the page and click `Save`. Your pfSense appliance is now using Cloudflare servers as DNS.
+
+To configure the pfSense DNS resolver to send DNS queries over TLS, navigate to `Services` > `DNS Resolver` and on the tab `General Settings` scroll down to the `Display Custom Options` box. Enter the following lines (you should be able to simply copy / paste the section text block below):
+```
+server:
+forward-zone:
+name: "."
+forward-ssl-upstream: yes
+forward-addr: 1.1.1.1@853
+forward-addr: 1.0.0.1@853
+```
+After entering the above code, scroll down to the bottom of the page and click `Save` and then to the top of the page click `Apply Changes`.
+Note: This guide applies only to DNS resolver. Forwarding mode must be disabled in the DNS resolver settings, since the example below defines its own forwarding zone.
+
+#### 4.4.9 Finish Up
+After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period but dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
+
+And finally navigate to `Diagnostics` > `Reboot` and reboot your pfSense machine.
+
+Once you’re done head over to any client PC on the network or mobile on the WiFi SSID on either `vpngate-world` VLAN30 or `vpngate-local` VLAN40 networks and use IP checker to if its all working https://wtfismyip.com
 
 Success! (hopefully)
 
