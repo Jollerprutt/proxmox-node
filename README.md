@@ -40,7 +40,9 @@ For Disk 2 (sdx) I recommend a 500 Gb SSD which will be used as a Proxmox ZFS sh
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
-For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild#install--configure-synology-virtual-machine-manager). Remember to remove your USB media on reboot on the hard metal hardware.
+For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild#install--configure-synology-virtual-machine-manager).
+
+Remember to remove your USB media on reboot on the hard metal hardware.
 
 Configure each node as follows:
 
@@ -772,6 +774,9 @@ And finally navigate to `Diagnostics` > `Reboot` and reboot your pfSense machine
 Once you’re done head over to any client PC on the network or mobile on the WiFi SSID on either `vpngate-world` VLAN30 or `vpngate-local` VLAN40 networks and use IP checker to if its all working https://wtfismyip.com
 
 Success! (hopefully)
+
+## 5 Automated Installation and Configuration
+
 
 
 
