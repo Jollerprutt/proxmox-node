@@ -1,4 +1,4 @@
-# Your Proxmox Node Builds
+# Proxmox Node Building
 This recipe will help you build two physical proxmox nodes and one Synology VM proxmox node. Such a group is called a cluster and has a central management webgui by a single IP address. A cluster or of three nodes can form a quorum so you can High Availability in the event a node fails.
 
 The hardware in the recipe includes:
@@ -152,7 +152,7 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
 
-## 3. Configure Qotom Multi NIC Network Setup - Typhoon-01
+## 3. Configure Qotom Multi NIC Hardware Network Setup - Typhoon-01
 Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
 
 If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
@@ -182,7 +182,7 @@ Configure your network switch LAG groups as per following table.
 Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
 
 Steps to configuring your network switch are as follows:
-#### 3.1.1 Create VLANs
+#### 3.1.1 Create Network Switch VLANs
 In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The below instructions are for the UniFi controller `Settings` > `Networks` > `Create New Network`
 *  Create a new network to be used for Egress of encypted traffic out of network to your VPN servers.
 
@@ -222,7 +222,7 @@ In this example network switch ingress port 19 is associated with vpngate-world 
 | `Name` |**Port 20**|  |
 | `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
 
-#### 3.1.3 Setup secure VPN WiFi SSiDs
+#### 3.1.3 Setup network WiFi SSiDs for the VPN service
 In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
 
 | Description | Value | Notes |
@@ -775,7 +775,12 @@ Once you’re done head over to any client PC on the network or mobile on the Wi
 
 Success! (hopefully)
 
-## 5 Automated Installation and Configuration
+### 3.4 Automated Installation and Configuration
+Under Development.
+
+## 4 Configure Single NIC Hardware Network Setup - Typhoon-02
+Seting up a single network NIC host (including Synology Virtual Machines) is simple. In the following setup I used a Intel i3 NUC model nuc5i3ryh machine.
+
 
 
 
