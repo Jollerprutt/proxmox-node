@@ -464,7 +464,7 @@ Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` 
 | Cryptographic & Thermal Hardware | Value | Notes
 | :---  | :---: | :--- |
 | Cryptographic Hardware | `AES-NI CPU-based Accelleration` | *This works for the Qotom Mini PC Q500G6-S05 series and modern hardware*
-| Thermal Sensors | `Intel Core* CPU on-die thermal sensor` | *If you have a Intel CPU*
+| Thermal Sensors | None/ACPI | *Will not work because Proxmox virtualization host will NOT forward CPU temperature data to it's pfSEnse guest*
 
 Remember to hit the `Save` button at the bottom of the page.
 
@@ -486,7 +486,7 @@ Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuratio
 | IPv4 Upstream gateway | `None`
 | **Reserved Networks**
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
-| Block bogon networks | `[x]` | *Check the box*
+| Block bogon networks | `[x]` | *Uncheck the box*
 
 Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuration form, then fill up the necessary fields as follows:
 
@@ -505,7 +505,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | IPv4 Upstream gateway | `None`
 | **Reserved Networks**
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
-| Block bogon networks | `[x]` | *Check the box*
+| Block bogon networks | `[]` | *Uncheck the box*
 
 #### 4.4.4 Setup DHCP Servers for OPT1 and OPT2
 Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `OPT2 Tab` to open a configuration form, then fill up the necessary fields as follows:
@@ -529,7 +529,7 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 Remember to hit the `Save` button at the bottom of the page.
 
 #### 4.4.5 Add your OpenVPN Client Server details
-Here we going to create OpenVPN clients vpngate-world and vpngate-local so have your VPN account server username and password details handy. Also best have your vpn server provider OVPN configuration file open in a text editor so you can copy the various certificate and key details. Remember the methods for this will vary across different providers but there should be a tutorial showing you how to do this somewhere out there. 
+Here we going to create OpenVPN clients vpngate-world and vpngate-local. You will need your VPN account server username and password details and have your vpn server provider OVPN configuration file open in a text editor so you can copy various certificate and key details (cut & paste). Note the values for this form will vary between different VPN providers but there should be a tutorial showing your providers pfSense configuration settings on the internet somewhere. 
 
 Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
 
@@ -606,12 +606,14 @@ Now using the pfSense web interface `VPN` > `OpenVPN` > `Clients Tab` > `Add` to
 | Gateway creation  | `IPv4 Only`
 | Verbosity level | `3 (recommended)`
 
-Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world and vpngate-local should show `up`. This means we are connected to the provider.
+Click `Save`.
+
+Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world and vpngate-local should show `up`. This means you are connected to your provider.
 
 #### 4.4.6 Add two new Gateways
-Next we need to add an interface for each new OpenVPN connection and then a gateway for each interface. Now using the pfSense web interface `Interfaces` > `Assignments` the configuration form will show two available network ports which can be added, ovpnc1 (vpngate-world) and ovpnc2 (vpngate-local). Now `Add` both and remember to click `Save`.
+Next we need to add an interface for each new OpenVPN connection and then a Gateway for each interface. Now using the pfSense web interface `Interfaces` > `Assignments` the configuration form will show two available network ports which can be added, ovpnc1 (vpngate-world) and ovpnc2 (vpngate-local). Now `Add` both and remember to click `Save`.
 
-Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (doing one each for for OPT3 and OPT4):
+Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (editing both OPT3 and OPT4):
 
 The first edit will be `OPT3`:
 | Interfaces/OPT3 (ovpnc1) | Value | Notes
@@ -647,13 +649,13 @@ Click `Save`.
 At this point you are ready to create the firewall rules. Now I would **highly recommend a reboot** here as this was the only thing that made the next few steps work. So do a reboot `Diagnostics` > `Reboot` and perform a `Reboot`. If you dont things might get not work in the steps ahead.
 
 #### 4.4.7 Adding NAT Rules
-Next we need to add the NAT rules to allow for traffic to go out of the  VPN encrypted gateway(s), this is done from `Firewall` > `NAT` > `Outbound Tab`. 
+Next we need to add the NAT rules to allow for traffic to go out of the  VPN encrypted gateway(s), this is done from the `Firewall` > `NAT` > `Outbound Tab`. 
 
 If you have Automatic NAT enabled you want to enable Manual Outbound NAT and click `Save`. Now you will see and be able to edit the NAT Mappings configuration form.
 
-But first you must find any rules that allows the devices you wish to tunnel, with a `Source` value of `192.168.30.0/24` and `192.168.40.0/24` and delete them and click `Save`. These are most likely have `Description` valies `Auto created rule – ***` and will directing traffic to the default WAN which is NOT want we want. **DO NOT DELETE** the `Mappings` with `Source` values like `127.0.0.0/8, ::1/128, 192.168.1.0/24`
+But first you must find any rules that allows the devices you wish to tunnel, with a `Source` value of `192.168.30.0/24` and `192.168.40.0/24` and delete them and click `Save` at the bottom right of the form page. **DO NOT DELETE** the `Mappings` with `Source` values like `127.0.0.0/8, ::1/128, 192.168.1.0/24`!
 
-Now create new mappings by `Firewall` > `NAT` > `Outband Tab` > `Add` to open a configuration form, then fill up the necessary fields as follows (creating one each for `VLAN30 to vpngate-world` and `VLAN40 to vpngate-local`):
+Now create new mappings by `Firewall` > `NAT` > `Outband Tab` > `Add` to open a new configuration form, then fill up the necessary fields as follows (creating one each for `VLAN30 to vpngate-world` and `VLAN40 to vpngate-local`):
 
 | Edit Advanced Outbound NAT Entry | Value | Value
 | :---  | :--- | :--- |
@@ -742,7 +744,7 @@ Click `Save` and `Apply`.
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
 #### 4.4.9 Setup pfSense DNS
-Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure DNS over TLS. In addition to Cloudflare DNS servers, the following guide also applies to Quad9 DNS service. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
+Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
 
 | DNS Server Settings | Value | Value |
 | :---  | :--- | :--- |
@@ -761,7 +763,6 @@ forward-addr: 1.1.1.1@853
 forward-addr: 1.0.0.1@853
 ```
 After entering the above code, scroll down to the bottom of the page and click `Save` and then to the top of the page click `Apply Changes`.
-Note: This guide applies only to DNS resolver. Forwarding mode must be disabled in the DNS resolver settings, since the example below defines its own forwarding zone.
 
 #### 4.4.9 Finish Up
 After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period but dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
