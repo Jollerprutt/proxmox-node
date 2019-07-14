@@ -152,7 +152,7 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
 
-## 3. Qotom Multi NIC Network Setup - Typhoon-01
+## 3. Configure Qotom Multi NIC Network Setup - Typhoon-01
 Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
 
 If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
@@ -343,12 +343,12 @@ Note the bridge port corresponds to a physical interface identified above. The n
 
 Reboot the Proxmox node to invoke the system changes.
 
-## 4 Install pfsense
+### 3.3 Install pfsense on the Qotom - Typhoon-01
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or union. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your union and should provide a faster connection speed. 
 
-### 4.1 Download the latest pfSense ISO
+#### 3.3.1 Download the latest pfSense ISO
 Use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
 
 For the Stable pfSense 2.4 (***Recommended - this is what I use***):
@@ -360,7 +360,7 @@ For the Development pfSense version 2.5:
 wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
 ```
 
-### 4.2 Create a pfSense VM
+#### 3.3.2 Create a pfSense VM
 You can create a pfSense VM by either using CLI or by the webgui.
 
 For the webgui method go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `Create VM` and fill out the details as shown below (whats not shown below leave as default)
@@ -421,7 +421,7 @@ For the Development pfSense version 2.5:
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
-### 4.3 Install pfSense
+#### 3.3.3 Install pfSense
 The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`. When running click on the  `>_Console` tab and you should see the installation script running. Follow the prompts and fill out the details as shown below:
 
 | pfSense Installation Step | Value | Notes
@@ -452,13 +452,13 @@ Do you want to revert to HTTP as the webConfigurator protocol? (y/n)| `y`
 
 You can now access the pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
 
-### 4.4 Setup pfSense
+#### 3.3.4 Setup pfSense
 You can now access pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/ . In the pfSense webConfigurator we are going to setup two OpenVPN Gateways, namely vpngate-world and vpngate-local. Your default login details are User > admin | Pwd > pfsense
 
-#### 4.4.1 Change Your Password
+#### 3.3.4.1 Change Your Password
 Now using the pfSense web interface `System` > `User Manager` > `click on the admin pencil icon` and change your password to something more secure. Remember to hit the `Save` button at the bottom of the page.
 
-#### 4.4.2 Enable AES-NI 
+#### 3.3.4.2 Enable AES-NI 
 If your CPU supports AES-NI CPU Crypto best enable it.
 
 Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` scroll down to the section `Cryptographic & Thermal Hardware` and change the details as shown below:
@@ -470,7 +470,7 @@ Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` 
 
 Remember to hit the `Save` button at the bottom of the page.
 
-#### 4.4.3 Add DHCP Servers to OPT1 and OPT2
+#### 3.3.4.3 Add DHCP Servers to OPT1 and OPT2
 Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
 
 | Interfaces/OPT1 (vtnet2) | Value | Notes
@@ -509,7 +509,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
 | Block bogon networks | `[]` | *Uncheck the box*
 
-#### 4.4.4 Setup DHCP Servers for OPT1 and OPT2
+#### 3.3.4.4 Setup DHCP Servers for OPT1 and OPT2
 Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `OPT2 Tab` to open a configuration form, then fill up the necessary fields as follows:
 
 | General Options | OPT 1 Value | OPT2 Value | Notes |
@@ -530,7 +530,7 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 
 Remember to hit the `Save` button at the bottom of the page.
 
-#### 4.4.5 Add your OpenVPN Client Server details
+#### 3.3.4.5 Add your OpenVPN Client Server details
 Here we going to create OpenVPN clients vpngate-world and vpngate-local. You will need your VPN account server username and password details and have your vpn server provider OVPN configuration file open in a text editor so you can copy various certificate and key details (cut & paste). Note the values for this form will vary between different VPN providers but there should be a tutorial showing your providers pfSense configuration settings on the internet somewhere. 
 
 Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
@@ -612,7 +612,7 @@ Click `Save`.
 
 Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world and vpngate-local should show `up`. This means you are connected to your provider.
 
-#### 4.4.6 Add two new Gateways
+#### 3.3.4.6 Add two new Gateways
 Next we need to add an interface for each new OpenVPN connection and then a Gateway for each interface. Now using the pfSense web interface `Interfaces` > `Assignments` the configuration form will show two available network ports which can be added, ovpnc1 (vpngate-world) and ovpnc2 (vpngate-local). Now `Add` both and remember to click `Save`.
 
 Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (editing both OPT3 and OPT4):
@@ -650,7 +650,7 @@ Click `Save`.
 
 At this point you are ready to create the firewall rules. Now I would **highly recommend a reboot** here as this was the only thing that made the next few steps work. So do a reboot `Diagnostics` > `Reboot` and perform a `Reboot`. If you dont things might get not work in the steps ahead.
 
-#### 4.4.7 Adding NAT Rules
+#### 3.3.4.7 Adding NAT Rules
 Next we need to add the NAT rules to allow for traffic to go out of the  VPN encrypted gateway(s), this is done from the `Firewall` > `NAT` > `Outbound Tab`. 
 
 If you have Automatic NAT enabled you want to enable Manual Outbound NAT and click `Save`. Now you will see and be able to edit the NAT Mappings configuration form.
@@ -704,7 +704,7 @@ Now your first two mappings for the new gateways show look like this:
 |[]|VPNGATEWORLD|192.168.30.0/24|*|*|*|VPNGATEWORLD address|*|:heavy_check_mark:|VLAN30 to vpngate-world
 |[]|VPNGATELOCAL|192.168.40.0/24|*|*|*|VPNGATELOCAL address|*|:heavy_check_mark:|VLAN40 to vpngate-local
 
-#### 4.4.8 Adding the Firewall Rules
+#### 3.3.4.8 Adding the Firewall Rules
 This is simple because we are going to send all the traffic in a subnet(s) (VLAN30 > vpngate-world / VLAN40 > vpngate-local) through the openVPN tunnel. 
 
 So first lets do OPT1 / vpngate-world so go `Firewall` > `Rules` > `OPT1 tab` and `Add` a new rule:
@@ -745,7 +745,7 @@ Click `Save` and `Apply`.
 
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
-#### 4.4.9 Setup pfSense DNS
+#### 3.3.4.9 Setup pfSense DNS
 Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
 
 | DNS Server Settings | Value | Value |
@@ -766,7 +766,7 @@ forward-addr: 1.0.0.1@853
 ```
 After entering the above code, scroll down to the bottom of the page and click `Save` and then to the top of the page click `Apply Changes`.
 
-#### 4.4.9 Finish Up
+#### 3.3.5 Finish Up
 After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period but dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
 
 And finally navigate to `Diagnostics` > `Reboot` and reboot your pfSense machine.
