@@ -1,41 +1,52 @@
 # Your Proxmox Node Builds
-The following build is for two hard metal proxmox nodes and one Synology VM proxmox container - total of three so we have a quorum.
+This recipe will help you build two physical proxmox nodes and one Synology VM proxmox node. Such a group is called a cluster and has a central management webgui by a single IP address. A cluster or of three nodes can form a quorum so you can High Availability in the event a node fails.
 
-Hardware includes 1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, 1x Intel i3 NUC model nuc5i3ryh and 1x Synology DS1515+ with 4x NICs. Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, CPU's are all 2x core / 4x thread Intel CPUs, support Intel AES-ni instruction sets (for OpenVPN), support HD 4K GPU, Intel NIC's, and have at least 2x SATA 6.0 Gb/s Ports each to support SSD's.
+The hardware in the recipe includes:
+*  1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs;
+*  1x Intel i3 NUC model nuc5i3ryh; and,
+*  1x Synology DS1515+ with 4x NICs. 
 
-Each node is installed with 16Gb of RAM. 
+Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, Intel CPU's are all 2x core / 4x thread Intel CPUs, support Intel AES-NI instruction sets (for OpenVPN), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM. 
 
 All the network gear is Ubiquiti Networks which is a dream to configure. 
 
-Obviously you can modify these instructions for your own hardware.
+Obviously you can modify these instructions to meet your own hardware requirements.
 
 Network prerequisites are:
+- [x] Layer 2 Network kit
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: on your DNS server 192.168.1.5, like a UniFi USG Gateway, set the following: primary DNS `192.168.1.254` which is your PiHole server IP address; secondary DNS `1.1.1.1` which is a Cloudfare DNS server)
+- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable your to configure DNS server(s), like a UniFi USG Gateway, set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or os down)
 - [x] Network DHCP server is `192.168.1.5`
+- [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
+- [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
 
 Other Prerequisites are:
-- [x] Synology NAS, Synology Virtual Machine Manager, including NFS, is fully configured as per [synobuild](https://github.com/ahuacate/synobuild)
+- [x] Synology NAS is `192.168.1.10`
+- [x] Synology NAS is installed with Synology Virtual Machine Manager
+- [x] Synology NAS is configured, including NFS, as per [synobuild](https://github.com/ahuacate/synobuild)
 
 Tasks to be performed are:
 - [ ] Proxmox OS Installation
 - [ ] Update Proxmox OS and enable turnkeylinux templates
 
 ## 1. Proxmox OS Installation
-Each proxmox node requires two hard disks. Basically one is for the Proxmox OS and the other disk is setup as Proxmox ZFS shared storage disk.
+Each Proxmox node requires two SSD hard disks. Basically one is for the Proxmox OS and the other disk is configured as a Proxmox ZFS shared storage disk.
 
-SCSi and SATA controller devices designate disk names as sda,sdb,sdc and so on - generic linux naming convention. So disk one is often device sda but in some hardware its not so best check because in these instructions disk two is your Proxmox ZFS shared storage disk so the disk size should be common across all nodes. For ease and to avoid confusion SATA disk devices are referred to as sdx.
+In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is important because the disk you have chosen to used as your Proxmox ZFS shared storage disk, a SSD size of at least 250 Gb,  should NOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx.
 
-The Proxmox OS disk one requires a minimum of 60 Gb but a 120 Gb SSD disk is about the smallest these days. You could also use a USB dom for the Proxmox OS but a generic consumer USB thumbdrive or SDcard is not recommended because Proxmox has a fair amount of Read/Write activity.
+Each Proxmox node requires a OS SSD disk, disk 1, minimum size of 60 Gb. But I recommend a 120 Gb SSD disk - the smallest these days. You could use a USB dom for the Proxmox OS but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of Read/Write activity.
 
-Disk two (sdx) I recommend a 500 Gb SSD which will be used as a Proxmox ZFS shared storage disk for the cluster. But my installation uses a 250 Gb SSD.
+For Disk 2 (sdx) I recommend a 500 Gb SSD which will be used as a Proxmox ZFS shared storage disk for the cluster. But my installation uses a 250 Gb SSD.
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
-For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild#install--configure-synology-virtual-machine-manager). Remember to remove your USB media on reboot on the hard metal hardware. Configure each node as follows:
+For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild#install--configure-synology-virtual-machine-manager). Remember to remove your USB media on reboot on the hard metal hardware.
+
+Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
+| Hardware Type | Qotom - Multi NIC | Generic PC - Single NIC | Synology VM
 | `Filesystem` |ext4 |ext4|ext4
 | `Disk(s)` |sdx|sdx|sdx
 | `Country` |"select"|"select"|"select"
@@ -48,7 +59,8 @@ For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructio
 | `Netmask` |255.255.255.0| 255.255.255.0| 255.255.255.0
 | `Gateway` |192.168.1.5|192.168.1.5|192.168.1.5
 | `DNS` |192.168.1.5|192.168.1.5|192.168.1.5
-Please use your supplied password.
+
+Node 1 should be your Qotom. Choose your own password.
 
 ### 1.1 Configure the Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
@@ -60,8 +72,8 @@ Next install the updates using the web interface `updates` > `_upgrade` - a pop 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
-### 1.3. Create Disk Two
-Create Disk Two using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
+### 1.3. Create Disk Two - your shared storage
+Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
@@ -87,7 +99,7 @@ All three Proxmox nodes use NFS to mount data stored on a NAS so these instructi
 The NFS mounts to be configured are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
 Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
-Using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure as follows:
+Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure the NFS mounts as follows:
 
 | Cyclone-01-backup | Value |
 | :---  | :---: |
@@ -143,12 +155,12 @@ Qotom hardware is unlike a Intel Nuc or any other single network NIC host (inclu
 
 If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
 
-In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad.
+In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
 ### 3.1. Configure your Network Switch
-This example is based on UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom / typhoon-01 hosting the pfSense OpenVPN Gateways.
+These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
 
 Configure your network switch LAG groups as per following table.
 
@@ -165,7 +177,7 @@ Configure your network switch LAG groups as per following table.
 |**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
 |**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
 
-Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch. The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
+Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
 
 Steps to configuring your network switch are as follows:
 #### 3.1.1 Create VLANs
@@ -198,7 +210,7 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 | `DHCP Guarding` |Disabled|  |
 
 #### 3.1.2 Setup network switch ports
-In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and edit and `apply` as follows:
+In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and `edit` and `apply` as follows:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
@@ -209,7 +221,7 @@ In this example network switch ingress port 19 is associated with vpngate-world 
 | `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
 
 #### 3.1.3 Setup secure VPN WiFi SSiDs
-In this example two VPN secure WiFI SSIDs are created. and all traffic on these WiFi connections will exit to the internet via VPN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network`  as follows:
+In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
@@ -235,13 +247,13 @@ The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs.
 |**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
 |**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-If you are using the Qotom 4x Gigabit NIC model version then you dont have enough NIC ports to create LAGS because we require 4x connection addresses. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
+If you are using the Qotom 4x Gigabit NIC model version then you dont have enough NIC ports to create LAGS because we require 4x physical connection addresses. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
 | :--- | :---:  | :---: | :---:  | :---: |
 |**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-The following recipes are for the Qotom Mini PC Q500G6-S05 unit. Amend for other hardware.
+The following recipes are for the 6x Gigabit NIC Qotom Mini PC Q500G6-S05 unit. Amend for other hardware.
 
 Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bond` and fill out the details as shown below (must be in order). Here we are going to create two LAGs/Bonds.
 
@@ -330,14 +342,14 @@ Note the bridge port corresponds to a physical interface identified above. The n
 Reboot the Proxmox node to invoke the system changes.
 
 ## 4 Install pfsense
-In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by connected devices, LAN and WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
-   * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or nation. A safer zone.
-   * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your selected region and should provide a faster connection speed. 
+In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
+   * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or union. A safer zone.
+   * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your union and should provide a faster connection speed. 
 
 ### 4.1 Download the latest pfSense ISO
-You can use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
+Use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
 
-For the Stable pfSense 2.4:
+For the Stable pfSense 2.4 (***Recommended - this is what I use***):
 ```
 wget https://sgpfiles.pfsense.org/mirror/downloads/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso.gz
 ```
@@ -398,7 +410,7 @@ Now using the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `Hardware` 
 
 Or if you prefer you can simply use Proxmox typhoon-01 cli `>Shell` and type the following to achieve the same thing (Note: the below script is for a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs ONLY):
 
-For the Stable pfSense 2.4.4:
+For the Stable pfSense 2.4.4 (***Recommended - this is what I use***):
 ```
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
@@ -408,7 +420,7 @@ qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-C
 ```
 
 ### 4.3 Install pfSense
-The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`  and click on the  `>_Console` tab and you should see the installation script running. Next fill out the details as shown below:
+The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`. When running click on the  `>_Console` tab and you should see the installation script running. Follow the prompts and fill out the details as shown below:
 
 | pfSense Installation Step | Value | Notes
 | :---  | :---: | :--- |
