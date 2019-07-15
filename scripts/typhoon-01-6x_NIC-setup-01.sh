@@ -57,13 +57,35 @@ pvesm status
 
 # Edit Proxmox host file
 echo -e "127.0.0.1 localhost.localdomain localhost
-192.168.1.101 typhoon-01.localdomain.com typhoon-01
-192.168.1.102 typhoon-02.localdomain.com typhoon-02
-192.168.1.103 typhoon-03.localdomain.com typhoon-03
-192.168.1.104 typhoon-04.localdomain.com typhoon-04
 
-# The follow are network machines
-192.168.1.10 cyclone-01 cyclone-01.localdomain.com cyclone-01
+# Proxmox Hosts
+192.168.1.101 typhoon-01.localdomain typhoon-01
+192.168.1.102 typhoon-02.localdomain typhoon-02
+192.168.1.103 typhoon-03.localdomain typhoon-03
+192.168.1.104 typhoon-04.localdomain typhoon-04
+
+# NAS Storage
+192.168.1.10 cyclone-01.localdomain cyclone-01
+192.168.1.11 cyclone-02.localdomain cyclone-02
+
+# Docker Nodes
+192.168.1.111 ds-01.localdomain ds-01
+192.168.1.112 ds-02.localdomain ds-02
+192.168.1.113 ds-03.localdomain ds-03
+192.168.1.114 ds-04.localdomain ds-04
+192.168.1.115 ds-05.localdomain ds-05
+192.168.1.116 ds-06.localdomain ds-06
+192.168.1.117 ds-07.localdomain ds-07
+192.168.1.118 ds-08.localdomain ds-08
+192.168.1.119 ds-09.localdomain ds-09
+
+# VM Machines
+192.168.1.253 pfsense.localdomain pfsense
+
+# LXC Machines
+192.168.1.6 unifi.localdomain unifi
+192.168.1.254 pihole.localdomain pihole
+192.168.50.20 jellyfin.localdomain jellyfin
 
 # The following lines are desirable for IPv6 capable hosts
 
