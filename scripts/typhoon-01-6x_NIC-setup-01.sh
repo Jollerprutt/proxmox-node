@@ -6,6 +6,7 @@
 # Proxmox Version : 4.15.18-12-pve      	                         #
 ###################################################################
 
+
 # Q&A before proceeding to run script
 read -r -p "Are you installing on a 6xNIC Qotom router [Y/n] " input
  
