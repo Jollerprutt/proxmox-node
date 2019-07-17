@@ -1,3 +1,21 @@
+#!/bin/bash
+
+# Q&A before proceeding to run script
+read -r -p "Are you installing on a 6xNIC Qotom router [Y/n] " input
+ 
+case $input in
+    [yY][eE][sS]|[yY])
+ echo "Yes"
+ ;;
+    [nN][oO]|[nN])
+ echo "No"
+       ;;
+    *)
+ echo "Invalid input..."
+ exit 1
+ ;;
+esac
+
 # Update turnkey appliance list
 pveam update
 
@@ -206,46 +224,10 @@ iface vmbr3 inet manual
         bridge-vids 2-4094
 #vpngate-local"  >  /etc/network/interfaces.new
 else
-   printf '%s\n' "This is not typhoon-01 so I am not configuring your NICs"
+   printf '%s\n' "This is not typhoon-01 so I am not configuring your NIC Interfaces"
 fi
 
-cat /home/james/.ssh/id_rsa.pub | ssh [USER]@[SERVER] "cat >> ~/.ssh/authorized_keys"
+# Reboot the node
+reboot
+exit 0
 
-/etc/pve/storage.cfg
-
-Reboot.
-shutdown -r 0
-mount -t nfs -o vers=3 serverip:/Backup /mnt/pve/Backup
-
-
-mount -t nfs -o vers=3,tcp 192.168.1.10:/volume1/public /mnt/pve/public
-/.ssh/authorized_keys
-ssh-add /mnt/pve/public/id_rsa.githubdeploy
-cp /mnt/pve/public/id_rsa.githubdeploy ~/.ssh
-ssh-add ~/.ssh/id_rsa.githubdeploy
-cd /var/lib/vz/template/iso
-
-# Enable Host resolution
-echo -e "# Proxmox Hosts
-192.168.1.101 typhoon-01.localdomain typhoon-01
-192.168.1.102 typhoon-02.localdomain typhoon-02
-192.168.1.103 typhoon-03.localdomain typhoon-03
-192.168.1.104 typhoon-04.localdomain typhoon-04
-# NAS Storage
-192.168.1.10 cyclone-01.localdomain cyclone-01
-192.168.1.11 cyclone-02.localdomain cyclone-02
-# Docker Nodes
-192.168.1.111 ds-01.localdomain ds-01
-192.168.1.112 ds-02.localdomain ds-02
-192.168.1.113 ds-03.localdomain ds-03
-192.168.1.114 ds-04.localdomain ds-04
-192.168.1.115 ds-05.localdomain ds-05
-192.168.1.116 ds-06.localdomain ds-06
-192.168.1.117 ds-07.localdomain ds-07
-192.168.1.118 ds-08.localdomain ds-08
-192.168.1.119 ds-09.localdomain ds-09
-# LXC Nodes
-192.168.1.254 pihole.localdomain pihole
-192.168.1.20 unifi.localdomain unifi
-192.168.1.121 jellyfin.localdomain jellyfin
-192.168.1.122 safevpn.localdomain safevpn" >> /etc/hosts
