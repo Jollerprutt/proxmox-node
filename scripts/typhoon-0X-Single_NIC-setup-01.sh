@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ash
 
 ###################################################################
 # This script is for Single LAN hardware.                         #
