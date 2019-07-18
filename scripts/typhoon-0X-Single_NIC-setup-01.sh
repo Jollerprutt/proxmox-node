@@ -1,7 +1,7 @@
 #!/bin/ash
 
 ###################################################################
-# This script is for Single LAN hardware.                         #
+# This script is for Single NIC hardware.                         #
 #                                                                 #
 # Proxmox Version : 4.15.18-12-pve                                #
 ###################################################################
@@ -12,7 +12,6 @@
 # Q&A before proceeding to run script
 #read -r -p "Are you installing on Single NIC hardware [Y/n] " input
  
-
 # Update turnkey appliance list
 pveam update
 
@@ -24,48 +23,12 @@ apt-get upgrade -y
 apt-get install lm-sensors -y
 
 # Cyclone-01 NFS Mounts
-echo -e "nfs: cyclone-01-backup
-        export /volume1/proxmox/backup
-        path /mnt/pve/cyclone-01-backup
-        server 192.168.1.10
-        content backup
-        maxfiles 1
-        options vers=3
-nfs: cyclone-01-public
-        export /volume1/public
-        path /mnt/pve/cyclone-01-public
-        server 192.168.1.10
-        content images
-        options vers=3
-nfs: cyclone-01-docker
-        export /volume1/docker
-        path /mnt/pve/cyclone-01-docker
-        server 192.168.1.10
-        content images
-        options vers=3
-nfs: cyclone-01-video
-        export /volume1/video
-        path /mnt/pve/cyclone-01-video
-        server 192.168.1.10
-        content images
-        options vers=3
-        
-nfs: cyclone-01-music
-        export /volume1/music
-        path /mnt/pve/cyclone-01-music
-        server 192.168.1.10
-        content images
-        options vers=3        
-        
-nfs: cyclone-01-photo
-        export /volume1/photo
-        path /mnt/pve/cyclone-01-photo
-        server 192.168.1.10
-        content images
-        options vers=3" >> /etc/pve/storage.cfg
-
-# NFS mount all
-pvesm status
+pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server 192.168.1.10 --export /volume1/proxmox/backup --content backup --options vers=3 --maxfiles 1
+pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server 192.168.1.10 --export /volume1/public --content images --options vers=3
+pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server 192.168.1.10 --export /volume1/docker --content images --options vers=3
+pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=3
+pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server 192.168.1.10 --export /volume1/music --content images --options vers=3
+pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server 192.168.1.10 --export /volume1/photo --content images --options vers=3
 
 # Edit Proxmox host file
 echo -e "127.0.0.1 localhost.localdomain localhost
