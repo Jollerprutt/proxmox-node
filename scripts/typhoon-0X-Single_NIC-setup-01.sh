@@ -10,20 +10,8 @@
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
 # Q&A before proceeding to run script
-read -r -p "Are you installing on Single NIC hardware [Y/n] " input
+#read -r -p "Are you installing on Single NIC hardware [Y/n] " input
  
-case $input in
-    [yY][eE][sS]|[yY])
- echo "Yes"
- ;;
-    [nN][oO]|[nN])
- echo "No"
-       ;;
-    *)
- echo "Invalid input..."
- exit 1
- ;;
-esac
 
 # Update turnkey appliance list
 pveam update
