@@ -9,6 +9,20 @@
 # Command to run script 
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
+# Create New User
+# Create a PVE User Group
+pveum groupadd homelab -comment 'Homelab User Group'
+# Add PVEVMAdmin role (fully administer VMs) to group homelab
+pveum aclmod / -group homelab -role PVEVMAdmin
+# Create PVE User
+pveum useradd storm@pve -comment 'User Storm'
+# Create storm password
+pveum passwd storm@pve
+#read -p "$uname's Password: " upasswd &&
+#echo "$upasswd\$upasswd" | pveum passwd storm@pve
+# Add User to homelab group
+pveum usermod storm@pve -group homelab
+
 # Update turnkey appliance list
 pveam update
 
