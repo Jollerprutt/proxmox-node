@@ -6,6 +6,8 @@
 # Proxmox Version : 4.15.18-12-pve                                #
 ###################################################################
 
+# Command to run script 
+# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
 
 # Q&A before proceeding to run script
 read -r -p "Are you installing on a 6xNIC Qotom router [Y/n] " input
