@@ -9,21 +9,6 @@
 # Command to run script 
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
-read -r -p "Are You Sure? [Y/n] " input
- 
-case $input in
-    [yY][eE][sS]|[yY])
- echo "Yes"
- ;;
-    [nN][oO]|[nN])
- echo "No"
-       ;;
-    *)
- echo "Invalid input..."
- exit 1
- ;;
-esac
-
 # Update turnkey appliance list
 pveam update
 
