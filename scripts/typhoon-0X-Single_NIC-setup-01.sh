@@ -75,4 +75,5 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts"  >  /etc/hosts
 
 # Reboot the node
-reboot
+echo "Complete, rebooting in 5 seconds ......"
+sleep 5 ; reboot
