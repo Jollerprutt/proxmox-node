@@ -10,9 +10,8 @@
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
 # Q&A before proceeding to run script
-read -r -p "Are you installing on a 6xNIC Qotom router [y/N] " response
-response=${response,,}    # tolower
-if [[ "$response" =~ ^(yes|y)$ ]]
+read -r -p "Are you installing on Single NIC hardware [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 then
 # Update turnkey appliance list
 pveam update
