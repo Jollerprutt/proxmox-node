@@ -21,6 +21,7 @@ read -p "$uname's Password: " upasswd
 echo -e "$upasswd\n$upasswd" | pveum passwd storm@pve
 # Add User to homelab group
 pveum usermod storm@pve -group homelab
+echo 'Added Storm User a Success'
 
 # Update turnkey appliance list
 pveam update
@@ -39,6 +40,7 @@ pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server 192.1
 pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=3
 pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server 192.168.1.10 --export /volume1/music --content images --options vers=3
 pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server 192.168.1.10 --export /volume1/photo --content images --options vers=3
+echo 'NFS Mounting a Success'
 
 # Edit Proxmox host file
 echo -e "127.0.0.1 localhost.localdomain localhost
@@ -73,7 +75,9 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts"  >  /etc/hosts
+echo 'Host File edit a Success'
 
 # Reboot the node
+clear
 echo "Complete, rebooting in 5 seconds ......"
 sleep 5 ; reboot
