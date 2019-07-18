@@ -7,7 +7,7 @@
 ###################################################################
 
 # Command to run script 
-# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-lxc/master/openvpn/build-vpn-gateway-expressvpn.sh | bash
+# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-6x_NIC-setup-01.sh | bash
 
 # Q&A before proceeding to run script
 read -r -p "Are you installing on a 6xNIC Qotom router [Y/n] " input
@@ -239,4 +239,3 @@ fi
 # Reboot the node
 reboot
 exit 0
-
