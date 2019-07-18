@@ -101,16 +101,5 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts"  >  /etc/hosts
 
-# Create a PAM User Group
-pveum groupadd homelab -comment 'Homelab User Group'
-# Add PVEVMAdmin role (fully administer VMs) to group homelab
-pveum aclmod / -group homelab -role PVEVMAdmin
-# Create PAM User
-pveum useradd storm@pam -comment 'User Storm'
-pveum passwd storm@pam
-# Add User to homelab group
-pveum usermod storm@pam -group homelab
-
 # Reboot the node
 reboot
-exit 0
