@@ -9,10 +9,6 @@
 # Command to run script 
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
-# Q&A before proceeding to run script
-read -r -p "Are you installing on Single NIC hardware [y/N] " response
-if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
-then
 # Update turnkey appliance list
 pveam update
 
@@ -67,6 +63,3 @@ ff02::3 ip6-allhosts"  >  /etc/hosts
 
 # Reboot the node
 reboot
-else
-    exit 1
-fi
