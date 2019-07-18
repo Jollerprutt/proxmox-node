@@ -68,15 +68,15 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts"  >  /etc/hosts
 
-# Create a PAM User Group
+# Create a PVE User Group
 pveum groupadd homelab -comment 'Homelab User Group'
 # Add PVEVMAdmin role (fully administer VMs) to group homelab
 pveum aclmod / -group homelab -role PVEVMAdmin
-# Create PAM User
-pveum useradd storm@pam -comment 'User Storm'
-pveum passwd storm@pam
+# Create PVE User
+pveum useradd storm@pve -comment 'User Storm'
+pveum passwd storm@pve
 # Add User to homelab group
-pveum usermod storm@pam -group homelab
+pveum usermod storm@pve -group homelab
 
 #### Here on is particular to Typhoon-01 and 6-NIC Hardware ####
 
