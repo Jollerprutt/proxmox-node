@@ -10,7 +10,7 @@
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
 # Basic Details
-read -p "Storm Password: " upasswd
+read -p "Please Enter a password for user storm: " stormpasswd
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
@@ -20,7 +20,7 @@ pveum aclmod / -group homelab -role PVEVMAdmin
 # Create PVE User
 pveum useradd storm@pve -comment 'User Storm'
 # Save storm password
-echo -e "$upasswd\n$upasswd" | pveum passwd storm@pve
+echo -e "$stormpasswd\n$stormpasswd" | pveum passwd storm@pve
 # Add User to homelab group
 pveum usermod storm@pve -group homelab
 
