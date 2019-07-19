@@ -1,13 +1,29 @@
 #!/bin/bash
 
 ###################################################################
-# This script is for 6x LAN port Qotom hardware.                  #
+# This script is for Single NIC hardware Only.                    #
 #                                                                 #
-# Proxmox Version : 4.15.18-12-pve                                #
+# Tested on Proxmox Version : 4.15.18-12-pve                      #
 ###################################################################
 
 # Command to run script 
-# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-6x_NIC-setup-01.sh | bash
+# wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-6x_NIC-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-01-6x_NIC-setup-01.sh && bash /tmp/typhoon-01-6x_NIC-setup-01.sh; rm -rf /tmp/typhoon-01-6x_NIC-setup-01.sh
+
+# Basic Details
+echo "All passwords must have a minimum of 5 characters"
+read -p "Please Enter a NEW password for user storm: " stormpasswd
+
+# Create a New User called 'storm'
+# Create a New PVE User Group
+pveum groupadd homelab -comment 'Homelab User Group'
+# Add PVEVMAdmin role (fully administer VMs) to group homelab
+pveum aclmod / -group homelab -role PVEVMAdmin
+# Create PVE User
+pveum useradd storm@pve -comment 'User Storm'
+# Save storm password
+echo -e "$stormpasswd\n$stormpasswd" | pveum passwd storm@pve
+# Add User to homelab group
+pveum usermod storm@pve -group homelab
 
 # Update turnkey appliance list
 pveam update
@@ -67,16 +83,6 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts"  >  /etc/hosts
-
-# Create a PVE User Group
-pveum groupadd homelab -comment 'Homelab User Group'
-# Add PVEVMAdmin role (fully administer VMs) to group homelab
-pveum aclmod / -group homelab -role PVEVMAdmin
-# Create PVE User
-pveum useradd storm@pve -comment 'User Storm'
-pveum passwd storm@pve
-# Add User to homelab group
-pveum usermod storm@pve -group homelab
 
 #### Here on is particular to Typhoon-01 and 6-NIC Hardware ####
 
@@ -182,4 +188,6 @@ else
 fi
 
 # Reboot the node
-reboot
+clear
+echo "Looking Good. Rebooting in 5 seconds ......"
+sleep 5 ; reboot
