@@ -24,8 +24,8 @@ pveum aclmod / -group homelab -role PVEVMAdmin
 # Create PVE User
 pveum useradd storm@pve -comment 'User Storm'
 # Create storm password
-echo "Now you must enter a password for user 'storm'. It MUST BE a minimum of 5 characters long."
-read -p "Create user 'Storm' Password: " upasswd
+echo "Strorms password MUST BE a minimum of 5 characters long."
+read -p "New Password: " upasswd
 echo -e "$upasswd\n$upasswd" | pveum passwd storm@pve
 # Add User to homelab group
 pveum usermod storm@pve -group homelab
