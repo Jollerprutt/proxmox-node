@@ -11,8 +11,9 @@
 
 # Script Intro Warning
 clear
-echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware"
-echo "You will create a new Proxmox user called 'storm'. So have your 'storm' password ready"
+echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware."
+sleep 1
+echo "This script will also create a new Proxmox username called 'storm'. So have your 'storm' password ready."
 sleep 2.5
 echo ""
 echo "Do you want to continue?(yes/no)"
