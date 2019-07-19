@@ -18,7 +18,7 @@ echo "All passwords must be a minimum of 5 characters long"
 sleep 2.5
 
 # Basic Details
-read -p "New Password: " upasswd
+read -s -p "Enter Password: " upasswd
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
