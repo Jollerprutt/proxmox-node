@@ -1,13 +1,26 @@
 #!/bin/ash
 
 ###################################################################
-# This script is for Single NIC hardware.                         #
+# This script is for Single NIC hardware Only.                    #
 #                                                                 #
-# Proxmox Version : 4.15.18-12-pve                                #
+# Tested on Proxmox Version : 4.15.18-12-pve                      #
 ###################################################################
 
 # Command to run script 
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
+
+# Script Intro Warning
+clear
+echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware"
+echo "You will create a new Proxmox user called 'storm'. So have your 'storm' password ready"
+sleep 2.5
+echo ""
+echo "Do you want to continue?(yes/no)"
+read input
+if [ "$input" == "yes" ]
+then
+echo "continue"
+fi
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
