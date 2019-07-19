@@ -12,13 +12,11 @@
 # Script Intro Warning
 clear
 echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware."
-#sleep 1
 echo "This script will also create a new Proxmox username called 'storm'."
 echo "All passwords must be a minimum of 5 characters long"
-sleep 2.5
 
 # Basic Details
-read -s -p "Enter Password: " upasswd
+read -s -p "Enter New Password: " upasswd
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
