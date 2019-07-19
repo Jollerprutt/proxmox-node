@@ -10,11 +10,11 @@
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
 # Script Intro Warning
-clear
-echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware."
-sleep 1
-echo "This script will also create a new Proxmox username called 'storm'. So have your 'storm' password ready."
-sleep 2.5
+#clear
+#echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware."
+#sleep 1
+#echo "This script will also create a new Proxmox username called 'storm'. So have your 'storm' password ready."
+#sleep 2.5
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
@@ -24,7 +24,7 @@ pveum aclmod / -group homelab -role PVEVMAdmin
 # Create PVE User
 pveum useradd storm@pve -comment 'User Storm'
 # Create storm password
-echo "Strorms password MUST BE a minimum of 5 characters long."
+echo "Storms password MUST BE a minimum of 5 characters long"
 read -p "New Password: " upasswd
 echo -e "$upasswd\n$upasswd" | pveum passwd storm@pve
 # Add User to homelab group
