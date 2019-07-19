@@ -20,8 +20,8 @@ echo "Do you want to continue?(yes/no)"
 read input
 if [ "$input" == "yes" ]
 then
-echo "continue"
-fi
+echo "okay, lets continue"
+
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
@@ -97,3 +97,5 @@ echo 'Success -- Hosts file is updated'
 clear
 echo "Looking Good. Rebooting in 5 seconds ......"
 sleep 5 ; reboot
+
+fi
