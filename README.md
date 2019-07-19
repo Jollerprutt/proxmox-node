@@ -1,12 +1,12 @@
 # Proxmox Node Building
-This recipe will help you build two physical proxmox nodes and one Synology VM proxmox node. Such a group is called a cluster and has a central management webgui by a single IP address. A cluster or of three nodes can form a quorum so you can High Availability in the event a node fails.
+This recipe builds two physical hardware Proxmox nodes and one Synology VM Proxmox node. Such a group is called a cluster and has a central management WebGUI by a single URL/IP address. A cluster or of three nodes can form a quorum so you can have High Availability in the event a node fails.
 
-The hardware in the recipe includes:
+The hardware in this recipe includes:
 *  1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs;
 *  1x Intel i3 NUC model nuc5i3ryh; and,
 *  1x Synology DS1515+ with 4x NICs. 
 
-Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, Intel CPU's are all 2x core / 4x thread Intel CPUs, support Intel AES-NI instruction sets (for OpenVPN), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM. 
+Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, Intel CPU's are all 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM. 
 
 All the network gear is Ubiquiti Networks which is a dream to configure. 
 
@@ -87,21 +87,21 @@ Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and config
 
 Note: If your choose to use a ZFS Raid for storage redundancy change accordingly per node but your must retain the Name ID **typhoon-share**.
 
-## 2. Configure Proxmox OS
-In this build the three Proxmox nodes are running to form a cluster and quorum. But the first node, typhoon-01, will also host a pfSense VM managing two OpenVPN Gateway services for the whole network (no redundancy for OpenVPN services as its deemed non critical).
+## 2. Basic Proxmox OS node configuration
+Some of the basic Proxmox OS configuration tasks are common across all three nodes. The variable is with typhoon-01, the multi NIC device, which will alone have a guest pfSense VM installed to manage your networks OpenVPN Gateway services (no redundancy for OpenVPN services as its deemed non critical).
 
 Configuration options are determined by hardware types:
    * Node 1 - typhoon-01 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports).
    * Node 2 - typhoon-02 - A single NIC x86 machine (1 LAN port).
    * Node 3 - typhoon-03 - Synology VM (1 Virtio LAN port)
 
-### 2.1  NFS mounts to NAS
+### 2.1  Create NFS mounts to NAS
 All three Proxmox nodes use NFS to mount data stored on a NAS so these instructions are applicable for all proxmox nodes. Your NFS server should be prepared and ready - Synology NFS Server instructions are available [HERE](https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares).
 
 The NFS mounts to be configured are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
 Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
-Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure the NFS mounts as follows:
+Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure the NFS mounts as follows on all three nodes:
 
 | Cyclone-01-backup | Value |
 | :---  | :---: |
