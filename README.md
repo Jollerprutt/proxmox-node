@@ -176,7 +176,8 @@ In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi
 | `VLAN` |40| Must be set as 40 |
 | `Other Settings` | Just leave as default| |
 
-## 3.0 Full Auto Recipes
+## 3.0 Power Installation Option
+I have written scipts 
 
 ## 4.0 Basic Proxmox node configuration
 Some of the basic Proxmox OS configuration tasks are common across all three nodes. The variable is with typhoon-01, the multi NIC device, which will alone have a guest pfSense VM installed to manage your networks OpenVPN Gateway services (no redundancy for OpenVPN services as its deemed non critical).
@@ -423,7 +424,7 @@ For the Development pfSense version 2.5:
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
-## 6.0 Install pfSense
+## 6.0 Install pfSense on the new VM
 The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`. When running click on the  `>_Console` tab and you should see the installation script running. Follow the prompts and fill out the details as shown below:
 
 | pfSense Installation Step | Value | Notes
