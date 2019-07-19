@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/bash
 
 ###################################################################
 # This script is for Single NIC hardware Only.                    #
