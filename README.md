@@ -29,7 +29,7 @@ Tasks to be performed are:
 - [ ] Proxmox OS Installation
 - [ ] Update Proxmox OS and enable turnkeylinux templates
 
-## 1. Proxmox OS Installation
+## 1.0 Proxmox Base OS Installation
 Each Proxmox node requires two SSD hard disks. Basically one is for the Proxmox OS and the other disk is configured as a Proxmox ZFS shared storage disk.
 
 In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is important because the disk you have chosen to used as your Proxmox ZFS shared storage disk, a SSD size of at least 250 Gb,  should NOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx.
@@ -87,7 +87,98 @@ Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and config
 
 Note: If your choose to use a ZFS Raid for storage redundancy change accordingly per node but your must retain the Name ID **typhoon-share**.
 
-## 2. Basic Proxmox OS node configuration
+## 2.0 Prepare your Network Hardware - Ready for Typhoon-01
+Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
+
+If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
+
+In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
+
+We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
+
+### 2.1 Configure your Network Switch
+These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
+
+Configure your network switch LAG groups as per following table.
+
+| 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
+|**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
+|**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
+|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (2) | LAN-vpngate-world (30) / LAN-vpngate-local (40) | All | All |
+|**LAN CAT6A cable connected to** |  |  | |  | |  | Port14 -> typhoon-02 | Port15+16 -> typhoon-01 (NIC1+2) | Port17+18 -> typhoon-01 (NIC3+4) | Port19 -> typhoon-01 (NIC5) : Port20 -> typhoon-01 (NIC6)  |  |  |
+||||||||||||
+|**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
+|**Proxmox Linux Bond** |  |  | |  | |  |  | `bond0` | `bond1` |  |  |  |
+|**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
+|**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
+
+Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
+
+Steps to configuring your network switch are as follows:
+#### 2.2 Create Network Switch VLANs
+In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The below instructions are for the UniFi controller `Settings` > `Networks` > `Create New Network`
+*  Create a new network to be used for Egress of encypted traffic out of network to your VPN servers.
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name` |VPN-egress| This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit). |
+| `Purpose` |Guest|  Network Guest security policies. |
+| `VLAN` |2| A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies. |
+| `Gateway/Subnet` |192.168.2.1/28| Only 2 addresses on this subnet so /29 is ideal |
+| `DHCP Server` | Enabled | Just use default range 192.168.2.2 -- 192.168.2.14 |
+| `Other Settings` | Just leave as Default | |
+
+* Create **two** new VLAN only networks to be used as gateways to connect to OpenVPN clients running on the Qotom and pfSense router.
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name` |**LAN-vpngate-world**| This is the network where LAN clients will be restricted to the vpngate-world server |
+| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| `VLAN` |30|  |
+| `IGMP Snooping` |Disabled|  |
+| `DHCP Guarding` |Disabled|  |
+|||
+| `Name` |**LAN-vpngate-local**| This is the network where LAN clients will be restricted to the vpngate-world server |
+| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| `VLAN` |40|  |
+| `IGMP Snooping` |Disabled|  |
+| `DHCP Guarding` |Disabled|  |
+
+#### 2.3 Setup network switch ports
+In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and `edit` and `apply` as follows:
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name` |**Port 19**|  |
+| `Switch Port Profile` |LAN-vpngate-world (30)| This will put switch port 19 on VLAN30 |
+|||
+| `Name` |**Port 20**|  |
+| `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
+
+#### 2.4 Setup network WiFi SSiDs for the VPN service
+In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
+
+| Description | Value | Notes |
+| :---  | :---: | :--- |
+| `Name/SSID` |**hello-vpngate-world**| Call it whatever you like |
+| `Enabled` |[x]| |
+| `Security` | WPA Personal | Wouldnt recommend anything less |
+| `Security Key` | password | Your choosing |
+| `VLAN` |30| Must be set as 30 |
+| `Other Settings` | Just leave as default| |
+|||
+| `Name/SSID` |**hello-vpngate-local**| Call it whatever you like |
+| `Enabled` |[x]| |
+| `Security` | WPA Personal | Wouldnt recommend anything less |
+| `Security Key` | password | Your choosing |
+| `VLAN` |40| Must be set as 40 |
+| `Other Settings` | Just leave as default| |
+
+## 3.0 Full Auto Recipes
+
+## 4.0 Basic Proxmox node configuration
 Some of the basic Proxmox OS configuration tasks are common across all three nodes. The variable is with typhoon-01, the multi NIC device, which will alone have a guest pfSense VM installed to manage your networks OpenVPN Gateway services (no redundancy for OpenVPN services as its deemed non critical).
 
 Configuration options are determined by hardware types:
@@ -95,7 +186,7 @@ Configuration options are determined by hardware types:
    * Node 2 - typhoon-02 - A single NIC x86 machine (1 LAN port).
    * Node 3 - typhoon-03 - Synology VM (1 Virtio LAN port)
 
-### 2.1  Create NFS mounts to NAS
+### 4.1  Create NFS mounts to NAS
 All three Proxmox nodes use NFS to mount data stored on a NAS so these instructions are applicable for all proxmox nodes. Your NFS server should be prepared and ready - Synology NFS Server instructions are available [HERE](https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares).
 
 The NFS mounts to be configured are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
@@ -152,96 +243,7 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | `Nodes` |leave as default|
 | `Enable` |leave as default|
 
-## 3. Configure Qotom Multi NIC Hardware Network Setup - Typhoon-01
-Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
-
-If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
-
-In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
-
-We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
-
-### 3.1. Configure your Network Switch
-These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
-
-Configure your network switch LAG groups as per following table.
-
-| 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
-|**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
-|**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
-|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (2) | LAN-vpngate-world (30) / LAN-vpngate-local (40) | All | All |
-|**LAN CAT6A cable connected to** |  |  | |  | |  | Port14 -> typhoon-02 | Port15+16 -> typhoon-01 (NIC1+2) | Port17+18 -> typhoon-01 (NIC3+4) | Port19 -> typhoon-01 (NIC5) : Port20 -> typhoon-01 (NIC6)  |  |  |
-||||||||||||
-|**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
-|**Proxmox Linux Bond** |  |  | |  | |  |  | `bond0` | `bond1` |  |  |  |
-|**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
-|**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
-
-Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
-
-Steps to configuring your network switch are as follows:
-#### 3.1.1 Create Network Switch VLANs
-In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The below instructions are for the UniFi controller `Settings` > `Networks` > `Create New Network`
-*  Create a new network to be used for Egress of encypted traffic out of network to your VPN servers.
-
-| Description | Value | Notes |
-| :---  | :---: | :--- |
-| `Name` |VPN-egress| This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit). |
-| `Purpose` |Guest|  Network Guest security policies. |
-| `VLAN` |2| A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies. |
-| `Gateway/Subnet` |192.168.2.1/28| Only 2 addresses on this subnet so /29 is ideal |
-| `DHCP Server` | Enabled | Just use default range 192.168.2.2 -- 192.168.2.14 |
-| `Other Settings` | Just leave as Default | |
-
-* Create **two** new VLAN only networks to be used as gateways to connect to OpenVPN clients running on the Qotom and pfSense router.
-
-| Description | Value | Notes |
-| :---  | :---: | :--- |
-| `Name` |**LAN-vpngate-world**| This is the network where LAN clients will be restricted to the vpngate-world server |
-| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
-| `VLAN` |30|  |
-| `IGMP Snooping` |Disabled|  |
-| `DHCP Guarding` |Disabled|  |
-|||
-| `Name` |**LAN-vpngate-local**| This is the network where LAN clients will be restricted to the vpngate-world server |
-| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
-| `VLAN` |40|  |
-| `IGMP Snooping` |Disabled|  |
-| `DHCP Guarding` |Disabled|  |
-
-#### 3.1.2 Setup network switch ports
-In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and `edit` and `apply` as follows:
-
-| Description | Value | Notes |
-| :---  | :---: | :--- |
-| `Name` |**Port 19**|  |
-| `Switch Port Profile` |LAN-vpngate-world (30)| This will put switch port 19 on VLAN30 |
-|||
-| `Name` |**Port 20**|  |
-| `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
-
-#### 3.1.3 Setup network WiFi SSiDs for the VPN service
-In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
-
-| Description | Value | Notes |
-| :---  | :---: | :--- |
-| `Name/SSID` |**hello-vpngate-world**| Call it whatever you like |
-| `Enabled` |[x]| |
-| `Security` | WPA Personal | Wouldnt recommend anything less |
-| `Security Key` | password | Your choosing |
-| `VLAN` |30| Must be set as 30 |
-| `Other Settings` | Just leave as default| |
-|||
-| `Name/SSID` |**hello-vpngate-local**| Call it whatever you like |
-| `Enabled` |[x]| |
-| `Security` | WPA Personal | Wouldnt recommend anything less |
-| `Security Key` | password | Your choosing |
-| `VLAN` |40| Must be set as 40 |
-| `Other Settings` | Just leave as default| |
-
-### 3.2 Configure Proxmox bridge networking
+### 4.2 Configure Proxmox bridge networking
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
@@ -343,12 +345,12 @@ Note the bridge port corresponds to a physical interface identified above. The n
 
 Reboot the Proxmox node to invoke the system changes.
 
-### 3.3 Install pfsense on the Qotom - Typhoon-01
+## 5.0 Create a Proxmox pfSense VM
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or union. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your union and should provide a faster connection speed. 
 
-#### 3.3.1 Download the latest pfSense ISO
+### 5.1 Download the latest pfSense ISO
 Use the Proxmox web gui to add the Proxmox installation ISO which is available from [HERE](https://www.pfsense.org/download/) or use a Proxmox typhoon-01 cli `>Shell` and type the following:
 
 For the Stable pfSense 2.4 (***Recommended - this is what I use***):
@@ -360,7 +362,7 @@ For the Development pfSense version 2.5:
 wget https://snapshots.pfsense.org/amd64/pfSense_master/installer/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso.gz
 ```
 
-#### 3.3.2 Create a pfSense VM
+### 5.2 Create the pfSense VM
 You can create a pfSense VM by either using CLI or by the webgui.
 
 For the webgui method go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `Create VM` and fill out the details as shown below (whats not shown below leave as default)
@@ -421,7 +423,7 @@ For the Development pfSense version 2.5:
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
-#### 3.3.3 Install pfSense
+## 6.0 Install pfSense
 The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`. When running click on the  `>_Console` tab and you should see the installation script running. Follow the prompts and fill out the details as shown below:
 
 | pfSense Installation Step | Value | Notes
@@ -452,13 +454,13 @@ Do you want to revert to HTTP as the webConfigurator protocol? (y/n)| `y`
 
 You can now access the pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
 
-#### 3.3.4 Setup pfSense
+### 6.1 Setup pfSense
 You can now access pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/ . In the pfSense webConfigurator we are going to setup two OpenVPN Gateways, namely vpngate-world and vpngate-local. Your default login details are User > admin | Pwd > pfsense
 
-#### 3.3.4.1 Change Your Password
+### 6.2 Change Your pfSense Password
 Now using the pfSense web interface `System` > `User Manager` > `click on the admin pencil icon` and change your password to something more secure. Remember to hit the `Save` button at the bottom of the page.
 
-#### 3.3.4.2 Enable AES-NI 
+### 6.3 Enable AES-NI 
 If your CPU supports AES-NI CPU Crypto best enable it.
 
 Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` scroll down to the section `Cryptographic & Thermal Hardware` and change the details as shown below:
@@ -466,11 +468,11 @@ Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` 
 | Cryptographic & Thermal Hardware | Value | Notes
 | :---  | :---: | :--- |
 | Cryptographic Hardware | `AES-NI CPU-based Accelleration` | *This works for the Qotom Mini PC Q500G6-S05 series and modern hardware*
-| Thermal Sensors | None/ACPI | *Will not work because Proxmox virtualization host will NOT forward CPU temperature data to it's pfSEnse guest*
+| Thermal Sensors | None/ACPI | *Will not work because Proxmox virtualization host will NOT forward CPU temperature data to it's pfSense guest*
 
 Remember to hit the `Save` button at the bottom of the page.
 
-#### 3.3.4.3 Add DHCP Servers to OPT1 and OPT2
+### 6.4 Add DHCP Servers to OPT1 and OPT2
 Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
 
 | Interfaces/OPT1 (vtnet2) | Value | Notes
@@ -509,7 +511,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
 | Block bogon networks | `[]` | *Uncheck the box*
 
-#### 3.3.4.4 Setup DHCP Servers for OPT1 and OPT2
+### 6.5 Setup DHCP Servers for OPT1 and OPT2
 Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `OPT2 Tab` to open a configuration form, then fill up the necessary fields as follows:
 
 | General Options | OPT 1 Value | OPT2 Value | Notes |
@@ -530,7 +532,7 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 
 Remember to hit the `Save` button at the bottom of the page.
 
-#### 3.3.4.5 Add your OpenVPN Client Server details
+### 6.6 Add your OpenVPN Client Server details
 Here we going to create OpenVPN clients vpngate-world and vpngate-local. You will need your VPN account server username and password details and have your vpn server provider OVPN configuration file open in a text editor so you can copy various certificate and key details (cut & paste). Note the values for this form will vary between different VPN providers but there should be a tutorial showing your providers pfSense configuration settings on the internet somewhere. 
 
 Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
@@ -612,7 +614,7 @@ Click `Save`.
 
 Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world and vpngate-local should show `up`. This means you are connected to your provider.
 
-#### 3.3.4.6 Add two new Gateways
+### 6.7 Add two new Gateways
 Next we need to add an interface for each new OpenVPN connection and then a Gateway for each interface. Now using the pfSense web interface `Interfaces` > `Assignments` the configuration form will show two available network ports which can be added, ovpnc1 (vpngate-world) and ovpnc2 (vpngate-local). Now `Add` both and remember to click `Save`.
 
 Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (editing both OPT3 and OPT4):
@@ -650,7 +652,7 @@ Click `Save`.
 
 At this point you are ready to create the firewall rules. Now I would **highly recommend a reboot** here as this was the only thing that made the next few steps work. So do a reboot `Diagnostics` > `Reboot` and perform a `Reboot`. If you dont things might get not work in the steps ahead.
 
-#### 3.3.4.7 Adding NAT Rules
+### 6.8 Adding NAT Rules
 Next we need to add the NAT rules to allow for traffic to go out of the  VPN encrypted gateway(s), this is done from the `Firewall` > `NAT` > `Outbound Tab`. 
 
 If you have Automatic NAT enabled you want to enable Manual Outbound NAT and click `Save`. Now you will see and be able to edit the NAT Mappings configuration form.
@@ -704,7 +706,7 @@ Now your first two mappings for the new gateways show look like this:
 |[]|VPNGATEWORLD|192.168.30.0/24|*|*|*|VPNGATEWORLD address|*|:heavy_check_mark:|VLAN30 to vpngate-world
 |[]|VPNGATELOCAL|192.168.40.0/24|*|*|*|VPNGATELOCAL address|*|:heavy_check_mark:|VLAN40 to vpngate-local
 
-#### 3.3.4.8 Adding the Firewall Rules
+### 6.9 Adding the Firewall Rules
 This is simple because we are going to send all the traffic in a subnet(s) (VLAN30 > vpngate-world / VLAN40 > vpngate-local) through the openVPN tunnel. 
 
 So first lets do OPT1 / vpngate-world so go `Firewall` > `Rules` > `OPT1 tab` and `Add` a new rule:
@@ -745,7 +747,7 @@ Click `Save` and `Apply`.
 
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
-#### 3.3.4.9 Setup pfSense DNS
+### 6.10 Setup pfSense DNS
 Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
 
 | DNS Server Settings | Value | Value |
@@ -766,7 +768,7 @@ forward-addr: 1.0.0.1@853
 ```
 After entering the above code, scroll down to the bottom of the page and click `Save` and then to the top of the page click `Apply Changes`.
 
-#### 3.3.5 Finish Up
+### 6.11 Finish Up
 After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period but dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
 
 And finally navigate to `Diagnostics` > `Reboot` and reboot your pfSense machine.
