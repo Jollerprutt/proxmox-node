@@ -7,11 +7,9 @@
 ###################################################################
 
 # Command to run script 
-# wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
+# wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh -P /tmp && ./tmp/typhoon-0X-Single_NIC-setup-01.sh; -rf /tmp/typhoon-0X-Single_NIC-setup-01.sh
 
 # Basic Details
-read -p "new username: " uname
-read -p "$uname's Password: " upasswd
 read -p "Please Enter a password for user storm: " stormpasswd
 
 # Create a New User called 'storm'
