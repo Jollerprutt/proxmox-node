@@ -9,14 +9,8 @@
 # Command to run script 
 # wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh | bash
 
-# Script Intro Warning
-clear
-echo "This script is for single NIC Hardware only. Do NOT use on Qotom or multi NIC hardware."
-echo "This script will also create a new Proxmox username called 'storm'."
-echo "All passwords must be a minimum of 5 characters long"
-
 # Basic Details
-read -s -p "Enter New Password: " upasswd
+read -p "Storm Password: " upasswd
 
 # Create a New User called 'storm'
 # Create a New PVE User Group
