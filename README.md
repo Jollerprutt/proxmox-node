@@ -176,7 +176,7 @@ In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi
 | `VLAN` |40| Must be set as 40 |
 | `Other Settings` | Just leave as default| |
 
-## 3.0 Power Installation Option
+## 3.0 Easy Installation Option
 I have written scipts 
 
 ## 4.0 Basic Proxmox node configuration
