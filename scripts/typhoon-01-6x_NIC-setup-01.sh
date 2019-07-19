@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###################################################################
-# This script is for Single NIC hardware Only.                    #
+# This script is for Qotom 6 NIC hardware Only.                   #
 #                                                                 #
 # Tested on Proxmox Version : 4.15.18-12-pve                      #
 ###################################################################
