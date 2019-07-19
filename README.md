@@ -88,7 +88,7 @@ Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and config
 Note: If your choose to use a ZFS Raid for storage redundancy change accordingly per node but your must retain the Name ID **typhoon-share**.
 
 ## 2.0 Prepare your Network Hardware - Ready for Typhoon-01
-Qotom hardware is unlike a Intel Nuc or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
+For our primary Proxmox machine we use Qotom hardware. Its different to standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
 
 If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
 
