@@ -94,5 +94,5 @@ echo 'Success -- Hosts file is updated'
 
 # Reboot the node
 clear
-echo "Looking Good. Now rebooting in 5 seconds ......"
+echo "Looking Good. Rebooting in 5 seconds ......"
 sleep 5 ; reboot
