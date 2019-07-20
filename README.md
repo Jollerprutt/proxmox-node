@@ -826,8 +826,20 @@ Once you’re done head over to any client PC on the network or mobile on the Wi
 
 Success! (hopefully)
 
-### 3.4 Automated Installation and Configuration
-Under Development.
+## 8.0 Create a pfSense Backup
+If all is working its best to make a backup of your pfsense configuration. Also if you experiment around a lot, it’s an easy way to restore back to a working configuration. Also, do a backup each and every time before upgrading to a newer version of your firewall or pfSense OS. So in the event you have to rebuild pfSense you can skip Steps 7.0 onwards by using the backup restore feature which will save you a lot of time.
+
+On your pfSense WebGUI navigate to `Diagnostics` > `Backup & Restore` then fill up the necessary fields as follows:
+
+| Backup Configuration | Value | Notes
+| :---  | :--- | :--- |
+| Backup area | `All` | *Select All*
+| Skip Packages | `[]` Do not backup package information | *Uncheck the box*
+| Skip RRD data | `[x]` Do not backup RRD data (NOTE: RRD Data can consume 4+ megabytes of config.xml space!)| *Check the box. RRD Data are your Graphs. Like the traffic Graph for example. I do not back them up because I do not need them*
+| Encyption | `[]` Encrypt this configuration file. | *If you check this box a password value box will appear. Dont forget your password otherwise you are truly stuffed if you need to perform a restore*
+| Password (optional box) | `xxxxxxxx` | *See above*
+
+And then click the `Download configuration as XML` and `Save` the backup XML file to your NAS or a secure location. Note: If you are using the WebGUI on a Win10 PC the XML backup file will be saved in your users `Downloads` folder where you can then copy/move the file to a safer location. You should have a backup folder share on your NAS so why not store the XML file there `backup/pfsense/config-pfSense.localdomain-2019xxxxxxxxxx.xml`
 
 ## 4 Configure Single NIC Hardware Network Setup - Typhoon-02
 Seting up a single network NIC host (including Synology Virtual Machines) is simple. In the following setup I used a Intel i3 NUC model nuc5i3ryh machine.
