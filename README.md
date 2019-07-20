@@ -88,11 +88,13 @@ Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and config
 Note: If your choose to use a ZFS Raid for storage redundancy change accordingly per node but your must retain the Name ID **typhoon-share**.
 
 ## 2.0 Prepare your Network Hardware - Ready for Typhoon-01
-For our primary Proxmox machine we use Qotom hardware. Its different to standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) because a Qotom has two or more network NICs. In the following setup we use a Qotom Mini PC model Q500G6-S0 which is a 6x port Gigabit NIC PC router.
+For our primary Proxmox machine, typhoon-01, we use Qotom hardware because it has 2, 4 or 6 network 1Gb NICs depeniding on the model. Standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) has only 1 network NIC.
 
-If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
+In the following setup we use a Qotom Mini PC model Q500G6-S0 which has 6x Gigabit LAN ports connected to our network switch.
 
 In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
+
+If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
@@ -177,7 +179,52 @@ In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi
 | `Other Settings` | Just leave as default| |
 
 ## 3.0 Easy Installation Option
-I have written scipts 
+If you have gotton this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
+
+I currently have the following CLI bash scripts available on GitHub to fastrack the build process:
+
+Script (A) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-01 (node-01), a Qotom Mini PC model Q500G6-S05 only. This script will perform the following tasks:
+*  Steps 4.0 through to Step 5.2 performing the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox node
+*  Install lm sensors SW
+*  Create NFS mounts to your NAS
+*  Update the hosts file
+*  Download pfsense ISO to Proxmox templates
+*  Create a pfSense Proxmox VM
+*  Configure all 6x Proxmox NICS to LAGS/Bonds and network interface configurations
+After executing this script you must continue manually to Step 6.0.
+
+Script (B) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which MUST BE single NIC hardware only. The script will perform the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox node
+*  Install lm sensors SW
+*  Create NFS mounts to your NAS
+*  Update the hosts file
+
+### 3.1 Qotom Mini PC model Q500G6-S05 build script
+This script is for the Qotom Mini PC model Q500G6-S05 model ONLY. 
+
+To execute the script use the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+```
+wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-6x_NIC-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-01-6x_NIC-setup-01.sh && bash /tmp/typhoon-01-6x_NIC-setup-01.sh; rm -rf /tmp/typhoon-01-6x_NIC-setup-01.sh
+```
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. You can now proceed to Step 6.0.
+
+### 3.2 Single NIC Hardware build script
+This script is for single NIC hardware ONLY (i.e Intel NUC etc). 
+
+To execute the script use the Proxmox web interface `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+```
+wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-0X-Single_NIC-setup-01.sh && bash /tmp/typhoon-0X-Single_NIC-setup-01.sh; rm -rf /tmp/typhoon-0X-Single_NIC-setup-01.sh
+```
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-01.
 
 ## 4.0 Basic Proxmox node configuration
 Some of the basic Proxmox OS configuration tasks are common across all three nodes. The variable is with typhoon-01, the multi NIC device, which will alone have a guest pfSense VM installed to manage your networks OpenVPN Gateway services (no redundancy for OpenVPN services as its deemed non critical).
@@ -455,13 +502,13 @@ Do you want to revert to HTTP as the webConfigurator protocol? (y/n)| `y`
 
 You can now access the pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
 
-### 6.1 Setup pfSense
+## 7.0 Setup pfSense
 You can now access pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/ . In the pfSense webConfigurator we are going to setup two OpenVPN Gateways, namely vpngate-world and vpngate-local. Your default login details are User > admin | Pwd > pfsense
 
-### 6.2 Change Your pfSense Password
+### 7.1 Change Your pfSense Password
 Now using the pfSense web interface `System` > `User Manager` > `click on the admin pencil icon` and change your password to something more secure. Remember to hit the `Save` button at the bottom of the page.
 
-### 6.3 Enable AES-NI 
+### 7.2 Enable AES-NI 
 If your CPU supports AES-NI CPU Crypto best enable it.
 
 Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` scroll down to the section `Cryptographic & Thermal Hardware` and change the details as shown below:
@@ -473,7 +520,7 @@ Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` 
 
 Remember to hit the `Save` button at the bottom of the page.
 
-### 6.4 Add DHCP Servers to OPT1 and OPT2
+### 7.3 Add DHCP Servers to OPT1 and OPT2
 Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
 
 | Interfaces/OPT1 (vtnet2) | Value | Notes
@@ -512,7 +559,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
 | Block bogon networks | `[]` | *Uncheck the box*
 
-### 6.5 Setup DHCP Servers for OPT1 and OPT2
+### 7.4 Setup DHCP Servers for OPT1 and OPT2
 Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `OPT2 Tab` to open a configuration form, then fill up the necessary fields as follows:
 
 | General Options | OPT 1 Value | OPT2 Value | Notes |
@@ -533,7 +580,7 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 
 Remember to hit the `Save` button at the bottom of the page.
 
-### 6.6 Add your OpenVPN Client Server details
+### 7.5 Add your OpenVPN Client Server details
 Here we going to create OpenVPN clients vpngate-world and vpngate-local. You will need your VPN account server username and password details and have your vpn server provider OVPN configuration file open in a text editor so you can copy various certificate and key details (cut & paste). Note the values for this form will vary between different VPN providers but there should be a tutorial showing your providers pfSense configuration settings on the internet somewhere. 
 
 Now using the pfSense web interface `System` > `Cert. Manager` > `CAs` > `Add` to open a configuration form, then fill up the necessary fields as follows:
@@ -615,7 +662,7 @@ Click `Save`.
 
 Then to check whether the connection works navigate `Status` > `OpenVPN` and Status field for vpngate-world and vpngate-local should show `up`. This means you are connected to your provider.
 
-### 6.7 Add two new Gateways
+### 7.6 Add two new Gateways
 Next we need to add an interface for each new OpenVPN connection and then a Gateway for each interface. Now using the pfSense web interface `Interfaces` > `Assignments` the configuration form will show two available network ports which can be added, ovpnc1 (vpngate-world) and ovpnc2 (vpngate-local). Now `Add` both and remember to click `Save`.
 
 Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (editing both OPT3 and OPT4):
@@ -653,7 +700,7 @@ Click `Save`.
 
 At this point you are ready to create the firewall rules. Now I would **highly recommend a reboot** here as this was the only thing that made the next few steps work. So do a reboot `Diagnostics` > `Reboot` and perform a `Reboot`. If you dont things might get not work in the steps ahead.
 
-### 6.8 Adding NAT Rules
+### 7.7 Adding NAT Rules
 Next we need to add the NAT rules to allow for traffic to go out of the  VPN encrypted gateway(s), this is done from the `Firewall` > `NAT` > `Outbound Tab`. 
 
 If you have Automatic NAT enabled you want to enable Manual Outbound NAT and click `Save`. Now you will see and be able to edit the NAT Mappings configuration form.
@@ -707,7 +754,7 @@ Now your first two mappings for the new gateways show look like this:
 |[]|VPNGATEWORLD|192.168.30.0/24|*|*|*|VPNGATEWORLD address|*|:heavy_check_mark:|VLAN30 to vpngate-world
 |[]|VPNGATELOCAL|192.168.40.0/24|*|*|*|VPNGATELOCAL address|*|:heavy_check_mark:|VLAN40 to vpngate-local
 
-### 6.9 Adding the Firewall Rules
+### 7.8 Adding the Firewall Rules
 This is simple because we are going to send all the traffic in a subnet(s) (VLAN30 > vpngate-world / VLAN40 > vpngate-local) through the openVPN tunnel. 
 
 So first lets do OPT1 / vpngate-world so go `Firewall` > `Rules` > `OPT1 tab` and `Add` a new rule:
@@ -748,7 +795,7 @@ Click `Save` and `Apply`.
 
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
-### 6.10 Setup pfSense DNS
+### 7.9 Setup pfSense DNS
 Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
 
 | DNS Server Settings | Value | Value |
@@ -769,7 +816,7 @@ forward-addr: 1.0.0.1@853
 ```
 After entering the above code, scroll down to the bottom of the page and click `Save` and then to the top of the page click `Apply Changes`.
 
-### 6.11 Finish Up
+### 7.9.1 Finish Up
 After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period but dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
 
 And finally navigate to `Diagnostics` > `Reboot` and reboot your pfSense machine.
