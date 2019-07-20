@@ -196,7 +196,8 @@ Script (A) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-01 (node-01), a 
 *  Download pfsense ISO to Proxmox templates
 *  Create a pfSense Proxmox VM
 *  Configure all 6x Proxmox NICS to LAGS/Bonds and network interface configurations
-After executing this script you must continue manually to Step 6.0.
+
+After executing this Script (A) you must continue manually to Step 6.0 to finish building typhoon-01.
 
 Script (B) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which MUST BE single NIC hardware only. The script will perform the following tasks:
 *  Create a New User **storm**
@@ -208,7 +209,7 @@ Script (B) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-02/03 (node-02/0
 *  Create NFS mounts to your NAS
 *  Update the hosts file
 
-### 3.1 Qotom Mini PC model Q500G6-S05 build script
+### 3.1 Script (A) - Qotom Mini PC model Q500G6-S05 build script
 This script is for the Qotom Mini PC model Q500G6-S05 model ONLY. 
 
 To execute the script use the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
@@ -217,7 +218,7 @@ wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typh
 ```
 If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. You can now proceed to Step 6.0.
 
-### 3.2 Single NIC Hardware build script
+### 3.2 Script (B) - Single NIC Hardware build script
 This script is for single NIC hardware ONLY (i.e Intel NUC etc). 
 
 To execute the script use the Proxmox web interface `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
