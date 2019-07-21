@@ -294,7 +294,7 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | `Enable` |leave as default|
 
 ### 4.2 Configure Proxmox bridge networking
-If you using a single NIC hardware you can skip this step.
+If you using a single NIC hardware or a Synology VM you can skip this step.
 
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
 
@@ -397,7 +397,7 @@ Note the bridge port corresponds to a physical interface identified above. The n
 
 Reboot the Proxmox node to invoke the system changes.
 
-### 4.3 Edit your hosts file
+### 4.3 Edit your Proxmox hosts file
 Go to Proxmox web interface of your node `typhoon-0X` > `System` > `Network` > `Hosts`  and replace the contents with the following:
 
 ```
@@ -436,7 +436,37 @@ ff02::3 ip6-allhosts
 ```
 Then click `Save`.
 
-## 5.0 Create a Proxmox pfSense VM
+### 4.4 Create a new Proxmox user
+For ease of management I have created a specific user and group explicitly for Proxmox and Virtual Machines in my cluster with a username storm and group called homelab. You only have to complete this task on typhoon-01 because Proxmox PVE users (not PAM users) are deployed across the cluster.
+
+To create a new group go to Proxmox web interface of your node (should be https://192.168.1.101:8006/ ) `Datacenter` > `Permissions` > `Groups` > `Create` and complete the form fields as follows:
+
+| Create: Group | Value |
+| :---  | :---: |
+| `Name` | homelab |
+| `Comment` | Homelab User Group |
+
+And click `Create`.
+
+Next create the new user so go to Proxmox web interface of your node (should be https://192.168.1.101:8006/ ) `Datacenter` > `Permissions` > `Users` > `Add` and complete the form fields as follows:
+
+| Add: User | Value |
+| :---  | :---: |
+| `User Name` | storm |
+| `Realm` | Proxmox VE Authentication Server |
+| `Password` | Type your password |
+| `Confirm password` | Type your password |
+| `Group` | homelab |
+| `Expire` | Leave Default |
+| `Enabled` | [x] |
+| `Comment` | User Storm |
+| `First Name` | Leave Blank |
+| `Last Name` | Leave Blank |
+| `E-Mail` | Leave blank |
+
+And click `Add`.
+
+## 5.0 Create a Proxmox pfSense VM on typhoon-01
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or union. A safer zone.
    * `vpngate-local` - VLAN40 - This VPN client (used as a gateway) connects to servers which are either local, incountry or within your union and should provide a faster connection speed. 
