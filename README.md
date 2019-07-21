@@ -210,6 +210,15 @@ Script (B) `typhoon-0X-Single_NIC-setup-01.sh` which is for typhoon-02/03 (node-
 *  Create NFS mounts to your NAS
 *  Update the hosts file
 
+Script (C) `typhoon-0X-VM-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which **MUST BE Synology or NAS VM BUILD ONLY**. The script will perform the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox node
+*  Create NFS mounts to your NAS
+*  Update the hosts file
+
 ### 3.1 Script (A) - Qotom Mini PC model Q500G6-S05 build script
 This script is for the Qotom Mini PC model Q500G6-S05 model ONLY. 
 
@@ -225,6 +234,15 @@ This script is for single NIC hardware ONLY (i.e Intel NUC etc).
 To execute the script use the Proxmox web interface `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
 ```
 wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-0X-Single_NIC-setup-01.sh && bash /tmp/typhoon-0X-Single_NIC-setup-01.sh; rm -rf /tmp/typhoon-0X-Single_NIC-setup-01.sh
+```
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-01.
+
+### 3.3 Script (C) - Synology or NAS VM build script
+This script is for a Proxmox VM build only (i.e Synology Virtual Machine Manager VM). 
+
+To execute the script use the Proxmox web interface `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+```
+wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-VM-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-0X-VM-setup-01.sh && bash /tmp/typhoon-0X-VM-setup-01.sh; rm -rf /tmp/typhoon-0X-VM-setup-01.sh
 ```
 If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-01.
 
