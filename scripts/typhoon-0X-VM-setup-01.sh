@@ -7,7 +7,7 @@
 ###################################################################
 
 # Command to run script 
-# wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-0X-Single_NIC-setup-01.sh && bash /tmp/typhoon-0X-Single_NIC-setup-01.sh; rm -rf /tmp/typhoon-0X-Single_NIC-setup-01.sh
+# wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-VM-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-0X-VM-setup-01.sh && bash /tmp/typhoon-0X-VM-setup-01.sh; rm -rf /tmp/typhoon-0X-VM-setup-01.sh
 
 # Basic Details
 echo "All passwords must have a minimum of 5 characters"
