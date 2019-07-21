@@ -58,7 +58,7 @@ Configure each node as follows:
 | `E-mail` |Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a valid email type mail@example.com*
 | `Management interface` |Leave Default|Leave Default|Leave Default
 | `Hostname` |typhoon-01.localdomain|typhoon-02.localdomain|typhoon-03.local.domain
-|`IP` |192.168.1.101|192.168.1.102|192.168.1.103
+|`IP Address` |192.168.1.101|192.168.1.102|192.168.1.103
 | `Netmask` |255.255.255.0| 255.255.255.0| 255.255.255.0
 | `Gateway` |192.168.1.5|192.168.1.5|192.168.1.5
 | `DNS Server` |192.168.1.5|192.168.1.5|192.168.1.5
@@ -66,16 +66,16 @@ Configure each node as follows:
 Node 1 should be your Qotom. Choose your own password.
 
 ### 1.1 Configure the Proxmox Hardware
-Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
+Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox. Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 ### 1.2 Update Proxmox OS and enable turnkeylinux templates
-Using the web interface `updates` > `refresh` search for all the latest required updates.
-Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates.
+Using the web interface `updates` > `refresh` search for all the latest required updates. You will get a few errors which ignore.
+Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates and it will prompt you to type `Y` so do so.
 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
-### 1.3. Create Disk Two - your shared storage
+### 1.3 Create Disk Two - your shared storage
 Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
@@ -180,7 +180,7 @@ In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi
 | `Other Settings` | Just leave as default| |
 
 ## 3.0 Easy Installation Option
-If you have gotton this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
+If you have gotten this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
 
 I currently have the following CLI bash scripts available on GitHub to fastrack the build process:
 
@@ -200,7 +200,7 @@ Script (A) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-01 (node-01), a 
 
 After executing this Script (A) you must continue manually to Step 6.0 to finish building typhoon-01.
 
-Script (B) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which MUST BE single NIC hardware only. The script will perform the following tasks:
+Script (B) `typhoon-0X-Single_NIC-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which MUST BE single NIC hardware only. The script will perform the following tasks:
 *  Create a New User **storm**
 *  Create a new password for user **storm**
 *  Create a new user group called **homelab**
@@ -294,6 +294,8 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | `Enable` |leave as default|
 
 ### 4.2 Configure Proxmox bridge networking
+If you using a single NIC hardware you can skip this step.
+
 The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
@@ -394,6 +396,45 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
 
 Reboot the Proxmox node to invoke the system changes.
+
+### 4.3 Edit your hosts file
+Go to Proxmox web interface of your node `typhoon-0X` > `System` > `Network` > `Hosts`  and replace the contents with the following:
+
+```
+127.0.0.1 localhost.localdomain localhost
+# Proxmox Hosts
+192.168.1.101 typhoon-01.localdomain typhoon-01
+192.168.1.102 typhoon-02.localdomain typhoon-02
+192.168.1.103 typhoon-03.localdomain typhoon-03
+192.168.1.104 typhoon-04.localdomain typhoon-04
+# NAS Storage
+192.168.1.10 cyclone-01.localdomain cyclone-01
+192.168.1.11 cyclone-02.localdomain cyclone-02
+# Docker Nodes
+192.168.1.111 ds-01.localdomain ds-01
+192.168.1.112 ds-02.localdomain ds-02
+192.168.1.113 ds-03.localdomain ds-03
+192.168.1.114 ds-04.localdomain ds-04
+192.168.1.115 ds-05.localdomain ds-05
+192.168.1.116 ds-06.localdomain ds-06
+192.168.1.117 ds-07.localdomain ds-07
+192.168.1.118 ds-08.localdomain ds-08
+192.168.1.119 ds-09.localdomain ds-09
+# VM Machines
+192.168.1.253 pfsense.localdomain pfsense
+# LXC Machines
+192.168.1.6 unifi.localdomain unifi
+192.168.1.254 pihole.localdomain pihole
+192.168.50.20 jellyfin.localdomain jellyfin
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+```
+Then click `Save`.
 
 ## 5.0 Create a Proxmox pfSense VM
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
