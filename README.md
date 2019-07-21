@@ -40,27 +40,28 @@ For Disk 2 (sdx) I recommend a 500 Gb SSD which will be used as a Proxmox ZFS sh
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
-For your Synology Virtual Machine Proxmox VM pre-setup follow the the instructions [HERE](https://github.com/ahuacate/synobuild#install--configure-synology-virtual-machine-manager).
+For your Synology Virtual Machine Proxmox VM build follow the the instructions [HERE](https://github.com/ahuacate/synobuild/blob/master/README.md#install--configure-synology-virtual-machine-manager).
 
 Remember to remove your USB media on reboot on the hard metal hardware.
 
 Configure each node as follows:
 
-| Option | Node 1 Value | Node 2 Value | Node 3 Value |
-| :---  | :---: | :---: | :---: |
+| Option | Node 1 Value | Node 2 Value | Node 3 Value | Notes |
+| :---  | :---: | :---: | :---: | :--- |
 | Hardware Type | Qotom - Multi NIC | Generic PC - Single NIC | Synology VM
-| `Filesystem` |ext4 |ext4|ext4
-| `Disk(s)` |sdx|sdx|sdx
-| `Country` |"select"|"select"|"select"
-| `Timezone` |"select"|"select"|"select"
+| `Target Disk` | Select the 120Gb | Select the 120Gb | Select the 120Gb | *Not the largest or disk for shared storage*
+| `Target Disk - Options Filesystem` |ext4 |ext4|ext4| *Leave Default - ext4 etc*
+| `Country` |Type your Country|Type your Country|Type your Country
+| `Timezone` |Select |select|select
 | `Keymap` |en-us|en-us|en-us
-| `E-mail` |"your email"|"your email"|"your email"
-| `Management interface` |default|default|default
-| `Hostname` |typhoon-01|typhoon-02|typhoon-03
+| `Password` | 	Enter your new password | 	Enter your new password |  	Enter your new password | *Same password on all nodes - easy to remember*
+| `E-mail` |Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a valid email type mail@example.com*
+| `Management interface` |Leave Default|Leave Default|Leave Default
+| `Hostname` |typhoon-01.localdomain|typhoon-02.localdomain|typhoon-03.local.domain
 |`IP` |192.168.1.101|192.168.1.102|192.168.1.103
 | `Netmask` |255.255.255.0| 255.255.255.0| 255.255.255.0
 | `Gateway` |192.168.1.5|192.168.1.5|192.168.1.5
-| `DNS` |192.168.1.5|192.168.1.5|192.168.1.5
+| `DNS Server` |192.168.1.5|192.168.1.5|192.168.1.5
 
 Node 1 should be your Qotom. Choose your own password.
 
