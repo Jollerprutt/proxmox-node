@@ -13,9 +13,9 @@ I also use Ubiquiti Network gear which is a dream to configure and maintain.
 Obviously you can modify these instructions to meet your own hardware requirements.
 
 Network prerequisites are:
-- [x] Layer 2 Network kit
+- [x] Layer 2 Network Switches
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable your to configure DNS server(s), like a UniFi USG Gateway, set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or os down)
+- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable you to a configure DNS server(s), like a UniFi USG Gateway, so set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or os down)
 - [x] Network DHCP server is `192.168.1.5`
 - [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
 - [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
@@ -26,8 +26,15 @@ Other Prerequisites are:
 - [x] Synology NAS is configured, including NFS, as per [synobuild](https://github.com/ahuacate/synobuild)
 
 Tasks to be performed are:
-- [ ] Proxmox OS Installation
-- [ ] Update Proxmox OS and enable turnkeylinux templates
+- [ ] 1.0 Proxmox Base OS Installation
+- [ ] 2.0 Prepare your Network Hardware - Ready for Typhoon-01
+- [ ] 3.0 Easy Installation Option
+- [ ] 4.0 Basic Proxmox node configuration
+- [ ] 5.0 Create a Proxmox pfSense VM on typhoon-01
+- [ ] 6.0 Install pfSense on the new VM
+- [ ] 7.0 Setup pfSense
+- [ ] 8.0 Create a pfSense Backup
+- [ ] 9.0 Create a Cluster
 
 ## 1.0 Proxmox Base OS Installation
 Each Proxmox node requires two SSD hard disks. Basically one is for the Proxmox OS and the other disk is configured as a Proxmox ZFS shared storage disk.
@@ -931,10 +938,10 @@ On your pfSense WebGUI navigate to `Diagnostics` > `Backup & Restore` then fill 
 
 And then click the `Download configuration as XML` and `Save` the backup XML file to your NAS or a secure location. Note: If you are using the WebGUI on a Win10 PC the XML backup file will be saved in your users `Downloads` folder where you can then copy/move the file to a safer location. You should have a backup folder share on your NAS so why not store the XML file there `backup/pfsense/config-pfSense.localdomain-2019xxxxxxxxxx.xml`
 
-## 10.0 Create a Cluster
+## 9.0 Create a Cluster
 At this stage you should have 3x fully built and ready Proxmox nodes on the same network - Typhoon-01, Typhoon-02 and Typhoon-03. You can need create a 3x node cluster.
 
-### 10.1 Create the Cluster
+### 9.1 Create the Cluster
 Now using the pfSense web interface on node-01, Typhoon-01, go to `Datacenter` > `Cluster` > `Create Cluster` and fill out the fields as follows:
 
 | Create Cluster | Value | Notes
@@ -944,7 +951,7 @@ Now using the pfSense web interface on node-01, Typhoon-01, go to `Datacenter` >
 
 And Click `Create`.
 
-### 10.2 Join the other Nodes to the New Cluster
+### 9.2 Join the other Nodes to the New Cluster
 The first step in joining other nodes to your cluster, `typhoon-cluster`, is to copy typhoon-01 cluster manager fingerprint/join information into your clipboard.
 
 **Step One:**
@@ -957,7 +964,7 @@ Now using the pfSense web interface on the OTHER Nodes, Typhoon-02/03/04 etc, go
 
 And  Click `Join`. Repeat for on all nodes.
 
-### 10.3 How to delete a existing cluster on a node
+### 9.3 How to delete a existing cluster on a node
 I made an error when creating the cluster name and it was headache to delete the cluster. But if you paste the following into a CLI terminal your cluster settings should be reset to default.
 
 ```
