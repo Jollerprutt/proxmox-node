@@ -931,21 +931,48 @@ On your pfSense WebGUI navigate to `Diagnostics` > `Backup & Restore` then fill 
 
 And then click the `Download configuration as XML` and `Save` the backup XML file to your NAS or a secure location. Note: If you are using the WebGUI on a Win10 PC the XML backup file will be saved in your users `Downloads` folder where you can then copy/move the file to a safer location. You should have a backup folder share on your NAS so why not store the XML file there `backup/pfsense/config-pfSense.localdomain-2019xxxxxxxxxx.xml`
 
-## 4 Configure Single NIC Hardware Network Setup - Typhoon-02
-Seting up a single network NIC host (including Synology Virtual Machines) is simple. In the following setup I used a Intel i3 NUC model nuc5i3ryh machine.
+## 10.0 Create a Cluster
+At this stage you should have 3x fully built and ready Proxmox nodes on the same network - Typhoon-01, Typhoon-02 and Typhoon-03. You can need create a 3x node cluster.
 
+### 10.1 Create the Cluster
+Now using the pfSense web interface on node-01, Typhoon-01, go to `Datacenter` > `Cluster` > `Create Cluster` and fill out the fields as follows:
 
+| Create Cluster | Value | Notes
+| :---  | :--- | :--- |
+| Cluster Name | `typhoon-cluster` |
+| Ring 0 Address | Leave Blank |
 
+And Click `Create`.
 
+### 10.2 Join the other Nodes to the New Cluster
+The first step in joining other nodes to your cluster, `typhoon-cluster`, is to copy typhoon-01 cluster manager fingerprint/join information into your clipboard.
 
+**Step One:**
 
+Now using the pfSense web interface on node-01, Typhoon-01, go to `Datacenter` > `Cluster` > `Join Information` and a new window will appear showing `Cluster Join Information` with the option to `Copy Information` into your clipboard. Click `Copy Information`.
 
+**Step Two:**
 
+Now using the pfSense web interface on the OTHER Nodes, Typhoon-02/03/04 etc, go to `Datacenter` > `Cluster` > `Join Cluster` and a new window will appear showing `Cluster Join` with the option to paste the `Cluster Join Information` into a `Infoprmation` field. Paste the information, enter your root password into the `Password` field and the other fields will automatically be filled.
 
+And  Click `Join`. Repeat for on all nodes.
 
+### 10.3 How to delete a existing cluster on a node
+I made an error when creating the cluster name and it was headache to delete the cluster. But if you paste the following into a CLI terminal your cluster settings should be reset to default.
 
-
-
-
+```
+systemctl stop pve-cluster &&
+pmxcfs -l &&
+rm -f /etc/pve/cluster.conf /etc/pve/corosync.conf &&
+rm -f /etc/cluster/cluster.conf /etc/corosync/corosync.conf &&
+systemctl stop pve-cluster &&
+rm /var/lib/pve-cluster/.pmxcfs.lockfile &&
+rm -f /etc/corosync/authkey &&
+systemctl start pve-cluster &&
+systemctl restart pvedaemon &&
+systemctl restart pveproxy &&
+systemctl restart pvestatd &&
+reboot
+```
 
 
