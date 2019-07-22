@@ -964,6 +964,37 @@ Now using the pfSense web interface on the OTHER Nodes, Typhoon-02/03/04 etc, go
 
 And  Click `Join`. Repeat for on all nodes.
 
+The result should be any configuration can now be done via a single Proxmox web interface. Just point your browser to the IP address given during installation (https://192.168.1.101:8006) and all 3x nodes should be shown below `Datacenter (typhoon-cluster)`. Or type `pvecm status` into any node `typhoon-01` > `>_Shell`:
+
+```
+pvecm status
+
+# Results ...
+Quorum information
+------------------
+Date:             Mon Jul 22 13:44:10 2019
+Quorum provider:  corosync_votequorum
+Nodes:            3
+Node ID:          0x00000001
+Ring ID:          1/348
+Quorate:          Yes
+
+Votequorum information
+----------------------
+Expected votes:   3
+Highest expected: 3
+Total votes:      3
+Quorum:           2  
+Flags:            Quorate 
+
+Membership information
+----------------------
+    Nodeid      Votes Name
+0x00000001          1 192.168.1.101 (local)
+0x00000002          1 192.168.1.102
+0x00000003          1 192.168.1.103
+```
+
 ### 9.3 How to delete a existing cluster on a node
 I made an error when creating the cluster name and it was headache to delete the cluster. But if you paste the following into a CLI terminal your cluster settings should be reset to default.
 
