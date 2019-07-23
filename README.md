@@ -766,6 +766,7 @@ Next we need to add an interface for each new OpenVPN connection and then a Gate
 Then click on the corresponding `Interface` names one at a time, likely to be `OPT3` and `OPT4`,  and edit the necessary fields as follows (editing both OPT3 and OPT4):
 
 The first edit will be `OPT3`:
+
 | Interfaces/OPT3 (ovpnc1) | Value | Notes
 | :---  | :---: | :--- |
 | Enable | `[x]` Enable interface | *Check the box*
