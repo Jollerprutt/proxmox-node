@@ -895,14 +895,22 @@ Click `Save` and `Apply`.
 The above rules will send all the traffic on that interface into the VPN tunnel, you must ensure that the ‘gateway’ option is set to your VPN gateway and that this rule is above any other rule that allows hosts to go out to the internet. pfSense needs to be able to catch this rule before any others.
 
 ### 7.9 Setup pfSense DNS
-Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS. The first step ensure Cloudflare DNS servers are used even if the DNS queries are not sent over TLS. Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
+Here will setup different DNS services for each OpenVPN WAN. I do not recommend setting one up for the non-OpenVPN WAN because it may cause DNS leaks when using a OpenVPN Gateway because of how pfSense DNS Resolver works.
 
-| DNS Server Settings | Value | Value |
-| :---  | :--- | :--- |
+Navigate to `System` > `General Settings` and under DNS servers add IP addresses for Cloudflare DNS servers and select your WAN gateway.
+
+| DNS Server Settings | Value | Value | Notes
+| :---  | :--- | :--- | :---
+| DNS Servers | `85.203.37.1` | `VPNGATEWORLD_VPNV4-opt3-wan-xxxx`
+| DNS Servers | `85.203.37.2` | `VPNGATELOCAL_VPNV4-opt4-wan-xxxx`
+| **Below is Optional BUT not recommended**
 | DNS Servers | `1.1.1.1` | `WAN_DHCP - wan-xxxx`
-| DNS Servers | `1.0.0.1` | `WAN_DHCP - wan-xxxx`
 
-After entering the DNS IP addresses, scroll down to the bottom of the page and click `Save`. Your pfSense appliance is now using Cloudflare servers as DNS.
+After entering the DNS IP addresses, scroll down to the bottom of the page and click `Save`. Your pfSense appliance is now configured for DNS servers.
+
+The problem with setting up a WAN (non encrypted gateway) is in the event OpenDNS queries fail, it will likely use 127.0.0.1 (itself - host) as another available DNS server. Anyway, Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS for added security.
+
+
 
 To configure the pfSense DNS resolver to send DNS queries over TLS, navigate to `Services` > `DNS Resolver` and on the tab `General Settings` scroll down to the `Display Custom Options` box. Enter the following lines (you should be able to simply copy / paste the section text block below):
 ```
@@ -923,6 +931,117 @@ And finally navigate to `Diagnostics` > `Reboot` and reboot your pfSense machine
 Once you’re done head over to any client PC on the network or mobile on the WiFi SSID on either `vpngate-world` VLAN30 or `vpngate-local` VLAN40 networks and use IP checker to if its all working https://wtfismyip.com
 
 Success! (hopefully)
+
+## 8.0 Install & Setup pfBlockerNG on pfSense
+pfBlockerNG can add other security enhancements such as blocking known bad IP addresses with blocklists. If you don’t already have the blocklist functionality in place on your pfSense, I would strongly suggest adding it after you’re done with installing pfBlockerNG.
+
+### 8.1 pfBlockerNG Installation
+In the pfSense WebGUI go to `System` > `Package Manager` > Available Packages` and type ‘pfblocker’ into the search criteria and then click `Search`.
+
+Make sure you click `+ Install` on the version with ‘-devel’ (i.e pfBlockerNG-devel) at the end of it, and then `Confirm` on the next page. Installation may take a short while as it downloads and updates certain packages.  
+
+At this point, you have already installed the package. Next, you will need to enable it from pfSense WebGUI `Firewall` > `pfBlockerNG` and the option to exit out of the wizard. A configuration page should appear, Click on the `General Tab`, and fill out the necessary fields as follows:
+
+| General Settings | Value | Notes
+| :---  | :--- | :--- |
+| pfBlockerNG | `[x] Enable | 
+| Keep Settings | `[x] Enable | 
+
+Then Click `Save` at the bottom of the page.
+
+### 8.2 Configure DNSBL
+Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `DNSBL Tab` and fill out the necessary fields as follows. Because we have multiple internal interfaces, we are using a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, you would want to protect them with DNSBL, so you will need to pay attention to the ‘Permit Firewall Rules’ section. First, place a checkmark in the ‘Enable’ box of `Permit Firewall Rules`. Then, select the various interfaces (to the right, in a box) by holding down the ‘Ctrl’ key and left-click selecting the interfaces you choose to protect with pfBlockerNG. Note, don’t forget to Click the `Save DNSBL settings’ at the bottom of the page.
+
+Also if your pfSense has plenty of memory enable TLD. Normally, DNSBL (and other DNS blackhole software) block the domains specified in the feeds and that’s that. What TLD does differently is it will block the domain specified in addition to all of a domain’s subdomains. As a result, a instrusive domain can’t circumvent the blacklist by creating a random subdomain name such as abcd1234.zuckermine.com (if zuckermine.com was in a DNSBL feed). I enable it.
+
+| DNSBL | Value | Other Values
+| :---  | :--- | :--- |
+| DNSBL | `[x] Enable | 
+| TLD | `[x] Enable | *Note: You need at least 3Gb of RAM for this feature*
+| **DNNSBL Configuration**
+| Permit Firewall Rules | `[x] Enable | Enable: OPT1, OPT2
+
+And Click `Save DNSBL settings` on the bottom of the page.
+
+### 8.3 Configure DNSBL feeds
+Using the pfSense WebGUI  `Firewall` > `pfBlockerNG` > `Feeds Tab` (not DNSBL Feeds) at the top. Here you will see all of the pre-configured feeds for the IPv4, IPv6, and DNSBL categories.
+
+Scroll down to the `DNSBL Category` header then to the Alias/Group labeled `ADs`. Click the blue colour **`+`** next to the `ADs` header (column should be all ADs) to add all the feeds related to that category. Note, if you instead clicked the `+` to the far right of each line, you will instead only add that individual feed.
+
+| Category | Alias/Group | Feed/Website | Header/URL
+| :---  | :--- | :--- | :---
+| **DNSBL Category**
+| DNSBL `I` **`+`** | `ADs` | `Adaway` | `Adaway`
+
+If you clicked the **`+`** next to the ADs category, you are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. All of the feeds in the list will initially be in the `OFF` state. You can go through and enable each one individually or you can click `Enable All` at the bottom of the list - all will switch to `ON` state. Then change the Action field to `Unbound`.
+
+Next, make sure you switch the `Action` from Disabled to `Unbound`.
+
+| Value | Value | Value | Value
+| :---  | :--- | :--- | :---
+| **DNSBL Source Definitions**
+| `Auto` | `ON` | `https://adaway.org/hosts.txt` | `Adaway`
+| **Settings**
+| Action | `Unbound`
+
+Now Click the `Save DNSBL Settings` at the bottom of the page and you should receive a message at the top along the lines of `Saved [ Type:DNSBL, Name:ADs ] configuration`.
+
+To check all went okay go to the `Firewall` > `pfBlockerNG` > `DNSBL` > `DNSBL Feeds` tab and you will see a DNSBL feeds summary. Your feeds summary should look similar to the one below:
+
+| Name | Description | Action | Frequency | Logging
+| :---  | :--- | :--- | :--- | :---
+| **DNSBL Feeds Summary**
+| ADs | ADs - Collection | Unbound | Once a day | Enabled
+
+Now lets add some more. Go back to `Firewall` > `pfBlockerNG` > `Feeds` tab up top and then scroll down to `DNSBL category` section again. We’re going to add another category (after making some changes), but let’s explain everything you see here. Looking at the `DNSBL Catergory` you’ll see the `ADs` category checkmark **`+`** is replaced with a :heavy_check_mark: means this category already exists and is active in the DNSBL ADs category. This distinction is important to recognize because when you add the next category we do not need to enable every feed for a particular category.
+
+Also worth mentioning before we add the `Malicious` category. Some feeds have selectable options such as feed category `Internet Storm Center`. I recommend switching the feed from `ISC_SDH` (high) to `ISC_SDL` (low) as the high feed has under 20 entries and the low feed includes the high feed.
+
+After making the switch to `ISC_SDL`, click the blue colour **`+`** next to the `Malicious` header (column should be all Malicious) to add all the feeds related to that category.
+click the left-hand plus next to the Malicious category (red arrow below). If you clicked the **`+`** next to the Makicious category, you are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. As when we added the ADs list, go ahead and click `Enable All` at the bottom of the list - all will switch to `ON` state. Then change the Action field to `Unbound`. **Don’t hit save just yet!**
+
+**Important:** Now look for any `Header/label` called **`Pulsedive`** and/or **`Malekal`** then delete them. It should be then gone.
+
+Now Click the `Save DNSBL Settings` at the bottom of the page and you should receive a message at the top along the lines of `Saved [ Type:DNSBL, Name:ADs ] configuration`.
+
+To check all went okay go to the `Firewall` > `pfBlockerNG` > `DNSBL` > `DNSBL Feeds` tab and you will see a DNSBL feeds summary. Your feeds summary should look similar to the one below:
+
+| Name | Description | Action | Frequency | Logging
+| :---  | :--- | :--- | :--- | :---
+| **DNSBL Feeds Summary**
+| ADs | ADs - Collection | Unbound | Once a day | Enabled
+| Malicious | Malicious - Collection | Unbound | Once a day | Enabled
+
+Now lets add some more. Scroll down to the `DNSBL Category` header then to the Alias/Group labeled `Easylist`. Click the blue colour **`+`** next to the `Easylist` header (column should be all Easylist) to add all the feeds related to that category. You are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. 
+
+**Important:** Now look for any `Header/label` called `EasyPrivacy` and delete it. It should be then gone.
+
+All of the feeds in the list will initially be in the `OFF` state. You can go through and enable each one individually or you can click `Enable All` at the bottom of the list - all will switch to `ON` state. Then change the Action field to `Unbound` and the Update Frequency to `Every 4 hours`.
+
+Now Click the `Save DNSBL Settings` at the bottom of the page and you should receive a message at the top along the lines of `Saved [ Type:DNSBL, Name:ADs ] configuration`.
+
+Now repeat the procedure for:
+*  BBcan177 - From the creater of pfBlockerBG
+*  hpHosts (all of them) - From Malwarebytes
+*  BBC (BBC_DGA_Agr) – From Bambenek Consulting
+*  Cryptojackers (all of them) – This blocks cryptojacking software and in-browser miners, but it also blocks various coin exchanges.
+
+After adding all of the above go to the `Firewall` > `pfBlockerNG` > `DNSBL` > `DNSBL Feeds` tab and you will see a DNSBL feeds summary. Your feeds summary should look similar to the one below:
+
+| Name | Description | Action | Frequency | Logging
+| :---  | :--- | :--- | :--- | :---
+| **DNSBL Feeds Summary**
+| ADs | ADs - Collection | Unbound | Once a day | Enabled
+| Malicious | Malicious - Collection | Unbound | Once a day | Enabled
+| hpHosts | Malwarebytes - Collection | Unbound | Once a day | Enabled
+| BBcan177 | BBcan177 - Collection | Unbound | Once a day | Enabled
+| BBC | BBC-DGA type - Collection | Unbound | Once a day | Enabled
+| Cryptojackers | Cryptojackers - Collection | Unbound | Once a day | Enabled
+| Easylist | EasyList Feeds | Unbound | Every 4 hours | Enabled
+
+### 8.4 Force DNSBL Feed Updates
+
+
 
 ## 8.0 Create a pfSense Backup
 If all is working its best to make a backup of your pfsense configuration. Also if you experiment around a lot, it’s an easy way to restore back to a working configuration. Also, do a backup each and every time before upgrading to a newer version of your firewall or pfSense OS. So in the event you have to rebuild pfSense you can skip Steps 7.0 onwards by using the backup restore feature which will save you a lot of time.
