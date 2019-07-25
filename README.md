@@ -33,8 +33,9 @@ Tasks to be performed are:
 - [ ] 5.0 Create a Proxmox pfSense VM on typhoon-01
 - [ ] 6.0 Install pfSense on the new VM
 - [ ] 7.0 Setup pfSense
-- [ ] 8.0 Create a pfSense Backup
-- [ ] 9.0 Create a Cluster
+- [ ] 8.0 Install & Setup pfBlockerNG on pfSense
+- [ ] 9.0 Create a pfSense Backup
+- [ ] 10.0 Create a Cluster
 
 ## 1.0 Proxmox Base OS Installation
 Each Proxmox node requires two SSD hard disks. Basically one is for the Proxmox OS and the other disk is configured as a Proxmox ZFS shared storage disk.
@@ -907,7 +908,7 @@ Navigate to `System` > `General Settings` and under DNS servers add IP addresses
 
 After entering the DNS IP addresses, scroll down to the bottom of the page and click `Save`. Your pfSense appliance is now configured for DNS servers.
 
-**Note:** The problem with setting up a WAN (non encrypted gateway) is in the event OpenDNS queries fail, it will likely use 127.0.0.1 (itself - host) as another available DNS server. But if you must, I recommend you use Cloudflare’s DNS service which is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS for added security.
+**Note:** The problem with setting up DNS for WAN (non encrypted gateway) is in the event OpenDNS queries fail, it will likely use 127.0.0.1 (itself - host) as another available DNS server. But if you must, I recommend you use Cloudflare’s DNS service which is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS for added security.
 
 To configure the pfSense DNS resolver to send DNS queries over TLS, navigate to `Services` > `DNS Resolver` and on the tab `General Settings` scroll down to the `Display Custom Options` box. Enter the following lines (you should be able to simply copy / paste the section text block below):
 ```
@@ -962,7 +963,7 @@ Once you’re done head over to any client PC on the network or mobile on the Wi
 Success! (hopefully)
 
 ## 8.0 Install & Setup pfBlockerNG on pfSense
-pfBlockerNG can add other security enhancements such as blocking known bad IP addresses with blocklists. If you don’t already have the blocklist functionality in place on your pfSense, I would strongly suggest adding it after you’re done with installing pfBlockerNG.
+pfBlockerNG can add other security enhancements such as blocking known bad IP addresses with blocklists. For example, getting rid of adverts and pop-ups from websites. If you don’t already have a blocklist functionality in place on your pfSense (such as PiHole), I would strongly suggest adding pfBlockerNG Devel to your new OpenVPN Gateways (VPNGGATEWORLD and VPNGATELOCAL).
 
 ### 8.1 pfBlockerNG Installation
 In the pfSense WebGUI go to `System` > `Package Manager` > Available Packages` and type ‘pfblocker’ into the search criteria and then click `Search`.
@@ -1107,7 +1108,7 @@ After adding all of the above go to the `Firewall` > `pfBlockerNG` > `DNSBL` > `
 | Easylist | EasyList Feeds | Unbound | Every 4 hours | Enabled
 
 ### 8.5 Force DNSBL Feed Updates
-You need to force a update to to `Reload` DNSBL new or changed settings you have done.
+You need to force a update to to `Reload` DNSBL new or changed settings. You must do this to check if your pfBlockerNG is working.
 
 Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `Update Tab` and fill out the necessary fields as follows. Whats NOT shown in the below table leave as default. 
 
@@ -1119,7 +1120,12 @@ Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `Update Tab` and fill out
 
 Now Click the `RUN` below the options and you should see the Logs being created on the page. It may take a while. Be patient.
 
-## 8.0 Create a pfSense Backup
+### 8.6 Check if pfBlockerNG is working
+First connect a device (mobile Wifi on the either) to either *.vpngate-local or *vpngate-world network. Go and browse a few websites like a news website. Then go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `Reports` > `Alerts Tab` and you should see the DNSBL entry being populated with intercepted data. 
+
+If you see nothing then pfBlockerNG is NOT working. Check your configurations to resolve.
+
+## 9.0 Create a pfSense Backup
 If all is working its best to make a backup of your pfsense configuration. Also if you experiment around a lot, it’s an easy way to restore back to a working configuration. Also, do a backup each and every time before upgrading to a newer version of your firewall or pfSense OS. So in the event you have to rebuild pfSense you can skip Steps 7.0 onwards by using the backup restore feature which will save you a lot of time.
 
 On your pfSense WebGUI navigate to `Diagnostics` > `Backup & Restore` then fill up the necessary fields as follows:
@@ -1134,10 +1140,10 @@ On your pfSense WebGUI navigate to `Diagnostics` > `Backup & Restore` then fill 
 
 And then click the `Download configuration as XML` and `Save` the backup XML file to your NAS or a secure location. Note: If you are using the WebGUI on a Win10 PC the XML backup file will be saved in your users `Downloads` folder where you can then copy/move the file to a safer location. You should have a backup folder share on your NAS so why not store the XML file there `backup/pfsense/config-pfSense.localdomain-2019xxxxxxxxxx.xml`
 
-## 9.0 Create a Cluster
+## 10.0 Create a Cluster
 At this stage you should have 3x fully built and ready Proxmox nodes on the same network - Typhoon-01, Typhoon-02 and Typhoon-03. You can need create a 3x node cluster.
 
-### 9.1 Create the Cluster
+### 10.1 Create the Cluster
 Now using the pfSense web interface on node-01, Typhoon-01, go to `Datacenter` > `Cluster` > `Create Cluster` and fill out the fields as follows:
 
 | Create Cluster | Value | Notes
@@ -1147,7 +1153,7 @@ Now using the pfSense web interface on node-01, Typhoon-01, go to `Datacenter` >
 
 And Click `Create`.
 
-### 9.2 Join the other Nodes to the New Cluster
+### 10.2 Join the other Nodes to the New Cluster
 The first step in joining other nodes to your cluster, `typhoon-cluster`, is to copy typhoon-01 cluster manager fingerprint/join information into your clipboard.
 
 **Step One:**
@@ -1191,7 +1197,7 @@ Membership information
 0x00000003          1 192.168.1.103
 ```
 
-### 9.3 How to delete a existing cluster on a node
+### 10.3 How to delete a existing cluster on a node
 I made an error when creating the cluster name and it was headache to delete the cluster. But if you paste the following into a CLI terminal your cluster settings should be reset to default.
 
 ```
