@@ -673,8 +673,7 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 | Range | `192.168.30.150 - 192.168.30.250` | `192.168.40.150 - 192.168.40.250` |
 | **Servers**
 | WINS servers | Leave blank
-| DNS servers | `85.203.37.1` | `85.203.37.1` | *DNS Server 1: Use the DNS IP supplied by your VPN provider (the ones shown are ExpressVPN's). If you dont have any leave blank. Note, for you to use your VPN providers DNS servers you generally need DDNS configured to report to your VPN provider your public IP address on a device on your network such as your router or NAS etc*
-|  | `85.203.37.2` | `85.203.37.2` | *DNS Server 2: Use the DNS IP supplied by your VPN provider (the ones shown are ExpressVPN's). If you dont have any leave blank*
+| DNS servers | Leave Blank | Leave Blank | *DNS Server 1-4: Must leave all blank. We are going to use DNS Resolver for DNS tasks. If you add DNS here then pFBlockerNG will not work.
 
 Remember to hit the `Save` button at the bottom of the page.
 
@@ -908,9 +907,7 @@ Navigate to `System` > `General Settings` and under DNS servers add IP addresses
 
 After entering the DNS IP addresses, scroll down to the bottom of the page and click `Save`. Your pfSense appliance is now configured for DNS servers.
 
-The problem with setting up a WAN (non encrypted gateway) is in the event OpenDNS queries fail, it will likely use 127.0.0.1 (itself - host) as another available DNS server. Anyway, Cloudflare’s DNS service is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS for added security.
-
-
+**Note:** The problem with setting up a WAN (non encrypted gateway) is in the event OpenDNS queries fail, it will likely use 127.0.0.1 (itself - host) as another available DNS server. But if you must, I recommend you use Cloudflare’s DNS service which is arguably the best DNS servers to use in pfSense and here we configure Cloudfare DNS over TLS for added security.
 
 To configure the pfSense DNS resolver to send DNS queries over TLS, navigate to `Services` > `DNS Resolver` and on the tab `General Settings` scroll down to the `Display Custom Options` box. Enter the following lines (you should be able to simply copy / paste the section text block below):
 ```
@@ -922,6 +919,38 @@ forward-addr: 1.1.1.1@853
 forward-addr: 1.0.0.1@853
 ```
 After entering the above code, scroll down to the bottom of the page and click `Save` and then to the top of the page click `Apply Changes`.
+
+### 7.9.1 Set Up DNS Resolver
+To configure the pfSense DNS resolver navigate to `Services` > `DNS Resolver` and on the tab `General Settings` fill up the necessary fields as follows:
+
+| General Settings | Value | Notes
+| :---  | :--- | :--- 
+| Enable | `[x] Enable DNS resolver` | 
+| Listen Port | Leave Default | 
+| Enable SSL/TLS Service | [ ] | 
+| SSL/TLS Certificate | Leave Default | 
+| SSL/TLS Listen Port | Leave Default | 
+| Network Interfaces | `OPT1` | *Select ONLY OPT1, OPT2 and Localhost - Use the Ctrl key to toggle selection*
+||`OPT2`
+||`Localhost`
+| Outgoing Network Interfaces | `VPNGATEWORLD` |*Select ONLY VPNGATEWORLD and VPNGATELOCAL - Use the Ctrl key to toggle selection*
+|| `VPNGATELOCAL`
+| System Domain Local Zone Type | `Transparent` | 
+| DNSSEC | `[x] Enable DNSSEC Support` | 
+| DNS Query Forwarding | [ ] Enable Forwarding Mode | *Uncheck*
+|| [ ] Use SSL/TLS for outgoing DNS Queries to Forwarding Servers | *Uncheck*
+| DHCP Registration | [ ] Register DHCP leases in the DNS Resolver | *Uncheck*
+| Static DHCP | [ ] Register DHCP static mappings in the DNS Resolver | *Uncheck*
+| OpenVPN Clients | [ ] Register connected OpenVPN clients in the DNS Resolver | *Uncheck*
+| **Below is Optional only if you want add TLS and Cloudfare DNS as shown in Step 7.9 - Not Recommended**
+| Display Custom Options | Click `Display Custom Options` | 
+| Custom options  | server:
+||forward-zone:
+||name: "."
+||forward-ssl-upstream: yes
+||forward-addr: 1.1.1.1@853
+||forward-addr: 1.0.0.1@853
+||server:include: /var/unbound/pfb_dnsbl.*conf | 
 
 ### 7.9.1 Finish Up
 After all your rules are in place head over to `Diagnostics` > `States` > `Reset States Tab` > and tick `Reset the firewall state table` click `Reset`. After doing any firewall changes that involve a gateway change its best doing a state reset before checking if anything has worked (odds are it will not work if you dont). PfSense WebGUI may hang for period but dont despair because it will return in a few seconds for routing to come back and up to a minute, don’t panic.
@@ -942,38 +971,76 @@ Make sure you click `+ Install` on the version with ‘-devel’ (i.e pfBlockerN
 
 At this point, you have already installed the package. Next, you will need to enable it from pfSense WebGUI `Firewall` > `pfBlockerNG` and the option to exit out of the wizard. A configuration page should appear, Click on the `General Tab`, and fill out the necessary fields as follows:
 
-| General Settings | Value | Notes
-| :---  | :--- | :--- |
+| General Settings | Value | Value | Value | Value | Notes
+| :---  | :--- | :--- | :--- | :--- | :---
 | pfBlockerNG | `[x] Enable | 
-| Keep Settings | `[x] Enable | 
+| Keep Settings | `[x] Enable |
+| CRON Settings | Every hour | 00 | 0 | 0 | *Generally Leave Default settings*
 
 Then Click `Save` at the bottom of the page.
 
-### 8.2 Configure DNSBL
-Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `DNSBL Tab` and fill out the necessary fields as follows. Because we have multiple internal interfaces, we are using a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, you would want to protect them with DNSBL, so you will need to pay attention to the ‘Permit Firewall Rules’ section. First, place a checkmark in the ‘Enable’ box of `Permit Firewall Rules`. Then, select the various interfaces (to the right, in a box) by holding down the ‘Ctrl’ key and left-click selecting the interfaces you choose to protect with pfBlockerNG. Note, don’t forget to Click the `Save DNSBL settings’ at the bottom of the page.
+### 8.2 Configure IP
+Go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `IP Tab` and fill out the necessary fields as follows. Whats NOT shown in the below table leave as default.
 
-Also if your pfSense has plenty of memory enable TLD. Normally, DNSBL (and other DNS blackhole software) block the domains specified in the feeds and that’s that. What TLD does differently is it will block the domain specified in addition to all of a domain’s subdomains. As a result, a instrusive domain can’t circumvent the blacklist by creating a random subdomain name such as abcd1234.zuckermine.com (if zuckermine.com was in a DNSBL feed). I enable it.
+| IP Configuration | Value | Other Values | Notes
+| :---  | :--- | :--- | :---
+| De-Duplication | [x] Enable | |*Check*
+| CIDR Aggregation | [x] Enable ||*Check*
+| Suppression | [x] Enable ||*Check*
+| Global Logging | [ ] ||*Uncheck*
+| Placeholder IP Address | 127.1.7.7||*Leave Default*
+| MaxMind Localized Language | English||*Leave Default*
+| MaxMind Updates | [ ] Check to disable MaxMind updates ||*Uncheck*
+| Global Logging | [ ] ||*Uncheck*
+| **IP Interface/Rules Configuration**
+| Inbound Firewall Rules | `VPNGATEWORLD` || *Select ONLY VPNGATEWORLD and VPNGATELOCAL*
+|| `VPNGATELOCAL`
+| Outbound Firewall Rules | `VPNGATEWORLD` || *Select ONLY VPNGATEWORLD and VPNGATELOCAL*
+|| `VPNGATELOCAL`
+| Floating Rules | [x] Enabled || *Check*
+| Firewall 'Auto' Rule Order | pfB_Pass/Match/Block/Reject\All other Rules\(Default Format) || *Leave Default*
+| Firewall 'Auto' Rule Suffix | `auto rule`
+| Kill States | [x] Enable
 
-| DNSBL | Value | Other Values
-| :---  | :--- | :--- |
+### 8.3 Configure DNSBL
+Because we have multiple internal interfaces, we are using a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, you would want to protect them with DNSBL, so you will need to pay attention to the ‘Permit Firewall Rules’ section. First, place a checkmark in the ‘Enable’ box of `Permit Firewall Rules`. Then, select the various interfaces (to the right, in a box) by holding down the ‘Ctrl’ key and left-click selecting the interfaces you choose to protect with pfBlockerNG. Note, don’t forget to Click the `Save DNSBL settings’ at the bottom of the page.
+
+Also if your pfSense OS has plenty of memory enable, 3Gb or more, use TLD. Normally, DNSBL (and other DNS blackhole software) block the domains specified in the feeds and that’s that. What TLD does differently is it will block the domain specified in addition to all of a domain’s subdomains. As a result, a instrusive domain can’t circumvent the blacklist by creating a random subdomain name such as abcd1234.zuckermine.com (if zuckermine.com was in a DNSBL feed). If you have the RAM enable it.
+
+Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `DNSBL Tab` and fill out the necessary fields as follows. Whats NOT shown in the below table leave as default. 
+
+| DNSBL | Value | Other Values | Notes
+| :---  | :--- | :--- | :---
 | DNSBL | `[x] Enable | 
-| TLD | `[x] Enable | *Note: You need at least 3Gb of RAM for this feature*
-| **DNNSBL Configuration**
-| Permit Firewall Rules | `[x] Enable | Enable: OPT1, OPT2
+| TLD | `[x] Enable | | *Note: You need at least 3Gb of RAM for this feature*
+| **DNSBL Webserver Configuration**
+| Virtual IP Address | 10.10.10.1 || *Leave Default*
+| VIP Address Type | IP Alias | Leave Blank (Enter Carp Password) | *Leave Default*
+| Port | 8081 || *Leave Default*
+| SSL Port | 8443 || *Leave Default*
+| Webserver Interface | LAN || *Leave Default*
+| **DNSBL Configuration**
+| Permit Firewall Rules | `[x] Enable` |`OPT1` | *Select ONLY OPT1 and OPT2 - Use the Ctrl key to toggle selection*
+||| `OPT2`
+| Blocked Webpage | dnsbl_default.php || *Leave Default*
+| Resolver Live Sync | [ ] Enable || *Uncheck*
+| **DNSBL IPs**
+| List Action | `Deny Outbound`
+| Enable Logging | `Enable`
 
-And Click `Save DNSBL settings` on the bottom of the page.
+Now Click `Save DNSBL settings` at the bottom of the page.
 
-### 8.3 Configure DNSBL feeds
+### 8.4 Configure DNSBL feeds
 Using the pfSense WebGUI  `Firewall` > `pfBlockerNG` > `Feeds Tab` (not DNSBL Feeds) at the top. Here you will see all of the pre-configured feeds for the IPv4, IPv6, and DNSBL categories.
 
-Scroll down to the `DNSBL Category` header then to the Alias/Group labeled `ADs`. Click the blue colour **`+`** next to the `ADs` header (column should be all ADs) to add all the feeds related to that category. Note, if you instead clicked the `+` to the far right of each line, you will instead only add that individual feed.
+Scroll down to the `DNSBL Category` header then to the Alias/Group labeled `ADs`. Click the blue colour **`+`** next to the `ADs` header (column should be all ADs) to add all the feeds related to ADs category. Note, if you instead clicked the `+` to the far right of each line, you will instead only add that individual feed - this is not what we want.
 
 | Category | Alias/Group | Feed/Website | Header/URL
 | :---  | :--- | :--- | :---
 | **DNSBL Category**
 | DNSBL `I` **`+`** | `ADs` | `Adaway` | `Adaway`
 
-If you clicked the **`+`** next to the ADs category, you are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. All of the feeds in the list will initially be in the `OFF` state. You can go through and enable each one individually or you can click `Enable All` at the bottom of the list - all will switch to `ON` state. Then change the Action field to `Unbound`.
+If you clicked the **`+`** next to the ADs category, you are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. All of the feeds in the list will initially be in the `OFF` state. You can go through and enable each one individually or you can click `Enable All` at the bottom of the list - then all will switch/change to `ON` state. Then change the Action field to `Unbound`.
 
 Next, make sure you switch the `Action` from Disabled to `Unbound`.
 
@@ -998,9 +1065,9 @@ Now lets add some more. Go back to `Firewall` > `pfBlockerNG` > `Feeds` tab up t
 Also worth mentioning before we add the `Malicious` category. Some feeds have selectable options such as feed category `Internet Storm Center`. I recommend switching the feed from `ISC_SDH` (high) to `ISC_SDL` (low) as the high feed has under 20 entries and the low feed includes the high feed.
 
 After making the switch to `ISC_SDL`, click the blue colour **`+`** next to the `Malicious` header (column should be all Malicious) to add all the feeds related to that category.
-click the left-hand plus next to the Malicious category (red arrow below). If you clicked the **`+`** next to the Makicious category, you are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. As when we added the ADs list, go ahead and click `Enable All` at the bottom of the list - all will switch to `ON` state. Then change the Action field to `Unbound`. **Don’t hit save just yet!**
+If you clicked the **`+`** next to the Makicious category, you are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. As when we added the ADs list, go ahead and click `Enable All` at the bottom of the list - all will switchchange to `ON` state. Then change the Action field to `Unbound`. **Don’t hit save just yet!**
 
-**Important:** Now look for any `Header/label` called **`Pulsedive`** and/or **`Malekal`** then delete them. It should be then gone.
+**Important:** Now look for any `Header/label` called **`Pulsedive`** and/or **`Malekal`** and delete them (they were not there in my pfBlockerNG version). You don't want these as they are subscription (paid) services. On deletion they will disappear.
 
 Now Click the `Save DNSBL Settings` at the bottom of the page and you should receive a message at the top along the lines of `Saved [ Type:DNSBL, Name:ADs ] configuration`.
 
@@ -1014,9 +1081,9 @@ To check all went okay go to the `Firewall` > `pfBlockerNG` > `DNSBL` > `DNSBL F
 
 Now lets add some more. Scroll down to the `DNSBL Category` header then to the Alias/Group labeled `Easylist`. Click the blue colour **`+`** next to the `Easylist` header (column should be all Easylist) to add all the feeds related to that category. You are taken to a `DNSBL feeds` page with all of the feeds under that category pre-populated. 
 
-**Important:** Now look for any `Header/label` called `EasyPrivacy` and delete it. It should be then gone.
+**Important:** Now look for any `Header/label` called `EasyPrivacy` and delete it. On deletion the line will disappear.
 
-All of the feeds in the list will initially be in the `OFF` state. You can go through and enable each one individually or you can click `Enable All` at the bottom of the list - all will switch to `ON` state. Then change the Action field to `Unbound` and the Update Frequency to `Every 4 hours`.
+All of the feeds in the list will initially be in the `OFF` state. You can go through and enable each one individually or you can click `Enable All` at the bottom of the list - all will switch/change to `ON` state. Then change the Action field to `Unbound` and the Update Frequency to `Every 4 hours`.
 
 Now Click the `Save DNSBL Settings` at the bottom of the page and you should receive a message at the top along the lines of `Saved [ Type:DNSBL, Name:ADs ] configuration`.
 
@@ -1039,9 +1106,18 @@ After adding all of the above go to the `Firewall` > `pfBlockerNG` > `DNSBL` > `
 | Cryptojackers | Cryptojackers - Collection | Unbound | Once a day | Enabled
 | Easylist | EasyList Feeds | Unbound | Every 4 hours | Enabled
 
-### 8.4 Force DNSBL Feed Updates
+### 8.5 Force DNSBL Feed Updates
+You need to force a update to to `Reload` DNSBL new or changed settings you have done.
 
+Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `Update Tab` and fill out the necessary fields as follows. Whats NOT shown in the below table leave as default. 
 
+| Update Settings | Value | Vale | Value | Notes
+| :---  | :--- | :--- | :--- | :---
+| Links 
+| Select Force option | [ ] Update | [ ] Cron | [x] Reload | *Select Reload*
+| Select Reload option | [x] All | [ ] IP | [ ] DNSBL | *Select All*
+
+Now Click the `RUN` below the options and you should see the Logs being created on the page. It may take a while. Be patient.
 
 ## 8.0 Create a pfSense Backup
 If all is working its best to make a backup of your pfsense configuration. Also if you experiment around a lot, it’s an easy way to restore back to a working configuration. Also, do a backup each and every time before upgrading to a newer version of your firewall or pfSense OS. So in the event you have to rebuild pfSense you can skip Steps 7.0 onwards by using the backup restore feature which will save you a lot of time.
