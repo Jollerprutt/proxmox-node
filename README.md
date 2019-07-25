@@ -55,22 +55,22 @@ Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value | Notes |
 | :---  | :---: | :---: | :---: | :--- |
-| Hardware Type | Qotom - Multi NIC | Generic PC - Single NIC | Synology VM
-| `Target Disk` | Select the 120Gb | Select the 120Gb | Select the 120Gb | *Not the largest or disk for shared storage*
-| `Target Disk - Options Filesystem` |ext4 |ext4|ext4| *Leave Default - ext4 etc*
-| `Country` |Type your Country|Type your Country|Type your Country
-| `Timezone` |Select |select|select
-| `Keymap` |en-us|en-us|en-us
-| `Password` | 	Enter your new password | 	Enter your new password |  	Enter your new password | *Same password on all nodes - easy to remember*
-| `E-mail` |Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a valid email type mail@example.com*
-| `Management interface` |Leave Default|Leave Default|Leave Default
-| `Hostname` |typhoon-01.localdomain|typhoon-02.localdomain|typhoon-03.local.domain
-|`IP Address` |192.168.1.101|192.168.1.102|192.168.1.103
-| `Netmask` |255.255.255.0| 255.255.255.0| 255.255.255.0
-| `Gateway` |192.168.1.5|192.168.1.5|192.168.1.5
-| `DNS Server` |192.168.1.5|192.168.1.5|192.168.1.5
+| **Hardware Type** | **Qotom - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
+| Target Disk | Select `120Gb` | Select `120Gb` | Select `120Gb` | *Not the largest disk for shared storage*
+| Target Disk - Options Filesystem |`ext4`|`ext4`|`ext4`| *Leave Default - ext4 etc*
+| Country |Type your Country|Type your Country|Type your Country
+| Timezone |Select |Select|Select
+| Keymap |`en-us`|`en-us`|`en-us`
+| Password | Enter your new password | 	Enter your new password |  	Enter your new password | *Same root password on all nodes*
+| E-mail |Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a invalid email type mail@example.com*
+| Management interface |Leave Default|Leave Default|Leave Default
+| Hostname |`typhoon-01.localdomain`|`typhoon-02.localdomain`|`typhoon-03.local.domain`
+|IP Address |`192.168.1.101`|`192.168.1.102`|`192.168.1.103`
+| Netmask |`255.255.255.0`|`255.255.255.0`|`255.255.255.0`
+| Gateway |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
+| DNS Server |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 
-Node 1 should be your Qotom. Choose your own password.
+**Note:** Node 1 MUST BE your Qotom.
 
 ### 1.1 Configure the Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox. Default login is "root" (realm PAM) and the root password you defined during the installation process.
@@ -87,13 +87,13 @@ Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and config
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
-| `Name` |typhoon-share|typhoon-share|typhoon-share
-| `RAID Level` |Single Disk|Single Disk|Single Disk
-| `Compression` |on|on|on
-| `ashift` |12|12|12
-| `Device` |/dev/sdx|/dev/sdx|/dev/sdx
+| Name |`typhoon-share`|`typhoon-share`|`typhoon-share`
+| RAID Level |`Single Disk`|`Single Disk`|`Single Disk`
+| Compression |`on`|`on`|`on`
+| ashift |`12`|`12`|`12`
+| Device |`/dev/sdx`|`/dev/sdx`|`/dev/sdx`
 
-Note: If your choose to use a ZFS Raid for storage redundancy change accordingly per node but your must retain the Name ID **typhoon-share**.
+**Note:** If your choose to use a ZFS Raid (2 or more disks) for storage redundancy change accordingly per node but you must retain the Name ID **typhoon-share**.
 
 ## 2.0 Prepare your Network Hardware - Ready for Typhoon-01
 For our primary Proxmox machine, typhoon-01, we use Qotom hardware because it has 2, 4 or 6 network 1Gb NICs depeniding on the model. Standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) has only 1 network NIC.
@@ -133,58 +133,58 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| `Name` |VPN-egress| This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit). |
-| `Purpose` |Guest|  Network Guest security policies. |
-| `VLAN` |2| A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies. |
-| `Gateway/Subnet` |192.168.2.1/28| Only 2 addresses on this subnet so /29 is ideal |
-| `DHCP Server` | Enabled | Just use default range 192.168.2.2 -- 192.168.2.14 |
-| `Other Settings` | Just leave as Default | |
+| Name |`VPN-egress`| This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit). |
+| Purpose |`Guest`|  Network Guest security policies. |
+| VLAN |`2`| A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies. |
+| Gateway/Subnet |`192.168.2.1/28`| Only 2 addresses on this subnet so /29 is ideal |
+| DHCP Server | `Enabled` | Just use default range 192.168.2.2 -- 192.168.2.14 |
+| Other Settings | Just leave as Default | |
 
 * Create **two** new VLAN only networks to be used as gateways to connect to OpenVPN clients running on the Qotom and pfSense router.
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| `Name` |**LAN-vpngate-world**| This is the network where LAN clients will be restricted to the vpngate-world server |
-| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
-| `VLAN` |30|  |
-| `IGMP Snooping` |Disabled|  |
-| `DHCP Guarding` |Disabled|  |
+| Name |**`LAN-vpngate-world`**| This is the network where LAN clients will be restricted to the vpngate-world server |
+| Purpose |`VLAN Only`| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| VLAN |`30`|  |
+| IGMP Snooping |`Disabled`|  |
+| DHCP Guarding |`Disabled`|  |
 |||
-| `Name` |**LAN-vpngate-local**| This is the network where LAN clients will be restricted to the vpngate-world server |
-| `Purpose` |VLAN Only| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
-| `VLAN` |40|  |
-| `IGMP Snooping` |Disabled|  |
-| `DHCP Guarding` |Disabled|  |
+| Name |**`LAN-vpngate-local`**| This is the network where LAN clients will be restricted to the vpngate-world server |
+| Purpose |`VLAN Only`| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| VLAN |`40`|  |
+| IGMP Snooping |`Disabled`|  |
+| DHCP Guarding |`Disabled`|  |
 
 #### 2.3 Setup network switch ports
 In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and `edit` and `apply` as follows:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| `Name` |**Port 19**|  |
-| `Switch Port Profile` |LAN-vpngate-world (30)| This will put switch port 19 on VLAN30 |
+| Name |**`Port 19`**|  |
+| Switch Port Profile |`LAN-vpngate-world (30)`| This will put switch port 19 on VLAN30 |
 |||
-| `Name` |**Port 20**|  |
-| `Switch Port Profile` |LAN-vpngate-local (40)| This will put switch port 20 on VLAN30 |
+| Name |**`Port 20`**|  |
+| Switch Port Profile |`LAN-vpngate-local (40)`| This will put switch port 20 on VLAN30 |
 
 #### 2.4 Setup network WiFi SSiDs for the VPN service
 In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| `Name/SSID` |**hello-vpngate-world**| Call it whatever you like |
-| `Enabled` |[x]| |
-| `Security` | WPA Personal | Wouldnt recommend anything less |
-| `Security Key` | password | Your choosing |
-| `VLAN` |30| Must be set as 30 |
-| `Other Settings` | Just leave as default| |
+| Name/SSID |**`hello-vpngate-world`**| Call it whatever you like |
+| Enabled |[x]| |
+| Security | `WPA Personal` | Wouldnt recommend anything less |
+| Security Key | password | Your choosing |
+| VLAN |`30`| Must be set as 30 |
+| Other Settings | Just leave as default| |
 |||
-| `Name/SSID` |**hello-vpngate-local**| Call it whatever you like |
-| `Enabled` |[x]| |
-| `Security` | WPA Personal | Wouldnt recommend anything less |
-| `Security Key` | password | Your choosing |
-| `VLAN` |40| Must be set as 40 |
-| `Other Settings` | Just leave as default| |
+| Name/SSID |**`hello-vpngate-local`**| Call it whatever you like |
+| Enabled |[x]| |
+| Security | `WPA Personal` | Wouldnt recommend anything less |
+| Security Key | password | Your choosing |
+| VLAN |`40`| Must be set as 40 |
+| Other Settings | Just leave as default| |
 
 ## 3.0 Easy Installation Option
 If you have gotten this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
@@ -271,52 +271,52 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 
 | Cyclone-01-backup | Value |
 | :---  | :---: |
-| `ID` |cyclone-01-backup|
-| `Server` |192.168.1.10|
-| `Export` |/volume1/proxmox/backup|
-| `Content` |VZDump backup file|
-| `Nodes` |leave as default|
-| `Enable` |leave as default|
+| ID |`cyclone-01-backup`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/proxmox/backup`|
+| Content |`VZDump backup file`|
+| Nodes |leave as default|
+| Enable |leave as default|
 |||
 | **Cyclone-01-docker** | **Value** |
-| `ID` |cyclone-01-docker|
-| `Server` |192.168.1.10|
-| `Export` |/volume1/docker|
-| `Content` |Disk image|
-| `Nodes` |leave as default|
-| `Enable` |leave as default|
+| ID |`cyclone-01-docke`r|
+| Server |`192.168.1.10`|
+| Export |`/volume1/docker`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
 |||
 | **Cyclone-01-music** | **Value** |
-| `ID` |cyclone-01-music|
-| `Server` |192.168.1.10|
-| `Export` |/volume1/music|
-| `Content` |Disk image|
-| `Nodes` |leave as default|
-| `Enable` |leave as default|
+| ID |`cyclone-01-music`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/music`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
 |||
 | **Cyclone-01-photo** | **Value** |
-| `ID` |cyclone-01-photo|
-| `Server` |192.168.1.10|
-| `Export` |/volume1/photo|
-| `Content` |Disk image|
-| `Nodes` |leave as default|
-| `Enable` |leave as default|
+| ID` |`cyclone-01-photo`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/photo`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
 |||
 | **Cyclone-01-public** | **Value** |
-| `ID` |cyclone-01-public|
-| `Server` |192.168.1.10|
-| `Export` |/volume1/public|
-| `Content` |Disk image|
-| `Nodes` |leave as default|
-| `Enable` |leave as default|
+| ID |`cyclone-01-public`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/public`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
 |||
 | **Cyclone-01-video** | **Value** |
-| `ID` |cyclone-01-video|
-| `Server` |192.168.1.10|
-| `Export` |/volume1/video|
-| `Content` |Disk image|
-| `Nodes` |leave as default|
-| `Enable` |leave as default|
+| ID |`cyclone-01-video`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/video`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
 
 ### 4.2 Configure Proxmox bridge networking
 If you using a single NIC hardware or a Synology VM you can skip this step.
@@ -340,83 +340,83 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 
 | Description | Value |
 | :---  | :---: |
-| `Name` |bond0|
-| `IP address` |leave blank|
-| `Subnet mask` |leave blank|
-| `Gateway` |leave blank|
-| `IPv6 address` |leave blank|
-| `Prefix length` |leave blank|
-| `Gateway` |leave blank|
-| `Autostart` |[x]|
-| `Slaves` |enp1s0 enp2s0|
-| `Mode` |LACP (802.3ad)|
-| `Hash policy` |layer2|
-| `Comment` |Proxmox LAN Bond|
+| Name |`bond0`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |[x]|
+| Slaves |`enp1s0 enp2s0`|
+| Mode |`LACP (802.3ad)`|
+| Hash policy |`layer2`|
+| Comment |`Proxmox LAN Bond`|
 |||
-| `Name` |bond1|
-| `IP address` |leave blank|
-| `Subnet mask` |leave blank|
-| `Gateway` |leave blank|
-| `IPv6 address` |leave blank|
-| `Prefix length` |leave blank|
-| `Gateway` |leave blank|
-| `Autostart` |[x]|
-| `Slaves` |enp3s0 enp4s0|
-| `Mode` |LACP (802.3ad)|
-| `Hash policy` |layer2|
-| `Comment` |VPN-egress Bond|
+| Name |`bond1`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |[x]|
+| Slaves |`enp3s0 enp4s0`|
+| Mode |`LACP (802.3ad)`|
+| Hash policy |`layer2`|
+| Comment |`VPN-egress Bond`|
 
 Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bridge` and fill out the details as shown below (must be in order) but note vmbr0 will be a edit, not create.
 
 | Description | Value |
 | :---  | :---: |
-| `Name` |vmbr0|
-| `IP address` |192.168.1.101|
-| `Subnet mask` |255.255.255.0|
-| `Gateway` |192.168.1.5|
-| `IPv6 address` |leave blank|
-| `Prefix length` |leave blank|
-| `Gateway` |leave blank|
-| `Autostart` |[x]|
-| `VLAN aware` |[x]|
-| `Bridge ports` |bond0|
-| `Comment` |Proxmox LAN Bridge/Bond|
+| Name |`vmbr0`|
+| IP address |`192.168.1.101`|
+| Subnet mask |`255.255.255.0`|
+| Gateway |`192.168.1.5`|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |[x]|
+| VLAN aware |[x]|
+|Bridge ports |`bond0`|
+| Comment |`Proxmox LAN Bridge/Bond`|
 |||
-| `Name` |vmbr1|
-| `IP address` |leave blank|
-| `Subnet mask` |leave blank|
-| `Gateway` |leave blank|
-| `IPv6 address` |leave blank|
-| `Prefix length` |leave blank|
-| `Gateway` |leave blank|
-| `Autostart` |[x]|
-| `VLAN aware` |[x]|
-| `Bridge ports` |bond1|
-| `Comment` |VPN-egress Bridge/Bond|
+| Name |`vmbr1`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |[x]|
+| VLAN aware |[x]|
+| Bridge ports |`bond1`|
+| Comment |`VPN-egress Bridge/Bond`|
 |||
-| `Name` |vmbr2|
-| `IP address` |leave blank|
-| `Subnet mask` |leave blank|
-| `Gateway` |leave blank|
-| `IPv6 address` |leave blank|
-| `Prefix length` |leave blank|
-| `Gateway` |leave blank|
-| `Autostart` |[x]|
-| `VLAN aware` |[x]|
-| `Bridge ports` |enp5s0|
-| `Comment` |vpngate-world|
+| Name |`vmbr2`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |[x]|
+| VLAN aware |[x]|
+| Bridge ports |`enp5s0`|
+| Comment |`vpngate-world`|
 |||
-| `Name` |vmbr3|
-| `IP address` |leave blank|
-| `Subnet mask` |leave blank|
-| `Gateway` |leave blank|
-| `IPv6 address` |leave blank|
-| `Prefix length` |leave blank|
-| `Gateway` |leave blank|
-| `Autostart` |[x]|
-| `VLAN aware` |[x]|
-| `Bridge ports` |enp6s0|
-| `Comment` |vpngate-local|
+| Name |`vmbr3`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |[x]|
+| VLAN aware |[x]|
+| Bridge ports |`enp6s0`|
+| Comment |`vpngate-local`|
 
 Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
 
@@ -477,17 +477,17 @@ Next create the new user so go to Proxmox web interface of your node (should be 
 
 | Add: User | Value |
 | :---  | :---: |
-| `User Name` | storm |
-| `Realm` | Proxmox VE Authentication Server |
-| `Password` | Type your password |
-| `Confirm password` | Type your password |
-| `Group` | homelab |
-| `Expire` | Leave Default |
-| `Enabled` | [x] |
-| `Comment` | User Storm |
-| `First Name` | Leave Blank |
-| `Last Name` | Leave Blank |
-| `E-Mail` | Leave blank |
+| User Name | `storm` |
+| Realm | `Proxmox VE Authentication Server` |
+| Password | Type your password |
+| Confirm password | Type your password |
+| Group | `homelab` |
+| Expire | Leave Default |
+| Enabled | [x] |
+| Comment | `User Storm` |
+| First Name | Leave Blank |
+| Last Name | Leave Blank |
+| E-Mail | Leave blank |
 
 And click `Add`.
 
@@ -515,58 +515,58 @@ For the webgui method go to Proxmox web interface of your Qotom node (should be 
 
 | Description | Value |
 | :---  | :---: |
-| `Node` |typhoon-01|
-| `VM ID` | 251 |
-| `Name` | pfsense |
-| `Start at Boot` | Enabled |
-| `Start/Shutdown order` | 1 |
-| `Resource Pool` | Leave blank |
-| `Use CD/DVD disc image file (ISO)` | pfSense-CE-2.4.4-RELEASE-p3-amd64.iso |
-| `Guest OS` | Other |
-| `Graphic card` | Default |
-| `Qemu Agent` | Disabled |
-| `SCSI Controller` | VirtIO SCSI |
-| `BIOS` | Default (SeaBIOS) |
-| `Machine` | Default (i440fx) |
-| `Bus/Device` | VirtIO Block 0 |
-| `Storage` | local-lvm |
-| `Disk size (GiB)` | 32 |
-| `Cache` | Default (No Cache) |
-| `Sockers` | 1 |
-| `Cores` | 2 |
-| `Type` | host |
-| `Memory (MiB)` | 2048 |
-| ` Minimum Memory (MiB)` | 2048 |
-| `Ballooning Device` | Enabled |
-| `Bridge` | vmbr0 |
-| `Model` | VirtIO (paravirtualized) |
-| `Start after created` | Disabled |
+| Node |`typhoon-01`|
+| VM ID | `251` |
+| Name | `pfsense` |
+| Start at Boot | `Enabled` |
+| Start/Shutdown order | `1` |
+| Resource Pool | Leave blank |
+| Use CD/DVD disc image file (ISO) | `pfSense-CE-2.4.4-RELEASE-p3-amd64.iso` |
+| Guest OS | `Other` |
+| Graphic card | `Default` |
+| Qemu Agent | `Disabled` |
+| SCSI Controller | `VirtIO SCSI` |
+| BIOS | `Default (SeaBIOS)` |
+| Machine | `Default (i440fx)` |
+| Bus/Device | `VirtIO Block 0` |
+| Storage | `local-lvm` |
+| Disk size (GiB) | `32` |
+| Cache | `Default (No Cache)` |
+| Sockers | `1` |
+| Cores | `2` |
+| Type | `host` |
+| Memory (MiB) | `3096` |
+| Minimum Memory (MiB) | `3096` |
+| Ballooning Device | `Enabled` |
+| Bridge | `vmbr0` |
+| Model | `VirtIO (paravirtualized)` |
+| Start after created | `Disabled` |
 
 Now using the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `Hardware` > `Add` > `Network Device` create the following additional network bridges as shown below:
 
 | Description | Value |
 | :---  | :---: |
-| `Bridge` | **vmbr1** |
-| `VLAN Tag` | no VLAN |
-| `Model` | VirtIO (paravirtualized) |
+| Bridge | **`vmbr1`** |
+| VLAN Tag | `no VLAN` |
+| Model | `VirtIO (paravirtualized)` |
 |||
-| `Bridge` | **vmbr2** |
-| `VLAN Tag` | no VLAN |
-| `Model` | VirtIO (paravirtualized) |
+| Bridge | **`vmbr2`** |
+| VLAN Tag | `no VLAN`|
+| Model | `VirtIO (paravirtualized)` |
 |||
-| `Bridge` | **vmbr3** |
-| `VLAN Tag` | no VLAN |
-| `Model` | VirtIO (paravirtualized) |
+| Bridge | **`vmbr3`** |
+| VLAN Tag | `no VLAN` |
+| Model | `VirtIO (paravirtualized)` |
 
 Or if you prefer you can simply use Proxmox typhoon-01 cli `>Shell` and type the following to achieve the same thing (Note: the below script is for a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs ONLY):
 
 For the Stable pfSense 2.4.4 (***Recommended - this is what I use***):
 ```
-qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 3096 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 For the Development pfSense version 2.5:
 ```
-qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 2048 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
+qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 3096 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
 ```
 
 ## 6.0 Install pfSense on the new VM
