@@ -1123,7 +1123,23 @@ Now Click the `RUN` below the options and you should see the Logs being created 
 ### 8.6 Check if pfBlockerNG is working
 First connect a device (mobile Wifi on the either) to either *.vpngate-local or *vpngate-world network. Go and browse a few websites like a news website. Then go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `Reports` > `Alerts Tab` and you should see the DNSBL entry being populated with intercepted data. 
 
-If you see nothing then pfBlockerNG is NOT working. Check your configurations to resolve.
+| Date | IF | Source | Domain/Referer/URI/Agent | Feed
+| :---  | :--- | :--- | :--- | :---
+| **DNSBL Section**
+ Jul 26 10:49:13 [65]|OPT2|192.168.40.151|graph.instagram.com [ DNSBL ]S|Yoyo
+ ||| Galaxy-Note8|DNSBL-HTTP|DNSBL_ADs
+|Jul 26 11:06:05|OPT2|192.168.40.151|connect.facebook.net [ TLD ]|AntiSocial_BD
+||||DNSBL-HTTPS | |DNSBL_Malicious
+
+If you see nothing in the DNSBL section then pfBlockerNG is NOT working. Check your configurations to resolve. Remember after any edits or changes always perform a pfBlockerNG Update by following the procedures in **8.5 Force DNSBL Feed Updates**.
+
+If I am left scratching my heading wondering what I've done wrong I find deleting and recreating the pfSense firewall floating rules often fixes things. My procedure is as follows:
+*  Step 1: Go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `General Tab` and disable pfBlockerNG. Click `Save` at the bottom of the page.
+*  Step 2: Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `DNSBL Tab` and disable DNSBL. Click `Save` at the bottom of the page.
+*  Step 3: Next go to pfSense WebGUI `Firewall` > `Rules` > `Floating Tab` and delete all 3 rules and click `Save`.
+*  Step 4: Next go to pfSense WebGUI `Diagnostics` > `States` > `Reset States` select `Reset the firewall state table` and click `Reset`.
+*  Step 5: Re-enable `pfBlockerNG` and `DNSBL` shown in Step 1 and 2.
+*  Step 6: Now perform a pfBlockerNG Update by following the procedures in **8.5 Force DNSBL Feed Updates**.
 
 ## 9.0 Create a pfSense Backup
 If all is working its best to make a backup of your pfsense configuration. Also if you experiment around a lot, it’s an easy way to restore back to a working configuration. Also, do a backup each and every time before upgrading to a newer version of your firewall or pfSense OS. So in the event you have to rebuild pfSense you can skip Steps 7.0 onwards by using the backup restore feature which will save you a lot of time.
