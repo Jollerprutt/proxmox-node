@@ -5,7 +5,7 @@ The hardware in this recipe uses:
 >  *  1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs;
 >  *  1x Intel i3 NUC model nuc5i3ryh; 
 >  *  1x Synology DS1515+ with 4x NICs; and,
->  *  Ubiqiti Network Switches.
+>  *  Ubiquiti Network Switches.
 
 Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, Intel CPU's are all 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM. 
 
