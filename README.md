@@ -1,10 +1,11 @@
 # Proxmox Node Building
 This recipe builds two physical hardware Proxmox nodes and one Synology VM Proxmox node. Such a group of nodes is called a cluster and has a central management WebGUI by a single URL/IP address. Because a cluster of 3x nodes can form a quorum we have High Availability in the event a node fails.
 
-The hardware in this recipe includes:
-*  1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs;
-*  1x Intel i3 NUC model nuc5i3ryh; and,
-*  1x Synology DS1515+ with 4x NICs. 
+The hardware in this recipe uses:
+>  *  1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs;
+>  *  1x Intel i3 NUC model nuc5i3ryh; 
+>  *  1x Synology DS1515+ with 4x NICs; and,
+>  *  Ubiqiti Network Switches.
 
 Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, Intel CPU's are all 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM. 
 
