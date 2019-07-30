@@ -150,13 +150,13 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 | Purpose |`VLAN Only`| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
 | VLAN |`30`|  |
 | IGMP Snooping |`Disabled`|  |
-| DHCP Guarding |`Disabled`|  |
+| DHCP Guarding |`192.168.30.5`|  |
 |||
 | Name |**`LAN-vpngate-local`**| This is the network where LAN clients will be restricted to the vpngate-world server |
 | Purpose |`VLAN Only`| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
 | VLAN |`40`|  |
 | IGMP Snooping |`Disabled`|  |
-| DHCP Guarding |`Disabled`|  |
+| DHCP Guarding |`192.168.40.5`|  |
 
 #### 2.3 Setup network switch ports
 In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and `edit` and `apply` as follows:
