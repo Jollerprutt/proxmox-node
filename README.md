@@ -175,14 +175,14 @@ In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi
 | Description | Value | Notes |
 | :---  | :---: | :--- |
 | Name/SSID |**`hello-vpngate-world`**| Call it whatever you like |
-| Enabled |☑| |
+| Enabled |`☑`| |
 | Security | `WPA Personal` | Wouldnt recommend anything less |
 | Security Key | password | Your choosing |
 | VLAN |`30`| Must be set as 30 |
 | Other Settings | Just leave as default| |
 |||
 | Name/SSID |**`hello-vpngate-local`**| Call it whatever you like |
-| Enabled |☑| |
+| Enabled |`☑`| |
 | Security | `WPA Personal` | Wouldnt recommend anything less |
 | Security Key | password | Your choosing |
 | VLAN |`40`| Must be set as 40 |
