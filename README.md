@@ -297,7 +297,7 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | Enable |leave as default|
 |||
 | **Cyclone-01-photo** | **Value** |
-| ID` |`cyclone-01-photo`|
+| ID |`cyclone-01-photo`|
 | Server |`192.168.1.10`|
 | Export |`/volume1/photo`|
 | Content |`Disk image`|
@@ -308,6 +308,14 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | ID |`cyclone-01-public`|
 | Server |`192.168.1.10`|
 | Export |`/volume1/public`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
+|||
+| **Cyclone-01-transcode** | **Value** |
+| ID |`cyclone-01-transcode`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/video/transcode`|
 | Content |`Disk image`|
 | Nodes |leave as default|
 | Enable |leave as default|
