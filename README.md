@@ -349,7 +349,7 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | IPv6 address |leave blank|
 | Prefix length |leave blank|
 | Gateway |leave blank|
-| Autostart |☑|
+| Autostart |`☑`|
 | Slaves |`enp1s0 enp2s0`|
 | Mode |`LACP (802.3ad)`|
 | Hash policy |`layer2`|
@@ -362,7 +362,7 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | IPv6 address |leave blank|
 | Prefix length |leave blank|
 | Gateway |leave blank|
-| Autostart |☑|
+| Autostart |`☑`|
 | Slaves |`enp3s0 enp4s0`|
 | Mode |`LACP (802.3ad)`|
 | Hash policy |`layer2`|
@@ -379,8 +379,8 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | IPv6 address |leave blank|
 | Prefix length |leave blank|
 | Gateway |leave blank|
-| Autostart |☑|
-| VLAN aware |☑|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
 |Bridge ports |`bond0`|
 | Comment |`Proxmox LAN Bridge/Bond`|
 |||
@@ -391,8 +391,8 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | IPv6 address |leave blank|
 | Prefix length |leave blank|
 | Gateway |leave blank|
-| Autostart |☑|
-| VLAN aware |☑|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
 | Bridge ports |`bond1`|
 | Comment |`VPN-egress Bridge/Bond`|
 |||
@@ -403,8 +403,8 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | IPv6 address |leave blank|
 | Prefix length |leave blank|
 | Gateway |leave blank|
-| Autostart |☑|
-| VLAN aware |☑|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
 | Bridge ports |`enp5s0`|
 | Comment |`vpngate-world`|
 |||
@@ -415,8 +415,8 @@ Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:
 | IPv6 address |leave blank|
 | Prefix length |leave blank|
 | Gateway |leave blank|
-| Autostart |☑|
-| VLAN aware |☑|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
 | Bridge ports |`enp6s0`|
 | Comment |`vpngate-local`|
 
@@ -485,7 +485,7 @@ Next create the new user so go to Proxmox web interface of your node (should be 
 | Confirm password | Type your password |
 | Group | `homelab` |
 | Expire | Leave Default |
-| Enabled | ☑ |
+| Enabled | `☑` |
 | Comment | `User Storm` |
 | First Name | Leave Blank |
 | Last Name | Leave Blank |
@@ -644,7 +644,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 
 | Interfaces/OPT2 (vtnet3) | Value | Notes
 | :---  | :---: | :--- |
-| Enable | `[x]` | *Check the box*
+| Enable | `☑` | *Check the box*
 | Description | `OPT2`
 | IPv4 Configuration Type | `Static IPv4`
 | Ipv6 Configuration Type | `None`
@@ -727,7 +727,7 @@ Now using the pfSense web interface `VPN` > `OpenVPN` > `Clients Tab` > `Add` to
 | Password | `insert your account password`
 | Authentication Retry | Leave disabled/default
 | **Cryptographic Settings**
-| TLS Configuration | `[x] Use a TLS Key` | *Check the box*
+| TLS Configuration | `☑ Use a TLS Key` | *Check the box*
 | TLS Configuration | `[ ] Automatically generate a TLS Key.` | *Uncheck the box*
 | TLS Key | `Insert your key data` | *Open the OpenVPN configuration file that you downloaded and open it with your favorite text editor. Look for text that is wrapped within the <tls-auth> portion of the file. Ignore the “2048 bit OpenVPN static key” entries and start copying from —–BEGIN OpenVPN Static key V1—– to —–END OpenVPN Static key V1—–*
 | TLS Key Usage Mode | `TLS Authentication`
@@ -747,8 +747,8 @@ Now using the pfSense web interface `VPN` > `OpenVPN` > `Clients Tab` > `Add` to
 | Compression | `Adaptive LZO Compression`
 | Topology | `Leave the default` | *Subnet — One IP address per client in a common subnet*
 | Type-of-Service |  [ ] Leave unchecked
-| Don't pull routes | ☑ | *Check the box*
-| Don't add/remove routes | ☑ | *Check the box*
+| Don't pull routes | `☑`| *Check the box*
+| Don't add/remove routes | `☑` | *Check the box*
 | **Advanced Configuration**
 | Custom options : vpngate-world| `route-nopull;fast-io;persist-key;persist-tun;remote sweden-2-ca-version-2.expressnetw.com 1195;remote singapore-cbd-ca-version-2.expressnetw.com 1195;remote germany-frankfurt-1-ca-version-2.expressnetw.com 1195;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously. Note, the addition of `route-nopull`. Also, for redundancy we add other remote servers in the event the primary server fails*
 | Custom options : vpngate-local| `route-nopull;fast-io;persist-key;persist-tun;remote-random;pull;comp-lzo;tls-client;verify-x509-name Server name-prefix;remote-cert-tls server;key-direction 1;route-method exe;route-delay 2;tun-mtu 1500;fragment 1300;mssfix 1450;verb 3;sndbuf 524288;rcvbuf 524288` | *These options are derived from the OpenVPN configuration you have been referencing. We will be pulling out all custom options that we have not used previously. Note, the addition of `route-nopull`.*
@@ -778,8 +778,8 @@ The first edit will be `OPT3`:
 | MTU | Leave blank
 | MSS | Leave blank
 | **Reserved Networks**
-| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
-| Block bogon networks | `[ ]` | *Uncheck the box*
+| Block private networks and loopback addresses | `[]` | *Uncheck the box*
+| Block bogon networks | `[]` | *Uncheck the box*
 
 Now edit `OPT4`:
 
@@ -793,8 +793,8 @@ Now edit `OPT4`:
 | MTU | Leave blank
 | MSS | Leave blank
 | **Reserved Networks**
-| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
-| Block bogon networks | `[ ]` | *Uncheck the box*
+| Block private networks and loopback addresses | `[]` | *Uncheck the box*
+| Block bogon networks | `[]` | *Uncheck the box*
 
 Click `Save`.
 
@@ -822,7 +822,7 @@ Now create new mappings by `Firewall` > `NAT` > `Outband Tab` > `Add` to open a 
 | Address | `Interface Address`
 | Port or Range | Leave blank
 | **Misc**
-| No XMLRPC Sync | []
+| No XMLRPC Sync | `[]`
 | Description | `VLAN30 to vpngate-world`
 
 And click `Save`. 
@@ -842,7 +842,7 @@ Repeat the above steps for `VLAN40 to vpngate-local` changing to the values as f
 | Address | `Interface Address`
 | Port or Range | Leave blank
 | **Misc**
-| No XMLRPC Sync | []
+| No XMLRPC Sync | `[]`
 | Description | `VLAN40 to vpngate-local`
 
 And click `Save`. 
@@ -862,16 +862,16 @@ So first lets do OPT1 / vpngate-world so go `Firewall` > `Rules` > `OPT1 tab` an
 | Edit Firewall Rule / OPT1 | Value | Notes|
 | :---  | :--- | :--- |
 | Action | `Pass`
-| Disabled | [] disable this rule
+| Disabled | `[]` disable this rule
 | Interface | `OPT1`
 | Addresss Family | `IPv4+IPv6`
 | Protocol | `Any`
 | **Extra Options**
-| Log | [] Log packets that are handled by this rule
+| Log | `[]` Log packets that are handled by this rule
 | Description | `VLAN30 Traffic to vpngate-world`
 | Advanced Options | Click `Display Advanced` | *This is a important step. You only want to edit one value in `Advanced`!!!!
 | **Advanced Options**
-| Gateway | `VPNGATEWORLD_VPNV$-x.x.x.x-Interface VPNGATEWORLD_VPNV4 Gateway` | `MUST Change to this gateway!
+| Gateway | `VPNGATEWORLD_VPNV$-x.x.x.x-Interface VPNGATEWORLD_VPNV4 Gateway` | `MUST Change to this gateway!`
 
 Click `Save`.
 
@@ -880,12 +880,12 @@ Now do OPT2 / vpngate-local so go `Firewall` > `Rules` > `OPT2 tab` and `Add` a 
 | Edit Firewall Rule / OPT2 | Value | Notes|
 | :---  | :--- | :--- |
 | Action | `Pass`
-| Disabled | [] disable this rule
+| Disabled | `[]` disable this rule
 | Interface | `OPT2`
 | Addresss Family | `IPv4+IPv6`
 | Protocol | `Any`
 | **Extra Options**
-| Log | [] Log packets that are handled by this rule
+| Log | `[]` Log packets that are handled by this rule
 | Description | `VLAN40 Traffic to vpngate-local`
 | Advanced Options | Click `Display Advanced` | *This is a important step. You only want to edit one value in `Advanced`!!!!*
 | **Advanced Options**
@@ -929,7 +929,7 @@ To configure the pfSense DNS resolver navigate to `Services` > `DNS Resolver` an
 | :---  | :--- | :--- 
 | Enable | `☑ Enable DNS resolver` | 
 | Listen Port | Leave Default | 
-| Enable SSL/TLS Service | [ ] | 
+| Enable SSL/TLS Service | `[]` | 
 | SSL/TLS Certificate | Leave Default | 
 | SSL/TLS Listen Port | Leave Default | 
 | Network Interfaces | `OPT1` | *Select ONLY OPT1, OPT2 and Localhost - Use the Ctrl key to toggle selection*
@@ -939,11 +939,11 @@ To configure the pfSense DNS resolver navigate to `Services` > `DNS Resolver` an
 || `VPNGATELOCAL`
 | System Domain Local Zone Type | `Transparent` | 
 | DNSSEC | `☑ Enable DNSSEC Support` | 
-| DNS Query Forwarding | [ ] Enable Forwarding Mode | *Uncheck*
-|| [ ] Use SSL/TLS for outgoing DNS Queries to Forwarding Servers | *Uncheck*
-| DHCP Registration | [ ] Register DHCP leases in the DNS Resolver | *Uncheck*
-| Static DHCP | [ ] Register DHCP static mappings in the DNS Resolver | *Uncheck*
-| OpenVPN Clients | [ ] Register connected OpenVPN clients in the DNS Resolver | *Uncheck*
+| DNS Query Forwarding | `[]` Enable Forwarding Mode | *Uncheck*
+|| `[]` Use SSL/TLS for outgoing DNS Queries to Forwarding Servers | *Uncheck*
+| DHCP Registration | `[]` Register DHCP leases in the DNS Resolver | *Uncheck*
+| Static DHCP | `[]` Register DHCP static mappings in the DNS Resolver | *Uncheck*
+| OpenVPN Clients | `[]` Register connected OpenVPN clients in the DNS Resolver | *Uncheck*
 | **Below is Optional only if you want add TLS and Cloudfare DNS as shown in Step 7.9 - Not Recommended**
 | Display Custom Options | Click `Display Custom Options` | 
 | Custom options  | server:
@@ -967,7 +967,7 @@ Success! (hopefully)
 pfBlockerNG can add other security enhancements such as blocking known bad IP addresses with blocklists. For example, getting rid of adverts and pop-ups from websites. If you don’t already have a blocklist functionality in place on your pfSense (such as PiHole), I would strongly suggest adding pfBlockerNG Devel to your new OpenVPN Gateways (VPNGGATEWORLD and VPNGATELOCAL).
 
 ### 8.1 pfBlockerNG Installation
-In the pfSense WebGUI go to `System` > `Package Manager` > Available Packages` and type ‘pfblocker’ into the search criteria and then click `Search`.
+In the pfSense WebGUI go to `System` > `Package Manager` > `Available Packages` and type ‘pfblocker’ into the search criteria and then click `Search`.
 
 Make sure you click `+ Install` on the version with ‘-devel’ (i.e pfBlockerNG-devel) at the end of it, and then `Confirm` on the next page. Installation may take a short while as it downloads and updates certain packages.  
 
@@ -975,8 +975,8 @@ At this point, you have already installed the package. Next, you will need to en
 
 | General Settings | Value | Value | Value | Value | Notes
 | :---  | :--- | :--- | :--- | :--- | :---
-| pfBlockerNG | ☑ Enable | 
-| Keep Settings | ☑ Enable |
+| pfBlockerNG | `☑` Enable | 
+| Keep Settings | `☑` Enable |
 | CRON Settings | Every hour | 00 | 0 | 0 | *Generally Leave Default settings*
 
 Then Click `Save` at the bottom of the page.
@@ -986,14 +986,14 @@ Go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `IP Tab` and fill out the nece
 
 | IP Configuration | Value | Other Values | Notes
 | :---  | :--- | :--- | :---
-| De-Duplication | ☑ Enable | |*Check*
-| CIDR Aggregation | ☑ Enable ||*Check*
-| Suppression | ☑ Enable ||*Check*
-| Global Logging | [ ] ||*Uncheck*
+| De-Duplication | `☑` Enable | |*Check*
+| CIDR Aggregation | `☑` Enable ||*Check*
+| Suppression | `☑` Enable ||*Check*
+| Global Logging | [] ||*Uncheck*
 | Placeholder IP Address | 127.1.7.7||*Leave Default*
 | MaxMind Localized Language | English||*Leave Default*
-| MaxMind Updates | [ ] Check to disable MaxMind updates ||*Uncheck*
-| Global Logging | [ ] ||*Uncheck*
+| MaxMind Updates | [] Check to disable MaxMind updates ||*Uncheck*
+| Global Logging | [] ||*Uncheck*
 | **IP Interface/Rules Configuration**
 | Inbound Firewall Rules | `VPNGATEWORLD` || *Select ONLY VPNGATEWORLD and VPNGATELOCAL*
 || `VPNGATELOCAL`
@@ -1002,10 +1002,10 @@ Go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `IP Tab` and fill out the nece
 | Floating Rules | ☑ Enabled || *Check*
 | Firewall 'Auto' Rule Order | pfB_Pass/Match/Block/Reject\All other Rules\(Default Format) || *Leave Default*
 | Firewall 'Auto' Rule Suffix | `auto rule`
-| Kill States | ☑ Enable
+| Kill States | `☑` Enable
 
 ### 8.3 Configure DNSBL
-Because we have multiple internal interfaces, we are using a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, you would want to protect them with DNSBL, so you will need to pay attention to the ‘Permit Firewall Rules’ section. First, place a checkmark in the ‘Enable’ box of `Permit Firewall Rules`. Then, select the various interfaces (to the right, in a box) by holding down the ‘Ctrl’ key and left-click selecting the interfaces you choose to protect with pfBlockerNG. Note, don’t forget to Click the `Save DNSBL settings’ at the bottom of the page.
+Because we have multiple internal interfaces, we are using a Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs, you would want to protect them with DNSBL, so you will need to pay attention to the ‘Permit Firewall Rules’ section. First, place a checkmark in the ‘Enable’ box of `Permit Firewall Rules`. Then, select the various interfaces (to the right, in a box) by holding down the ‘Ctrl’ key and left-click selecting the interfaces you choose to protect with pfBlockerNG. Note, don’t forget to Click the `Save DNSBL settings` at the bottom of the page.
 
 Also if your pfSense OS has plenty of memory enable, 3Gb or more, use TLD. Normally, DNSBL (and other DNS blackhole software) block the domains specified in the feeds and that’s that. What TLD does differently is it will block the domain specified in addition to all of a domain’s subdomains. As a result, a instrusive domain can’t circumvent the blacklist by creating a random subdomain name such as abcd1234.zuckermine.com (if zuckermine.com was in a DNSBL feed). If you have the RAM enable it.
 
@@ -1013,8 +1013,8 @@ Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `DNSBL Tab` and fill out 
 
 | DNSBL | Value | Other Values | Notes
 | :---  | :--- | :--- | :---
-| DNSBL | ☑ Enable | 
-| TLD | ☑ Enable | | *Note: You need at least 3Gb of RAM for this feature*
+| DNSBL | `☑` Enable | 
+| TLD | `☑` Enable | | *Note: You need at least 3Gb of RAM for this feature*
 | **DNSBL Webserver Configuration**
 | Virtual IP Address | 10.10.10.1 || *Leave Default*
 | VIP Address Type | IP Alias | Leave Blank (Enter Carp Password) | *Leave Default*
@@ -1022,10 +1022,10 @@ Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `DNSBL Tab` and fill out 
 | SSL Port | 8443 || *Leave Default*
 | Webserver Interface | LAN || *Leave Default*
 | **DNSBL Configuration**
-| Permit Firewall Rules | ☑ Enable |`OPT1` | *Select ONLY OPT1 and OPT2 - Use the Ctrl key to toggle selection*
+| Permit Firewall Rules | `☑` Enable |`OPT1` | *Select ONLY OPT1 and OPT2 - Use the Ctrl key to toggle selection*
 ||| `OPT2`
 | Blocked Webpage | dnsbl_default.php || *Leave Default*
-| Resolver Live Sync | [ ] Enable || *Uncheck*
+| Resolver Live Sync | `[]` Enable || *Uncheck*
 | **DNSBL IPs**
 | List Action | `Deny Outbound`
 | Enable Logging | `Enable`
@@ -1116,8 +1116,8 @@ Next go to pfSense WebGUI `Firewall` > `pfBlockerNG` > `Update Tab` and fill out
 | Update Settings | Value | Vale | Value | Notes
 | :---  | :--- | :--- | :--- | :---
 | Links 
-| Select Force option | [ ] Update | [ ] Cron | [x] Reload | *Select Reload*
-| Select Reload option | ☑ All | [ ] IP | [ ] DNSBL | *Select All*
+| Select Force option | [] Update | [] Cron | `☑` Reload | *Select Reload*
+| Select Reload option | `☑` All | [] IP | [] DNSBL | *Select All*
 
 Now Click the `RUN` below the options and you should see the Logs being created on the page. It may take a while. Be patient.
 
@@ -1151,7 +1151,7 @@ On your pfSense WebGUI navigate to `Diagnostics` > `Backup & Restore` then fill 
 | :---  | :--- | :--- |
 | Backup area | `All` | *Select All*
 | Skip Packages | `[]` Do not backup package information | *Uncheck the box*
-| Skip RRD data | ☑ Do not backup RRD data (NOTE: RRD Data can consume 4+ megabytes of config.xml space!)| *Check the box. RRD Data are your Graphs. Like the traffic Graph for example. I do not back them up because I do not need them*
+| Skip RRD data | `☑` Do not backup RRD data (NOTE: RRD Data can consume 4+ megabytes of config.xml space!)| *Check the box. RRD Data are your Graphs. Like the traffic Graph for example. I do not back them up because I do not need them*
 | Encyption | `[]` Encrypt this configuration file. | *If you check this box a password value box will appear. Dont forget your password otherwise you are truly stuffed if you need to perform a restore*
 | Password (optional box) | `xxxxxxxx` | *See above*
 
