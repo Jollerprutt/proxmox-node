@@ -35,6 +35,9 @@ apt-get upgrade -y
 # Install lm sensors (CPU Temp simple type 'sensors')
 apt-get install lm-sensors -y
 
+# Install VAINFO
+apt install vainfo -y
+
 # Cyclone-01 NFS Mounts
 pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server 192.168.1.10 --export /volume1/proxmox/backup --content backup --options vers=3 --maxfiles 1
 pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server 192.168.1.10 --export /volume1/public --content images --options vers=3
