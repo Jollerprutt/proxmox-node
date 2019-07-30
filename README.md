@@ -656,7 +656,7 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | IPv4 Address | `192.168.40.5/24`
 | IPv4 Upstream gateway | `None`
 | **Reserved Networks**
-| Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
+| Block private networks and loopback addresses | `[]` | *Uncheck the box*
 | Block bogon networks | `[]` | *Uncheck the box*
 
 ### 7.4 Setup DHCP Servers for OPT1 and OPT2
@@ -665,10 +665,10 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 | General Options | OPT 1 Value | OPT2 Value | Notes |
 | :---  | :---: | :---: | :---
 | Enable | `☑` |  `☑` | *Opt1&2 Check the box*
-| BOOTP | `[ ]` | [ ] | *Disable*
-| Deny unknown clients | `[ ]` | [ ] | *Disable*
-| Ignore denied clients | `[ ]` | [ ] | *Disable*
-| Ignore client identifiers | `[ ]` | [ ] | *Disable*
+| BOOTP | `[ ]` | `[ ]` | *Disable*
+| Deny unknown clients | `[ ]` | `[ ]` | *Disable*
+| Ignore denied clients | `[ ]` | `[ ]` | *Disable*
+| Ignore client identifiers | `[ ]` | `[ ]` | *Disable*
 | Subnet | 192.168.30.0 | 192.168.40.0 |
 | Subnet mask |255.255.255.0 | 255.255.255.0 | 
 | Available range | 192.168.30.1 - 192.168.30.254 | 192.168.40.1 - 192.168.40.254 |
