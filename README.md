@@ -683,7 +683,11 @@ Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `
 | Range | `192.168.30.150 - 192.168.30.250` | `192.168.40.150 - 192.168.40.250` |
 | **Servers**
 | WINS servers | Leave blank
-| DNS servers | Leave Blank | Leave Blank | *DNS Server 1-4: Must leave all blank. We are going to use DNS Resolver for DNS tasks. If you add DNS here then pFBlockerNG will not work.
+| DNS servers | Leave Blank | Leave Blank | *DNS Server 1-4: Must leave all blank. We are going to use DNS Resolver for DNS tasks. If you add DNS here then pFBlockerNG will not work.*
+| **Other Options**
+| Gateway | `192.168.30.5` | `192.168.40.51`
+| Default Lease time | `86320` | `86320`
+| Maximum lease time | `86400` | `86400`
 
 Remember to hit the `Save` button at the bottom of the page.
 
