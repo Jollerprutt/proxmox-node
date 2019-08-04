@@ -135,25 +135,25 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| Name |`VPN-egress`| This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit). |
-| Purpose |`Guest`|  Network Guest security policies. |
-| VLAN |`2`| A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies. |
-| Gateway/Subnet |`192.168.2.1/28`| Only 2 addresses on this subnet so /29 is ideal |
-| DHCP Server | `Enabled` | Just use default range 192.168.2.2 -- 192.168.2.14 |
-| Other Settings | Just leave as Default | |
+| Name |`VPN-egress`| *This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit).* |
+| Purpose |`Guest`| *Network Guest security policies.* |
+| VLAN |`2`| *A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies.* |
+| Gateway/Subnet |`192.168.2.5/28`| *Only 2 addresses on this subnet so /29 is ideal* |
+| DHCP Server | `Enabled` | *Just use default range 192.168.2.1 -- 192.168.2.14* |
+| Other Settings | *Just leave as Default* | |
 
 * Create **two** new VLAN only networks to be used as gateways to connect to OpenVPN clients running on the Qotom and pfSense router.
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| Name |**`LAN-vpngate-world`**| This is the network where LAN clients will be restricted to the vpngate-world server |
-| Purpose |`VLAN Only`| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| Name |**`LAN-vpngate-world`**| *This is the network where LAN clients will be restricted to the vpngate-world server* |
+| Purpose |`VLAN Only`| This is critical. *We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway.* |
 | VLAN |`30`|  |
 | IGMP Snooping |`Disabled`|  |
 | DHCP Guarding |`192.168.30.5`|  |
 |||
-| Name |**`LAN-vpngate-local`**| This is the network where LAN clients will be restricted to the vpngate-world server |
-| Purpose |`VLAN Only`| This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway. |
+| Name |**`LAN-vpngate-local`**| *This is the network where LAN clients will be restricted to the vpngate-world server* |
+| Purpose |`VLAN Only`| *This is critical. We don't want the UniFi USG to do anything with any client on this VLAN other than be sure that they can get to their gateway.* |
 | VLAN |`40`|  |
 | IGMP Snooping |`Disabled`|  |
 | DHCP Guarding |`192.168.40.5`|  |
@@ -164,29 +164,29 @@ In this example network switch ingress port 19 is associated with vpngate-world 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
 | Name |**`Port 19`**|  |
-| Switch Port Profile |`LAN-vpngate-world (30)`| This will put switch port 19 on VLAN30 |
+| Switch Port Profile |`LAN-vpngate-world (30)`| *This will put switch port 19 on VLAN30* |
 |||
 | Name |**`Port 20`**|  |
-| Switch Port Profile |`LAN-vpngate-local (40)`| This will put switch port 20 on VLAN30 |
+| Switch Port Profile |`LAN-vpngate-local (40)`| *This will put switch port 20 on VLAN30* |
 
 #### 2.4 Setup network WiFi SSiDs for the VPN service
 In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| Name/SSID |**`hello-vpngate-world`**| Call it whatever you like |
+| Name/SSID |**`hello-vpngate-world`**| *Call it whatever you like* |
 | Enabled |`☑`| |
-| Security | `WPA Personal` | Wouldnt recommend anything less |
-| Security Key | password | Your choosing |
-| VLAN |`30`| Must be set as 30 |
-| Other Settings | Just leave as default| |
+| Security | `WPA Personal` | *Wouldnt recommend anything less* |
+| Security Key | password | *Your choosing* |
+| VLAN |`30`| *Must be set as 30* |
+| Other Settings | Leave as default| |
 |||
-| Name/SSID |**`hello-vpngate-local`**| Call it whatever you like |
+| Name/SSID |**`hello-vpngate-local`**| *Call it whatever you like* |
 | Enabled |`☑`| |
-| Security | `WPA Personal` | Wouldnt recommend anything less |
-| Security Key | password | Your choosing |
-| VLAN |`40`| Must be set as 40 |
-| Other Settings | Just leave as default| |
+| Security | `WPA Personal` | *Wouldnt recommend anything less* |
+| Security Key | password | *Your choosing* |
+| VLAN |`40`| *Must be set as 40* |
+| Other Settings | leave as default| |
 
 ## 3.0 Easy Installation Option
 If you have gotten this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
