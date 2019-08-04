@@ -628,7 +628,7 @@ Now using the pfSense web interface `System` > `Advanced` > `Miscellaneous Tab` 
 
 Remember to hit the `Save` button at the bottom of the page.
 
-### 7.3 Add DHCP Servers to OPT1 and OPT2
+### 7.3 Add DHCP Servers to OPT1 and OPT2 and fix a Static IPv4 to WAN
 Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuration form, then fill up the necessary fields as follows:
 
 | Interfaces/OPT1 (vtnet2) | Value | Notes
@@ -648,6 +648,8 @@ Now using the pfSense web interface `Interfaces` > `OPT1` to open a configuratio
 | Block private networks and loopback addresses | `[ ]` | *Uncheck the box*
 | Block bogon networks | `[]` | *Uncheck the box*
 
+And click `Save`.
+
 Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuration form, then fill up the necessary fields as follows:
 
 | Interfaces/OPT2 (vtnet3) | Value | Notes
@@ -666,6 +668,34 @@ Now using the pfSense web interface `Interfaces` > `OPT2` to open a configuratio
 | **Reserved Networks**
 | Block private networks and loopback addresses | `[]` | *Uncheck the box*
 | Block bogon networks | `[]` | *Uncheck the box*
+
+And click `Save`.
+
+Now using the pfSense web interface `Interfaces` > `WAN` to open a configuration form, then edit the necessary fields to match the following:
+
+| Interfaces/WAN (vtnet1) | Value | Notes
+| :---  | :---: | :--- |
+| Enable | `☑` | *Check the box*
+| Description | `WAN`
+| IPv4 Configuration Type | `Static IPv4`
+| Ipv6 Configuration Type | `None`
+| MAC Address | Leave blank
+| MTU | Leave blank
+| MSS | Leave blank
+| Speed and  Duplex | `Default (no preference, typically autoselect)`
+| **Static IPv4 Configuration**
+| IPv4 Address | `192.168.2.1/28`
+| IPv4 Upstream gateway | Click `Add a new Gateway` | First 
+| **NewIPv4 Gateway**
+| Default | `☑` Default gateway
+| Gateway Name |`WANGW`
+| Gateway IPv4 | `192.168.2.5`
+| Description | `WAN/VPN Egress Gateway` | *And click `Save` to create the new gateway*
+| **Reserved Networks**
+| Block private networks and loopback addresses | `[]` | *Uncheck the box*
+| Block bogon networks | `[]` | *Uncheck the box*
+
+And click `Save`.
 
 ### 7.4 Setup DHCP Servers for OPT1 and OPT2
 Now using the pfSense web interface `Services` > `DHCP Server` > `OPT1 Tab` or `OPT2 Tab` to open a configuration form, then fill up the necessary fields as follows:
