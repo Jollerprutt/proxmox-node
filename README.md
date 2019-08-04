@@ -685,7 +685,7 @@ Now using the pfSense web interface `Interfaces` > `WAN` to open a configuration
 | Speed and  Duplex | `Default (no preference, typically autoselect)`
 | **Static IPv4 Configuration**
 | IPv4 Address | `192.168.2.1/28`
-| IPv4 Upstream gateway | Click `Add a new Gateway` | First 
+| IPv4 Upstream gateway | Click `Add a new Gateway` | `First create the new gateway, then select it`
 | **NewIPv4 Gateway**
 | Default | `☑` Default gateway
 | Gateway Name |`WANGW`
