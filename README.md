@@ -37,6 +37,7 @@ Tasks to be performed are:
 - [ ] 8.0 Install & Setup pfBlockerNG on pfSense
 - [ ] 9.0 Create a pfSense Backup
 - [ ] 10.0 Create a Cluster
+- [ ] 11.0 pfSense – disable firewall with CLI pfctl -d
 
 ## 1.0 Proxmox Base OS Installation
 Each Proxmox node requires two SSD hard disks. Basically one is for the Proxmox OS and the other disk is configured as a Proxmox ZFS shared storage disk.
@@ -1274,4 +1275,9 @@ systemctl restart pvestatd &&
 reboot
 ```
 
+### 11.0 pfSense – disable firewall with pfctl -d
+If for whatever reason you have lost access to the pfSense web management console then go to the Proxmox web interface `typhoon-01` > `251 (pfsense)` > `>_ Console` and `Enter an option` numerical `8` to open a shell.
 
+Then type and execute `pfctl -d` where the -d will temporally disable the firewall (you should see the confirmation in the shell `pf disabled`, where pf is the packet filter = FIREWALL)
+
+Now you can log into the WAN side IP address (192.168.2.1) and govern the pfsense again to fix the problem causing pfSense web management console to sease working on 192.168.1.253.
