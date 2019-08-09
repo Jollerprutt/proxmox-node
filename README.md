@@ -189,6 +189,27 @@ In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi
 | VLAN |`40`| *Must be set as 40* |
 | Other Settings | leave as default| |
 
+#### 2.5 Edit your UniFi network firewall
+On your Proxmox Qotom build (typhoon-01) NIC ports enp3s0 & enp4s0 are bonded to create LAG `bond1`. You will then create in Proxmox a Linux Bridge using `bond1` called `vmbr2`. When you install pfSense VM on typhoon-01 the pfSense and HAProxy software will assign `vmbr2` (bond1) as its WAN interface NIC.
+
+This WAN interface is VLAN2 and named in the UniFi controller software as `VPN-egress`. It's configured with network `Guest security policies` in the UniFi controller therefore it has no access to other network VLANs. The reason for this is explained build recipe for `VPN-egress` shown [HERE](https://github.com/ahuacate/proxmox-node#22-create-network-switch-vlans).
+
+For HAProxy to work you must authorise VLAN2 (WAN in pfSense HAProxy) to have access to your Proxmox LXC server nodes with static IPv4 addresses on VLAN50.
+
+The below instructions are for a UniFi controller `Settings` > `Guest Control`  and look under the `Access Control` section. Under `Pre-Authorization Access` click`**+** Add IPv4 Hostname or subnet` to add the following IPv4 addresses to authorise access for VLAN2 clients:fill out the form details as shown below:
+
+| + Add IPv4 Hostname or subnet | Value | Notes
+| :---  | :---: 
+| IPv4 | 192.168.50.111 | *Jellyfin Server*
+| IPv4 | 192.168.50.112 | *Sonarr Server*
+| IPv4 | 192.168.50.113 | *Radarr Server*
+| IPv4 | 192.168.50.114 | *Sabnzbd Server*
+| IPv4 | 192.168.50.115 | *Deluge Server*
+
+And click `Apply Changes`.
+
+As you've probably concluded you must add any new HAProxy backend server IPv4 address to the Unifi Pre-Authorization Access list for it to work.
+
 ## 3.0 Easy Installation Option
 If you have gotten this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
 
