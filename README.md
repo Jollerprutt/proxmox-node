@@ -208,7 +208,7 @@ The below instructions are for a UniFi controller `Settings` > `Guest Control`  
 
 And click `Apply Changes`.
 
-As you've probably concluded you must add any new HAProxy backend server IPv4 address to the Unifi Pre-Authorization Access list for it to work.
+As you've probably concluded you must add any new HAProxy backend server IPv4 address(s) to the Unifi Pre-Authorization Access list for HAProxy frontend to have access to those backend VLAN50 servers.
 
 ## 3.0 Easy Installation Option
 If you have gotten this far and completed Steps 1.0 thru to 2.4 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
