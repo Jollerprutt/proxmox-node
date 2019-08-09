@@ -199,7 +199,7 @@ For HAProxy to work you must authorise VLAN2 (WAN in pfSense HAProxy) to have ac
 The below instructions are for a UniFi controller `Settings` > `Guest Control`  and look under the `Access Control` section. Under `Pre-Authorization Access` click`**+** Add IPv4 Hostname or subnet` to add the following IPv4 addresses to authorise access for VLAN2 clients:fill out the form details as shown below:
 
 | + Add IPv4 Hostname or subnet | Value | Notes
-| :---  | :---: 
+| :---  | :---: | :---
 | IPv4 | 192.168.50.111 | *Jellyfin Server*
 | IPv4 | 192.168.50.112 | *Sonarr Server*
 | IPv4 | 192.168.50.113 | *Radarr Server*
