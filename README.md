@@ -288,13 +288,21 @@ Configuration options are determined by hardware types:
 ### 4.1  Create NFS mounts to NAS
 All three Proxmox nodes use NFS to mount data stored on a NAS so these instructions are applicable for all proxmox nodes. Your NFS server should be prepared and ready - Synology NFS Server instructions are available [HERE](https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares).
 
-The NFS mounts to be configured are: | `backup` | `docker`| `music` | `photo` | `public` | `video` | 
+The NFS mounts to be configured are: | `audio` | `backup` | `books` | `docker`| `music` | `photo` | `public` | `video` | 
 Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure the NFS mounts as follows on all three nodes:
 
-| Cyclone-01-backup | Value |
+| Cyclone-01-audio | Value |
 | :---  | :---: |
+| ID |`cyclone-01-audio`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/audio`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
+|||
+| **Cyclone-01-backup** | **Value** |
 | ID |`cyclone-01-backup`|
 | Server |`192.168.1.10`|
 | Export |`/volume1/proxmox/backup`|
@@ -302,8 +310,16 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | Nodes |leave as default|
 | Enable |leave as default|
 |||
+| **Cyclone-01-books** | **Value** |
+| ID |`cyclone-01-books`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/books`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
+|||
 | **Cyclone-01-docker** | **Value** |
-| ID |`cyclone-01-docke`r|
+| ID |`cyclone-01-docker`|
 | Server |`192.168.1.10`|
 | Export |`/volume1/docker`|
 | Content |`Disk image`|
