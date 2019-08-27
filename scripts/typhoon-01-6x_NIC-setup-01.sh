@@ -14,7 +14,7 @@ echo "All passwords must have a minimum of 5 characters"
 read -p "Please Enter a NEW password for user storm: " stormpasswd
 
 # Create a New User called 'storm'
-groupadd --system homelab -g 1005 &&
+groupadd --system homelab -g 1005
 adduser --system --no-create-home --uid 1005 --gid 1005 storm
 # Create a New PVE User Group
 pveum groupadd homelab -comment 'Homelab User Group'
