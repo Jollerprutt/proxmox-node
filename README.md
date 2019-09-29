@@ -288,7 +288,7 @@ Configuration options are determined by hardware types:
 ### 4.1  Create NFS mounts to NAS
 All three Proxmox nodes use NFS to mount data stored on a NAS so these instructions are applicable for all proxmox nodes. Your NFS server should be prepared and ready - Synology NFS Server instructions are available [HERE](https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares).
 
-The NFS mounts to be configured are: | `audio` | `backup` | `books` | `docker`| `music` | `photo` | `public` | `video` | 
+The NFS mounts to be configured are: | `audio` | `backup` | `books` | `docker`| `music` | `nextcloud` | `photo` | `public` | `transcode` | `video` |
 Configuration is by the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006). Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure the NFS mounts as follows on all three nodes:
@@ -330,6 +330,14 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | ID |`cyclone-01-music`|
 | Server |`192.168.1.10`|
 | Export |`/volume1/music`|
+| Content |`Disk image`|
+| Nodes |leave as default|
+| Enable |leave as default|
+|||
+| **Cyclone-01-nextcloud** | **Value** |
+| ID |`cyclone-01-nextcloud`|
+| Server |`192.168.1.10`|
+| Export |`/volume1/nextcloud`|
 | Content |`Disk image`|
 | Nodes |leave as default|
 | Enable |leave as default|
