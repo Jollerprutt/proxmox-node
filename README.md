@@ -334,10 +334,10 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | Nodes |leave as default|
 | Enable |leave as default|
 |||
-| **Cyclone-01-nextcloud** | **Value** |
-| ID |`cyclone-01-nextcloud`|
+| **Cyclone-01-cloudstorage** | **Value** |
+| ID |`cyclone-01-cloudstorage`|
 | Server |`192.168.1.10`|
-| Export |`/volume1/nextcloud`|
+| Export |`/volume1/cloudstorage`|
 | Content |`Disk image`|
 | Nodes |leave as default|
 | Enable |leave as default|
