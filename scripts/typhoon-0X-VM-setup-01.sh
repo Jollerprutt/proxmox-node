@@ -38,16 +38,16 @@ apt-get upgrade -y
 #apt-get install lm-sensors -y
 
 # Cyclone-01 NFS Mounts
-pvesm add nfs cyclone-01-audio --path /mnt/pve/cyclone-01-audio --server 192.168.1.10 --export /volume1/audio --content images --options vers=3
-pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server 192.168.1.10 --export /volume1/proxmox/backup --content backup --options vers=3 --maxfiles 1
-pvesm add nfs cyclone-01-books --path /mnt/pve/cyclone-01-books --server 192.168.1.10 --export /volume1/books --content images --options vers=3
-pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server 192.168.1.10 --export /volume1/public --content images --options vers=3
-pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server 192.168.1.10 --export /volume1/docker --content images --options vers=3
-pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=3
-pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server 192.168.1.10 --export /volume1/music --content images --options vers=3
-pvesm add nfs cyclone-01-nextcloud --path /mnt/pve/cyclone-01-nextcloud --server 192.168.1.10 --export /volume1/nextcloud --content images --options vers=4.1
-pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server 192.168.1.10 --export /volume1/photo --content images --options vers=3
-pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server 192.168.1.10 --export /volume1/video/transcode --content images --options vers=3
+pvesm add nfs cyclone-01-audio --path /mnt/pve/cyclone-01-audio --server 192.168.1.10 --export /volume1/audio --content images --options vers=4.1
+pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server 192.168.1.10 --export /volume1/proxmox/backup --content backup --options vers=4.1 --maxfiles 1
+pvesm add nfs cyclone-01-books --path /mnt/pve/cyclone-01-books --server 192.168.1.10 --export /volume1/books --content images --options vers=4.1
+pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server 192.168.1.10 --export /volume1/public --content images --options vers=4.1
+pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server 192.168.1.10 --export /volume1/docker --content images --options vers=4.1
+pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=4.1
+pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server 192.168.1.10 --export /volume1/music --content images --options vers=4.1
+pvesm add nfs cyclone-01-cloudstorage --path /mnt/pve/cyclone-01-cloudstorage --server 192.168.1.10 --export /volume1/cloudstorage --content images --options vers=4.1
+pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server 192.168.1.10 --export /volume1/photo --content images --options vers=4.1
+pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server 192.168.1.10 --export /volume1/video/transcode --content images --options vers=4.1
 
 # Edit Proxmox host file
 echo -e "127.0.0.1 localhost.localdomain localhost
