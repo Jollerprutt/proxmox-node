@@ -547,6 +547,11 @@ Next create the new user so go to Proxmox web interface of your node (should be 
 
 And click `Add`.
 
+### 4.5 Edit Proxmox inotify limits
+```
+sysctl fs.inotify.max_user_instances=512
+```
+
 ## 5.0 Create a Proxmox pfSense VM on typhoon-01
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
    * `vpngate-world` - VLAN30 - This VPN client (used as a gateway) randomly connects to servers from a user determined safe list which should be outside of your country or union. A safer zone.
