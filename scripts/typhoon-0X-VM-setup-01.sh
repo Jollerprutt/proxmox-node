@@ -35,7 +35,9 @@ apt-get update
 apt-get upgrade -y
 
 # Increase the inotify limits
-sysctl fs.inotify.max_user_instances=512
+echo -e "fs.inotify.max_queued_events = 16384
+fs.inotify.max_user_instances = 512
+fs.inotify.max_user_watches = 8192" >> /etc/sysctl.conf
 
 # Install lm sensors (CPU Temp simple type 'sensors')
 #apt-get install lm-sensors -y
