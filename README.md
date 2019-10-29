@@ -549,7 +549,9 @@ And click `Add`.
 
 ### 4.5 Edit Proxmox inotify limits
 ```
-sysctl fs.inotify.max_user_instances=512
+echo -e "fs.inotify.max_queued_events = 16384
+fs.inotify.max_user_instances = 512
+fs.inotify.max_user_watches = 8192" >> /etc/sysctl.conf
 ```
 
 ## 5.0 Create a Proxmox pfSense VM on typhoon-01
