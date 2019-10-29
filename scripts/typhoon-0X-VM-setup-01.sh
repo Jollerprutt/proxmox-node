@@ -34,6 +34,9 @@ pveum usermod storm@pve -group homelab
 apt-get update
 apt-get upgrade -y
 
+# Increase the inotify limits
+sysctl fs.inotify.max_user_instances=512
+
 # Install lm sensors (CPU Temp simple type 'sensors')
 #apt-get install lm-sensors -y
 
