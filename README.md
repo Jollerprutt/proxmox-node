@@ -654,6 +654,39 @@ For the Development pfSense version 2.5:
 qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.5.0-DEVELOPMENT-amd64-latest.iso,media=cdrom --memory 4096 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 typhoon-share:32 --startup order=1
 ```
 
+### 6.03 Install pfSense on the new VM
+
+The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`. When running click on the `>_Console tab` and you should see the installation script running. Follow the prompts and fill out the details as shown below:
+
+| pfSense Installation Step | Value | Notes
+| :--- | :--- | :---
+| Copyright and distribution notice | `Accept` 	
+| Welcome to pfSense / Install pfSense | `<OK>` 	
+| Keymap Selection / >>> Continue with default keymap | `<Select>` 	
+| Partitioning / Auto (UFS) - Guided Disk Setup | `<OK>`	
+| Manual Configuration | `<No>` 	
+| Complete | `<Reboot>` 	
+| **The reboot phase**		
+| Should VLANs be setup now? | `n` 	
+| Enter the WAN interface name or 'a' for auto-detection | `vtnet1` | *This a 2Gb LAG WAN exit for pfSense*
+| Enter the LAN interface name or 'a' for auto-detection | `vtnet0`	
+| Enter the Optional 1 Interface name or 'a' for auto-detection | `vtnet2` | *This is Proxmox Linux Bridge vmbr2, VLAN30 - a 1Gb vpngate-world gateway connection*
+| Enter the Optional 2 Interface name or 'a' for auto-detection | `vtnet3` | *This is Proxmox Linux Bridge vmbr3, VLAN40 - a 1Gb vpngate-local gateway connection*
+| Do you want to proceed [y:n] |`y`	
+| **Installation Phase**	
+| Welcome to pfSense (amd64) on pfSense 
+| pfSense boot screen has 16 options for further configuration
+| Enter an option | `2` | *Type 2 to Set interface(s) IP address*
+| Enter the number of the interface you wish to configure | `2` | *Type 2 to configure LAN (vtnet0 - static)*
+| Enter the new LAN IPv4 address | `192.168.1.253` | *This will be the new pfSense webgui interface IP address*
+| Enter the new LAN IPv4 subnet bit count | `24` 	
+| For a WAN / For a LAN, press for none | `Press ENTER` | *Hit the key*
+| Enter the new LAN IPv6 address, press for none | `Press ENTER` | *Hit the key*
+| Do you want to enable the DHCP server on LAN? (y/n) | `n`	
+| Do you want to revert to HTTP as the webConfigurator protocol? (y/n) | `y`	
+
+You can now access the pfSense webConfigurator by opening the following URL in your web browser: http://192.168.1.253/
+
 ## 7.00 Create a pfSense Backup
 If all is working its best to make a backup of your pfsense configuration. Also if you experiment around a lot, it’s an easy way to restore back to a working configuration. Also, do a backup each and every time before upgrading to a newer version of your firewall or pfSense OS. So in the event you have to rebuild pfSense you can skip Steps 7.0 onwards by using the backup restore feature which will save you a lot of time.
 
