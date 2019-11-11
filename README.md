@@ -231,7 +231,7 @@ The below instructions are for a UniFi controller `Settings` > `Guest Control`  
 | IPv4 | 192.168.50.117 | *Lidarr Server*
 | IPv4 | 192.168.50.118 | *Lazylibrarian Server*
 | IPv4 | 192.168.50.119 | *Ombi Server*
-| IPv4 | 192.168.50.122 | *Syncthing Server*
+| IPv4 | 192.168.80.122 | *Syncthing Server*
 
 And click `Apply Changes`.
 
