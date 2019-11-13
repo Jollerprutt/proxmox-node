@@ -148,7 +148,13 @@ Configure your network switch LAG groups as per following table.
 |**Proxmox Bridge** | `vmbr0` | `vmbr1` | `vmbr2 : vmbr3` |  | |  |  |  |  |  |  |  |
 |**Proxmox Comment** | Proxmox LAN Bond | VPN-egress Bond | vpngate-world : vpngate-local |  | |  |  |  |  |  |  |  |
 
-Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. So ports 1 to 6, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
+Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. 
+
+So ports 1 to 6 numbering on your switch correspond with the Qotom numbering for all 6 ports on the Qotom.
+
+![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/qotom_6port.png)
+
+The other LAG, ports 21-24 are used by the Synology.
 
 Steps to configuring your network switch are as follows.
 
