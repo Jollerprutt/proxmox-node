@@ -131,7 +131,7 @@ If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds 
 We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
 ### 3.01 Configure your Network Switch
-These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and the preceding 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
+These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and always the first 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
 
 Configure your network switch LAG groups as per following table.
 
@@ -139,16 +139,16 @@ Configure your network switch LAG groups as per following table.
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 |**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
 |**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
-|**LAG Bond** |  |  | |  | |  |  | LAG 15-16 | LAG 17-18 |  | LAG 21-24 | LAG 21-24 |
-|**Switch Port Profile / VLAN** |  |  | |  | |  |  | All | VPN-egress (2) | LAN-vpngate-world (30) / LAN-vpngate-local (40) | All | All |
-|**LAN CAT6A cable connected to** |  |  | |  | |  | Port14 -> typhoon-02 | Port15+16 -> typhoon-01 (NIC1+2) | Port17+18 -> typhoon-01 (NIC3+4) | Port19 -> typhoon-01 (NIC5) : Port20 -> typhoon-01 (NIC6)  |  |  |
+|**LAG Bond** | LAG 1-2  | LAG 3-4 | |  | |  |  |  |  |  | LAG 21-24 | LAG 21-24 |
+|**Switch Port Profile / VLAN** | All | VPN-egress (2) | LAN-vpngate-world (30) : LAN-vpngate-local (40) |  |  |  |  |  |  |  | All | All |
+|**LAN CAT6A cable connected to** | Port1+2 -> typhoon-01 (NIC1+2) | Port3+4 -> typhoon-01 (NIC3+4) | Port5 -> typhoon-01 (NIC5) : Port6 -> typhoon-01 (NIC6) |  |  |  | Port14 -> typhoon-02 |  |  |  |  |  |
 ||||||||||||
-|**Qotom NIC Ports** |  |  | |  | |  |  | Port 1+2 | Port 3+4 | Port 5+6 |  |  |
-|**Proxmox Linux Bond** |  |  | |  | |  |  | `bond0` | `bond1` |  |  |  |
-|**Proxmox Bridge** |  |  | |  | |  |  | `vmbr0` | `vmbr1` | `vmbr2/vmbr3` |  |  |
-|**Proxmox Comment** |  |  | |  | |  |  | Proxmox LAN Bond | VPN-egress Bond | vpngate-world/vpngate-local|  |  |
+|**Qotom NIC Ports** | Port 1+2 | Port 3+4 | Port 5+6 |  | |  |  |  |  |  |  |  |
+|**Proxmox Linux Bond** | `bond0` | `bond1` | |  | |  |  |  |  |  |  |  |
+|**Proxmox Bridge** | `vmbr0` | `vmbr1` | `vmbr2 : vmbr3` |  | |  |  |  |  |  |  |  |
+|**Proxmox Comment** | Proxmox LAN Bond | VPN-egress Bond | vpngate-world : vpngate-local |  | |  |  |  |  |  |  |  |
 
-Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 15+16 are link agregated (LAG), port 17+18 are another LAG and ports 19 and 20 are not LAG'd. So ports 15 to 20, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
+Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. So ports 1 to 6, a total of 6 ports are used by the Qotom. The other LAG, ports 21-24 are used by the Synology.
 
 Steps to configuring your network switch are as follows.
 
@@ -182,15 +182,15 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 | DHCP Guarding |`192.168.40.5`|  |
 
 ### 3.03 Setup network switch ports
-In this example network switch ingress port 19 is associated with vpngate-world and ingress port 20 is associted with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 19 or 20 and `edit` and `apply` as follows:
+In this example network switch ingress port 5 is associated with vpngate-world and ingress port 6 is associated with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 5 or 6 and `edit` and `apply` as follows:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| Name |**`Port 19`**|  |
-| Switch Port Profile |`LAN-vpngate-world (30)`| *This will put switch port 19 on VLAN30* |
+| Name |**`Port 5`**|  |
+| Switch Port Profile |`LAN-vpngate-world (30)`| *This will put switch port 5 on VLAN30* |
 |||
-| Name |**`Port 20`**|  |
-| Switch Port Profile |`LAN-vpngate-local (40)`| *This will put switch port 20 on VLAN40* |
+| Name |**`Port 6`**|  |
+| Switch Port Profile |`LAN-vpngate-local (40)`| *This will put switch port 6 on VLAN40* |
 
 ### 3.04 Setup network WiFi SSiDs for the VPN service
 In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
