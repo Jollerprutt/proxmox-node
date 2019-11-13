@@ -210,7 +210,7 @@ The instructions are for the UniFi controller `Devices` > `Select device - i.e U
 | Switch Port Profile |`LAN-vpngate-local (40)`| *This will put switch port 6 on VLAN40* |
 | Profile Overrides | Leave Default
 
-![alt text](https://raw.githubusercontent.com/ahuacate/pfsense-node/master/images/unifi_ports_01.png)
+![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/unifi_ports_01.png)
 
 ### 3.04 Setup network WiFi SSiDs for the VPN service
 In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
