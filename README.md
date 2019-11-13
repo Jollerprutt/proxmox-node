@@ -182,15 +182,35 @@ In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpn
 | DHCP Guarding |`192.168.40.5`|  |
 
 ### 3.03 Setup network switch ports
-In this example network switch ingress port 5 is associated with vpngate-world and ingress port 6 is associated with vpngate-local. The below instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select port 5 or 6 and `edit` and `apply` as follows:
+Here we need to configure the network switch ports.
+
+The instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select your port and `edit` and `apply` as follows:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
+| Name |**`Port 1 & 2`**|  |
+| Switch Port Profile |`All`| *This is default* |
+| **Profile Overrides**
+| Operation | `☑` Aggregate
+| Agregate Ports | `1-2`
+| Link Speed | Autonegotiation
+|||
+| Name |**`Port 3 & 4`**|  |
+| Switch Port Profile |`VPN-egress(2)`
+| **Profile Overrides**
+| Operation | `☑` Aggregate
+| Agregate Ports | `3-4`
+| Link Speed | Autonegotiation
+|||
 | Name |**`Port 5`**|  |
 | Switch Port Profile |`LAN-vpngate-world (30)`| *This will put switch port 5 on VLAN30* |
+| Profile Overrides | Leave Default
 |||
 | Name |**`Port 6`**|  |
 | Switch Port Profile |`LAN-vpngate-local (40)`| *This will put switch port 6 on VLAN40* |
+| Profile Overrides | Leave Default
+
+![alt text](https://raw.githubusercontent.com/ahuacate/pfsense-node/master/images/unifi_ports_01.png)
 
 ### 3.04 Setup network WiFi SSiDs for the VPN service
 In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
