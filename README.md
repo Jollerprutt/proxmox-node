@@ -50,6 +50,7 @@ Tasks to be performed are:
 - [6.00 Create a Proxmox pfSense VM on typhoon-01](#600-create-a-proxmox-pfsense-vm-on-typhoon-01)
 	- [6.01 Download the latest pfSense ISO](#601-download-the-latest-pfsense-iso)
 	- [6.02 Create the pfSense VM](#602-create-the-pfsense-vm)
+	- [6.03 Install pfSense on the new VM](#603-install-pfsense-on-the-new-vm)
 - [7.00 Create a pfSense Backup](#700-create-a-pfsense-backup)
 - [8.00 Create a Cluster](#800-create-a-cluster)
 	- [8.01 Create the Cluster](#801-create-the-cluster)
@@ -57,6 +58,8 @@ Tasks to be performed are:
 	- [8.03 How to delete a existing cluster on a node](#803-how-to-delete-a-existing-cluster-on-a-node)
 - [00.00 Patches and Fixes](#0000-patches-and-fixes)
 	- [00.01 pfSense – disable firewall with pfctl -d](#0001-pfsense--disable-firewall-with-pfctl--d)
+	- [00.02 Proxmox Backup Error - Permissions](#0002-proxmox-backup-error---permissions)
+
 
 
 
@@ -819,7 +822,7 @@ Then type and execute `pfctl -d` where the -d will temporally disable the firewa
 
 Now you can log into the WAN side IP address (192.168.2.1) and govern the pfsense again to fix the problem causing pfSense web management console to sease working on 192.168.1.253.
 
-00.02 Proxmox Backup Error - Permissions
+### 00.02 Proxmox Backup Error - Permissions
 If you get this error:
 ```
 INFO: tar:  '/mnt/pve/cyclone-01-backup/dump/vzdump-lxc-111-2017_01_27-16_54_45.tmp: Cannot open: Permission denied
