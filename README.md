@@ -818,3 +818,13 @@ If for whatever reason you have lost access to the pfSense web management consol
 Then type and execute `pfctl -d` where the -d will temporally disable the firewall (you should see the confirmation in the shell `pf disabled`, where pf is the packet filter = FIREWALL)
 
 Now you can log into the WAN side IP address (192.168.2.1) and govern the pfsense again to fix the problem causing pfSense web management console to sease working on 192.168.1.253.
+
+00.02 Proxmox Backup Error - Permissions
+If you get this error:
+```
+INFO: tar:  '/mnt/pve/cyclone-01-backup/dump/vzdump-lxc-111-2017_01_27-16_54_45.tmp: Cannot open: Permission denied
+```
+Fix is go to Proxmox `typhoon-01` > `>_Shell` and type the following:
+```
+chmod 755 /mnt/pve/cyclone-01-backup/dump
+```
