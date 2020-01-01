@@ -1,0 +1,43 @@
+127.0.0.1 localhost.localdomain localhost
+
+# Proxmox Hosts
+192.168.1.101 typhoon-01.localdomain typhoon-01
+192.168.1.102 typhoon-02.localdomain typhoon-02
+192.168.1.103 typhoon-03.localdomain typhoon-03
+192.168.1.104 typhoon-04.localdomain typhoon-04
+192.168.1.105 typhoon-05.localdomain typhoon-05
+192.168.1.106 typhoon-06.localdomain typhoon-06
+
+# NAS Storage
+192.168.1.10 cyclone-01.localdomain cyclone-01
+192.168.1.11 cyclone-02.localdomain cyclone-02
+
+# VM Machines
+192.168.1.253 pfsense.localdomain pfsense
+
+# LXC Machines
+192.168.50.111 jellyfin.localdomain jellyfin
+192.168.30.112 nzbget.localdomain nzbget
+192.168.30.113 deluge.localdomain deluge
+192.168.30.114 flexget.localdomain flexget
+192.168.50.115 sonarr.localdomain sonarr
+192.168.50.116 radarr.localdomain radarr
+192.168.50.117 lidarr.localdomain lidarr
+192.168.50.118 lazy.localdomain lazy
+192.168.50.119 ombi.localdomain ombi
+192.168.50.120 jackett.localdomain jackett
+192.168.80.122 syncthing.localdomain syncthing
+192.168.110.131 hassio.localdomain hassio
+192.168.110.132 nodered.localdomain nodered
+192.168.1.131 hassio.localdomain hassio
+192.168.1.251 unifi.localdomain unifi
+192.168.1.254 pihole.localdomain pihole
+
+# The following lines are desirable for IPv6 capable hosts
+
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
