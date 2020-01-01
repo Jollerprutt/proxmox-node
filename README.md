@@ -365,6 +365,7 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | Content |`VZDump backup file`|
 | Nodes |leave as default|
 | Enable |leave as default|
+| Max Backups | `3` |
 |||
 | **Cyclone-01-books** | **Value** |
 | ID |`cyclone-01-books`|
