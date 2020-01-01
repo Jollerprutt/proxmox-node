@@ -536,43 +536,16 @@ Note the bridge port corresponds to a physical interface identified above. The n
 Reboot the Proxmox node to invoke the system changes.
 
 ### 5.03 Edit your Proxmox hosts file
-Go to Proxmox web interface of your node `typhoon-0X` > `System` > `Network` > `Hosts`  and replace the contents with the following:
+I've stored my hosts file on GitHub for easy updating. You can view it [HERE](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts)
+
+Go to Proxmox web interface of your node `typhoon-0X` > `>_Shell` and type the following to fully replace and update your hosts file:
 
 ```
-127.0.0.1 localhost.localdomain localhost
-# Proxmox Hosts
-192.168.1.101 typhoon-01.localdomain typhoon-01
-192.168.1.102 typhoon-02.localdomain typhoon-02
-192.168.1.103 typhoon-03.localdomain typhoon-03
-192.168.1.104 typhoon-04.localdomain typhoon-04
-# NAS Storage
-192.168.1.10 cyclone-01.localdomain cyclone-01
-192.168.1.11 cyclone-02.localdomain cyclone-02
-# Docker Nodes
-192.168.1.111 ds-01.localdomain ds-01
-192.168.1.112 ds-02.localdomain ds-02
-192.168.1.113 ds-03.localdomain ds-03
-192.168.1.114 ds-04.localdomain ds-04
-192.168.1.115 ds-05.localdomain ds-05
-192.168.1.116 ds-06.localdomain ds-06
-192.168.1.117 ds-07.localdomain ds-07
-192.168.1.118 ds-08.localdomain ds-08
-192.168.1.119 ds-09.localdomain ds-09
-# VM Machines
-192.168.1.253 pfsense.localdomain pfsense
-# LXC Machines
-192.168.1.6 unifi.localdomain unifi
-192.168.1.254 pihole.localdomain pihole
-192.168.50.20 jellyfin.localdomain jellyfin
-# The following lines are desirable for IPv6 capable hosts
-::1     ip6-localhost ip6-loopback
-fe00::0 ip6-localnet
-ff00::0 ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-ff02::3 ip6-allhosts
+hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -) &&
+cat << EOF > /etc/hosts
+$hostsfile
+EOF
 ```
-Then click `Save`.
 
 ### 5.04 Create a new Proxmox user
 For ease of management I have created a specific user and group explicitly for Proxmox and Virtual Machines in my cluster with a username storm and group called homelab. You only have to complete this task on typhoon-01 because Proxmox PVE users (not PAM users) are deployed across the cluster.
