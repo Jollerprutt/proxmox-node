@@ -46,7 +46,8 @@ Tasks to be performed are:
 	- [5.02 Configure Proxmox bridge networking](#502-configure-proxmox-bridge-networking)
 	- [5.03 Edit your Proxmox hosts file](#503-edit-your-proxmox-hosts-file)
 	- [5.04 Create a new Proxmox user](#504-create-a-new-proxmox-user)
-	- [5.05 Edit Proxmox inotify limits](#505-edit-proxmox-inotify-limits)
+	- [5.05 Add SSH Keys](#505-add-ssh-keys)
+	- [5.06 Edit Proxmox inotify limits](#506-edit-proxmox-inotify-limits)
 - [6.00 Create a Proxmox pfSense VM on typhoon-01](#600-create-a-proxmox-pfsense-vm-on-typhoon-01)
 	- [6.01 Download the latest pfSense ISO](#601-download-the-latest-pfsense-iso)
 	- [6.02 Create the pfSense VM](#602-create-the-pfsense-vm)
@@ -59,8 +60,6 @@ Tasks to be performed are:
 - [00.00 Patches and Fixes](#0000-patches-and-fixes)
 	- [00.01 pfSense – disable firewall with pfctl -d](#0001-pfsense--disable-firewall-with-pfctl--d)
 	- [00.02 Proxmox Backup Error - Permissions](#0002-proxmox-backup-error---permissions)
-
-
 
 
 ## 1.00 Proxmox Base OS Installation
@@ -577,7 +576,18 @@ Next create the new user so go to Proxmox web interface of your node (should be 
 
 And click `Add`.
 
-### 5.05 Edit Proxmox inotify limits
+### 5.05 Add SSH Keys
+Want to add your ssh key in Proxmox authorized_keys file? With proxmox you want to append your public key to `/etc/pve/priv/authorized_keys` NOT `~/.ssh/authorized_keys`.
+
+First COPY your public key (i.e id_rsa.pub) to your shared `public` folder on your NAS so Proxmox has access to it. Then go to Proxmox web interface of your node `typhoon-0X/01` > `>_Shell` and type the following to update your Proxmox authorized key file:
+
+```
+cat /mnt/pve/cyclone-01-public/id_rsa*.pub | cat >> /etc/pve/priv/authorized_keys &&
+service sshd restart &&
+rm /mnt/pve/cyclone-01-public/id_rsa*.pub
+```
+
+### 5.06 Edit Proxmox inotify limits
 ```
 echo -e "fs.inotify.max_queued_events = 16384
 fs.inotify.max_user_instances = 512
