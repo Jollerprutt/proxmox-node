@@ -577,9 +577,9 @@ Next create the new user so go to Proxmox web interface of your node (should be 
 And click `Add`.
 
 ### 5.05 Add SSH Keys
-Want to add your ssh key in Proxmox authorized_keys file? With proxmox you want to append your public key to `/etc/pve/priv/authorized_keys` NOT `~/.ssh/authorized_keys`.
+When adding `authorized_keys` to Proxmox you want to append your public key to `/etc/pve/priv/authorized_keys` NOT `~/.ssh/authorized_keys`.
 
-First COPY your public key (i.e id_rsa.pub) to your shared `public` folder on your NAS so Proxmox has access to it. Then go to Proxmox web interface of your node `typhoon-0X/01` > `>_Shell` and type the following to update your Proxmox authorized key file:
+First copy your public key (i.e id_rsa.pub or id_rsa.storm.pub) to your NAS shared folder called `public` (Proxmox needs access). Then go to Proxmox web interface of your node `typhoon-0X/01` > `>_Shell` and type the following to update your Proxmox authorized key file:
 
 ```
 cat /mnt/pve/cyclone-01-public/id_rsa*.pub | cat >> /etc/pve/priv/authorized_keys &&
