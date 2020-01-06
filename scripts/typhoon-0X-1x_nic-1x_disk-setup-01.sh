@@ -6,8 +6,8 @@
 # Tested on Proxmox Version : 4.15.18-12-pve                      #
 ###################################################################
 
-# Command to run script 
-# wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-6x_NIC-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-01-6x_NIC-setup-01.sh && bash /tmp/typhoon-01-6x_NIC-setup-01.sh; rm -rf /tmp/typhoon-01-6x_NIC-setup-01.sh
+# Command to run script
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-1x_nic-1x_disk-setup-01.sh)"
 
 # Update turnkey appliance list
 msg "Updating turnkey appliance list..."
@@ -24,7 +24,6 @@ echo -e "fs.inotify.max_queued_events = 16384
 fs.inotify.max_user_instances = 512
 fs.inotify.max_user_watches = 8192" >> /etc/sysctl.conf
 
-
 # Install lm sensors (CPU Temp simple type 'sensors')
 msg "Installing lm sensors..."
 apt-get install -y lm-sensors >/dev/null
@@ -34,7 +33,7 @@ msg "Installing VAINFO..."
 apt install -y vainfo >/dev/null
 
 # Rename ZFS disk label
-msg "Renaming local ZFS disk label..."
+msg "Renaming local-zfs disk label..."
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
 
 # Cyclone-01 NFS Mounts
@@ -52,18 +51,24 @@ pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server
 pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=4.1
 
 # Edit Proxmox host file
-hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
-cat << EOF > /etc/hosts
-$hostsfile
-EOF
+read -p "Update your system hosts file to Ahuacates latest version? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
+    cat << EOF > /etc/hosts
+    $hostsfile
+    EOF
+fi
+
 
 # Basic Details
 echo "All passwords must have a minimum of 5 characters"
 read -p "Please Enter a NEW password for user storm: " stormpasswd
 
 # Create a New User called 'storm'
-groupadd --system homelab -g 1005
-adduser --system --no-create-home --uid 1005 --gid 1005 storm
+groupadd --system homelab -g 65606
+adduser --system --no-create-home --uid 1606 --gid 65606 storm
 # Create a New PVE User Group
 pveum groupadd homelab -comment 'Homelab User Group'
 # Add PVEVMAdmin role (fully administer VMs) to group homelab
