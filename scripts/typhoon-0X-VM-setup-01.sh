@@ -6,8 +6,9 @@
 # Tested on Proxmox Version : 4.15.18-12-pve                      #
 ###################################################################
 
-# Command to run script 
-# wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-VM-setup-01.sh -P /tmp && chmod +x /tmp/typhoon-0X-VM-setup-01.sh && bash /tmp/typhoon-0X-VM-setup-01.sh; rm -rf /tmp/typhoon-0X-VM-setup-01.sh
+# Command to run script
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-VM-setup-01.sh)"
+
 
 # Basic Details
 echo "All passwords must have a minimum of 5 characters"
