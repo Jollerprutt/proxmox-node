@@ -60,6 +60,8 @@ Tasks to be performed are:
 - [00.00 Patches and Fixes](#0000-patches-and-fixes)
 	- [00.01 pfSense – disable firewall with pfctl -d](#0001-pfsense--disable-firewall-with-pfctl--d)
 	- [00.02 Proxmox Backup Error - Permissions](#0002-proxmox-backup-error---permissions)
+	- [00.03 Simple bash script to APT update all LXC containers which are stopped or running status](#0003-simple-bash-script-to-apt-update-all-lxc-containers-which-are-stopped-or-running-status)
+
 
 
 ## 1.00 Proxmox Base OS Installation
@@ -814,4 +816,12 @@ INFO: tar:  '/mnt/pve/cyclone-01-backup/dump/vzdump-lxc-111-2017_01_27-16_54_45.
 Fix is go to Proxmox `typhoon-01` > `>_Shell` and type the following:
 ```
 chmod 755 /mnt/pve/cyclone-01-backup/dump
+```
+
+### 00.03 Simple bash script to APT update all LXC containers which are stopped or running status
+The script will start stopped containers, update them and then shut them down in the background before moving on to next container.
+
+To run script:
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/update_all_containers.sh)"
 ```
