@@ -2,6 +2,9 @@
 # Simple bash script to APT update all LXC containers which are stopped or running status
 # Will start stopped containers to update then shut them down in the background and move on to next container
 
+# To run script
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/update_all_containers.sh)"
+
 # list of container ids we need to iterate through
 containers=$(pct list | tail -n +2 | cut -f1 -d' ')
 
