@@ -33,7 +33,7 @@ msg "Installing VAINFO..."
 apt install -y vainfo >/dev/null
 
 # Rename ZFS disk label
-msg "Renaming local-zfs disk label..."
+msg "Renaming local-zfs disk label to typhoon-share..."
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
 
 # Cyclone-01 NFS Mounts
@@ -51,7 +51,7 @@ pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server
 pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=4.1
 
 # Edit Proxmox host file
-read -p "Update your system hosts file to Ahuacates latest version? " -n 1 -r
+read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -59,6 +59,24 @@ then
     cat << EOF > /etc/hosts
     $hostsfile
     EOF
+fi
+
+# Append your public key to /etc/pve/priv/authorized_keys
+echo -e "To append your public SSH key to `hostname` you MUST COPY your public SSH key into your shared 'public folder' on your NAS.\nYour NAS public folder should be NFS mounted by `hostname`."
+read -p  "If you have copied your public SSH key into your 'public folder' on your NAS OR want to continue without adding a public SSH key to `hostname` simply press 'ENTER'..."
+RSA_KEY=/mnt/pve/cyclone-01-public/id_rsa*.pub
+if [ -f "$RSA_KEY" ]; then
+    echo "A public RSA key exists in folder $RSA_KEY"
+    read -p "Do you want to add this public SSH key to `hostname` authorized_keys? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        cat /mnt/pve/cyclone-01-public/id_rsa*.pub | cat >> /etc/pve/priv/authorized_keys >/dev/null
+        echo "Your public SSH key has been added to `hostname` authorized_keys..."
+        service sshd restart >/dev/null
+        echo "Restarting sshd service..."
+else 
+    echo -e "No public SSH key was found in folder $RSA_KEY.\nNo public SSH key has been added to `hostname` authorized_keys."
 fi
 
 
@@ -97,6 +115,8 @@ if [ "$HOSTNAME" = typhoon-01 ]; then
 else
    printf '%s\n' "This is not typhoon-01 so I am not installing pfSense"
 fi
+
+lspci | grep -i ethernet | wc -l
 
 
 # Proxmox Networking - Qotom 6x Nic Version
