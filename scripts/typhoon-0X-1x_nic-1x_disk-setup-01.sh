@@ -159,73 +159,15 @@ lspci | grep -i ethernet | wc -l
 I350=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I350' | wc -l`
 I211=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I211' | wc -l`
 
+lan_intel_i350-t4_interfaces.new=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/ 	lan_intel_i350-t4_interfaces.new -q -O -)
 
 # Proxmox Networking - Intel I350-T4 Nic Version
 if [ "$I350" = 4 ]; then
-printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
-cat << EOF > /etc/network/interfaces.new
-# Settings for Intel I350-T4 (4x Nic)
-
-# Please do NOT modify this file directly, unless you know what
-# you're doing.
-#
-# If you want to manage parts of the network configuration manually,
-# please utilize the 'source' or 'source-directory' directives to do
-# so.
-# PVE will preserve these directives, but will NOT read its network
-# configuration from sourced files, so do not attempt to move any of
-# the PVE managed interfaces into external files!
-
-auto lo
-iface lo inet loopback
-
-iface enp1s0f0 inet manual
-
-iface enp1s0f1 inet manual
-
-iface enp1s0f2 inet manual
-
-iface enp1s0f3 inet manual
-
-#Proxmox LAN Bridge
-auto vmbr0
-iface vmbr0 inet static
-        address  $NEW_IPV4
-        netmask  255.255.255.0
-        gateway  $NEW_GATEWAY
-        bridge-ports enp1s0f0
-        bridge-stp off
-        bridge-fd 0
-        bridge-vlan-aware yes
-        bridge-vids 2-4094
-
-#VPN-egress Bridge
-auto vmbr1
-iface vmbr1 inet manual
-        bridge-ports enp1s0f1
-        bridge-stp off
-        bridge-fd 0
-        bridge-vlan-aware yes
-        bridge-vids 2-4094
-
-#vpngate-world
-auto vmbr2
-iface vmbr2 inet manual
-        bridge-ports enp1s0f2
-        bridge-stp off
-        bridge-fd 0
-        bridge-vlan-aware yes
-        bridge-vids 2-4094
-
-#vpngate-local
-auto vmbr3
-iface vmbr3 inet manual
-        bridge-ports enp1s0f3
-        bridge-stp off
-        bridge-fd 0
-        bridge-vlan-aware yes
-        bridge-vids 2-4094
-EOF
+  printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
+  intel_i350-t4=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/lan_intel_i350-t4_interfaces.new -q -O -)
+  cat << EOF > /etc/network/interfaces.new
+  $intel_i350-t4
+  EOF
 else
    printf '%s\n' "No Intel Corporation I350-T4 Gigabit Network Ethernet Controller is installed."
 fi
