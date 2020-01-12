@@ -1,4 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+shopt -s expand_aliases
+alias die='EXIT=$? LINE=$LINENO error_exit'
+trap die ERR
+trap cleanup EXIT
+function error_exit() {
+  trap - ERR
+  local DEFAULT='Unknown failure occured.'
+  local REASON="\e[97m${1:-$DEFAULT}\e[39m"
+  local FLAG="\e[91m[ERROR] \e[93m$EXIT@$LINE"
+  msg "$FLAG $REASON"
+  [ ! -z ${CTID-} ] && cleanup_failed
+  exit $EXIT
+  
+TEMP_DIR=$(mktemp -d)
+pushd $TEMP_DIR >/dev/null
 
 ###################################################################
 # This script is for 1x NIC hardware Only.                        #
@@ -8,6 +25,26 @@
 
 # Command to run script
 # bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-1x_nic-1x_disk-setup-01.sh)"
+
+# Intro
+echo -e "In the next steps you must enter your desired Proxmox host settings. \nOr simply press 'ENTER' to accept our defaults."
+echo
+
+# Set Proxmox Machine hostname
+read -p "Enter your Proxmox machine hostname: " -e -i $HOSTNAME NEW_HOSTNAME
+info "Your Proxmox hostname is $NEW_HOSTNAME."
+echo
+
+# Set Proxmox host IP address
+read -p "Enter $HNAME IPv4 address: " -e -i `hostname -i`/24 NEW_IPV4
+info "Your $NEW_HOSTNAME IPv4 address is $NEW_IPV4."
+echo
+
+# Set Proxmox host Gateway IP address
+read -p "Enter $HNAME IPv4 address: " -e -i `ip route | grep default | cut -d\  -f3` NEW_GATEWAY
+info "Your $NEW_HOSTNAME gateway IPv4 address is $NEW_GATEWAY."
+echo
+
 
 # Update turnkey appliance list
 msg "Updating turnkey appliance list..."
@@ -116,7 +153,9 @@ else
    printf '%s\n' "This is not typhoon-01 so I am not installing pfSense"
 fi
 
+lspci | egrep -i --color 'network|ethernet'
 lspci | grep -i ethernet | wc -l
+lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I350' | wc -l
 
 
 # Proxmox Networking - Qotom 6x Nic Version
@@ -135,58 +174,43 @@ if [ "$HOSTNAME" = typhoon-01 ]; then
 auto lo
 iface lo inet loopback
 
-iface enp1s0 inet manual
+iface enp1s0f0 inet manual
 
-iface enp2s0 inet manual
+iface enp1s0f1 inet manual
 
-iface enp3s0 inet manual
+iface enp1s0f2 inet manual
 
-iface enp4s0 inet manual
+iface enp1s0f3 inet manual
 
 iface enp5s0 inet manual
 
 iface enp6s0 inet manual
 
-auto bond0
-iface bond0 inet manual
-        bond-slaves enp1s0 enp2s0
-        bond-miimon 100
-        bond-mode 802.3ad
-        bond-xmit-hash-policy layer2
-#Proxmox LAN Bond
-
-auto bond1
-iface bond1 inet manual
-        bond-slaves enp3s0 enp4s0
-        bond-miimon 100
-        bond-mode 802.3ad
-        bond-xmit-hash-policy layer2
-#VPN-egress Bond
 
 auto vmbr0
 iface vmbr0 inet static
-        address  192.168.1.101
+        address  192.168.1.104
         netmask  255.255.255.0
         gateway  192.168.1.5
-        bridge-ports bond0
+        bridge-ports enp1s0f0
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
         bridge-vids 2-4094
-#Proxmox LAN Bridge/Bond
+#Proxmox LAN Bridge
 
 auto vmbr1
 iface vmbr1 inet manual
-        bridge-ports bond1
+        bridge-ports enp1s0f1
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
         bridge-vids 2-4094
-#VPN-egress Bridge/Bond
+#VPN-egress Bridge
 
 auto vmbr2
 iface vmbr2 inet manual
-        bridge-ports enp5s0
+        bridge-ports enp1s0f2
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
@@ -195,7 +219,7 @@ iface vmbr2 inet manual
 
 auto vmbr3
 iface vmbr3 inet manual
-        bridge-ports enp6s0
+        bridge-ports enp1s0f3
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
