@@ -159,15 +159,17 @@ lspci | grep -i ethernet | wc -l
 I350=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I350' | wc -l`
 I211=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I211' | wc -l`
 
-lan_intel_i350-t4_interfaces.new=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/ 	lan_intel_i350-t4_interfaces.new -q -O -)
+intel_i350_t4=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i350-t4_interfaces)
+
 
 # Proxmox Networking - Intel I350-T4 Nic Version
 if [ "$I350" = 4 ]; then
   printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
-  intel_i350-t4=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/lan_intel_i350-t4_interfaces.new -q -O -)
-  cat << EOF > /etc/network/interfaces.new
-  $intel_i350-t4
+  intel_i350_t4=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i350-t4_interfaces)
+  eval "cat << EOF > /etc/network/interfaces.new
+  $intel_i350_t4
   EOF
+  "
 else
    printf '%s\n' "No Intel Corporation I350-T4 Gigabit Network Ethernet Controller is installed."
 fi
