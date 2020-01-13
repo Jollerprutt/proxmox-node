@@ -109,10 +109,10 @@ apt-get install -y vainfo >/dev/null
 # Rename ZFS disk label
 msg "Renaming local-zfs disk label to typhoon-share..."
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
+echo
 
 # Cyclone-01 NFS Mounts
 if [ "$NEW_HOSTNAME" = "typhoon-04" ]; then
-  echo
   echo "The device hostname is set to be $NEW_HOSTNAME which is your primary Proxmox device."
   echo "The following NFS mount points are available on your NFS server IPV4 $NAS_IPV4."
   showmount -d "$NAS_IPV4"
