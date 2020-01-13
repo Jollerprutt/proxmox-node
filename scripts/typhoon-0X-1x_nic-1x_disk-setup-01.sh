@@ -4,18 +4,19 @@ set -Eeuo pipefail
 shopt -s expand_aliases
 alias die='EXIT=$? LINE=$LINENO error_exit'
 trap die ERR
-trap cleanup EXIT
 function error_exit() {
   trap - ERR
   local DEFAULT='Unknown failure occured.'
   local REASON="\e[97m${1:-$DEFAULT}\e[39m"
-  local FLAG="\e[91m[ERROR] \e[93m$EXIT@$LINE"
+  local FLAG="\e[91m[ERROR:LXC] \e[93m$EXIT@$LINE"
   msg "$FLAG $REASON"
-  [ ! -z ${CTID-} ] && cleanup_failed
   exit $EXIT
-  
-TEMP_DIR=$(mktemp -d)
-pushd $TEMP_DIR >/dev/null
+}
+function msg() {
+  local TEXT="$1"
+  echo -e "$TEXT"
+}
+
 
 ###################################################################
 # This script is for 1x NIC hardware Only.                        #
