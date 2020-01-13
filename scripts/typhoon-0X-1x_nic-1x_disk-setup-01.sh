@@ -107,9 +107,9 @@ msg "Installing VAINFO..."
 apt-get install -y vainfo >/dev/null
 
 # Rename ZFS disk label
-msg "Renaming local-zfs disk label to typhoon-share..."
-sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
-echo
+#msg "Renaming local-zfs disk label to typhoon-share..."
+#sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
+#echo
 
 # Edit Proxmox host file
 read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
