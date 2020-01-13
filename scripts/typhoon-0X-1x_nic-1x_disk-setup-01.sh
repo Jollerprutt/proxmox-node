@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # Echo output in a box
-function box_out()
-{
+function box_out() {
   local s=("$@") b w
   for l in "${s[@]}"; do
     ((w<${#l})) && { b="$l"; w="${#l}"; }
