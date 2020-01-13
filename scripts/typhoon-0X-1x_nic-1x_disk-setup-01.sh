@@ -63,6 +63,10 @@ read -p "Enter $NEW_HOSTNAME IPv4 address: " -e -i `ip route | grep default | cu
 info "Your $NEW_HOSTNAME gateway IPv4 address is $NEW_GATEWAY."
 echo
 
+# Set IP address for NAS
+read -p "Enter your Network Attached Storage (NAS) IPv4 address: " -e -i 192.168.1.10 NAS_IPV4
+info "Your Network Attached Storage (NAS) IPv4 address is $NAS_IPV4."
+echo
 
 # Update turnkey appliance list
 msg "Updating turnkey appliance list..."
@@ -92,18 +96,29 @@ msg "Renaming local-zfs disk label to typhoon-share..."
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
 
 # Cyclone-01 NFS Mounts
+if [ "$NEW_HOSTNAME" = typhoon-04 ]; then
+echo
+echo "The device hostname is set to be $NEW_HOSTNAME which is your primary Proxmox device."
+echo "The following NFS mount points are available on your NFS server IPV4 $NAS_IPV4."
+showmount -d "$NAS_IPV4"
+echo
+read -p "Create all required NFS mounts to NFS server IPV4 $NAS_IPV4? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
 msg "Creating NFS mounts..."
-pvesm add nfs cyclone-01-audio --path /mnt/pve/cyclone-01-audio --server 192.168.1.10 --export /volume1/audio --content images --options vers=4.1
-pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server 192.168.1.10 --export /volume1/proxmox/backup --content backup --options vers=4.1 --maxfiles 3
-pvesm add nfs cyclone-01-books --path /mnt/pve/cyclone-01-books --server 192.168.1.10 --export /volume1/books --content images --options vers=4.1
-pvesm add nfs cyclone-01-cloudstorage --path /mnt/pve/cyclone-01-cloudstorage --server 192.168.1.10 --export /volume1/cloudstorage --content images --options vers=4.1
-pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server 192.168.1.10 --export /volume1/docker --content images --options vers=4.1
-pvesm add nfs cyclone-01-downloads --path /mnt/pve/cyclone-01-downloads --server 192.168.1.10 --export /volume1/downloads --content images --options vers=4.1
-pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server 192.168.1.10 --export /volume1/music --content images --options vers=4.1
-pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server 192.168.1.10 --export /volume1/photo --content images --options vers=4.1
-pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server 192.168.1.10 --export /volume1/public --content images --options vers=4.1
-pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server 192.168.1.10 --export /volume1/video/transcode --content images --options vers=4.1
-pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server 192.168.1.10 --export /volume1/video --content images --options vers=4.1
+pvesm add nfs cyclone-01-audio --path /mnt/pve/cyclone-01-audio --server $NAS_IPV4 --export /volume1/audio --content images --options vers=4.1
+pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server $NAS_IPV4 --export /volume1/proxmox/backup --content backup --options vers=4.1 --maxfiles 3
+pvesm add nfs cyclone-01-books --path /mnt/pve/cyclone-01-books --server $NAS_IPV4 --export /volume1/books --content images --options vers=4.1
+pvesm add nfs cyclone-01-cloudstorage --path /mnt/pve/cyclone-01-cloudstorage --server $NAS_IPV4 --export /volume1/cloudstorage --content images --options vers=4.1
+pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server $NAS_IPV4 --export /volume1/docker --content images --options vers=4.1
+pvesm add nfs cyclone-01-downloads --path /mnt/pve/cyclone-01-downloads --server $NAS_IPV4 --export /volume1/downloads --content images --options vers=4.1
+pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server $NAS_IPV4 --export /volume1/music --content images --options vers=4.1
+pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server $NAS_IPV4 --export /volume1/photo --content images --options vers=4.1
+pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server $NAS_IPV4 --export /volume1/public --content images --options vers=4.1
+pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server $NAS_IPV4 --export /volume1/video/transcode --content images --options vers=4.1
+pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server $NAS_IPV4 --export /volume1/video --content images --options vers=4.1
+fi
 
 # Edit Proxmox host file
 read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
@@ -134,47 +149,9 @@ else
     echo -e "No public SSH key was found in folder $RSA_KEY.\nNo public SSH key has been added to `hostname` authorized_keys."
 fi
 
-
-# Basic Details
-echo "All passwords must have a minimum of 5 characters"
-read -p "Please Enter a NEW password for user storm: " stormpasswd
-
-# Create a New User called 'storm'
-groupadd --system homelab -g 65606
-adduser --system --no-create-home --uid 1606 --gid 65606 storm
-# Create a New PVE User Group
-pveum groupadd homelab -comment 'Homelab User Group'
-# Add PVEVMAdmin role (fully administer VMs) to group homelab
-pveum aclmod / -group homelab -role PVEVMAdmin
-# Create PVE User
-pveum useradd storm@pve -comment 'User Storm'
-# Save storm password
-echo -e "$stormpasswd\n$stormpasswd" | pveum passwd storm@pve
-# Add User to homelab group
-pveum usermod storm@pve -group homelab
-
-
-
-#### Here on is particular to Typhoon-01 and 6-NIC Hardware ####
-
-# Download pfSense VM into templates and for typhoon-01 only
-if [ "$HOSTNAME" = typhoon-01 ]; then
-   wget https://sgpfiles.pfsense.org/mirror/downloads/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso.gz -P /var/lib/vz/template/iso && gzip -d /var/lib/vz/template/iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso.gz
-else
-   printf '%s\n' "This is not typhoon-01 so I am not downloading"
-fi
-
-# Create pfSense VM
-if [ "$HOSTNAME" = typhoon-01 ]; then
-   qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-CE-2.4.4-RELEASE-p3-amd64.iso,media=cdrom --memory 4096 --name pfsense --net0 virtio,bridge=vmbr0,firewall=1 --net1 virtio,bridge=vmbr1,firewall=1 --net2 virtio,bridge=vmbr2,firewall=1 --net3 virtio,bridge=vmbr3,firewall=1 --numa 0 --onboot 1 --ostype other --scsihw virtio-scsi-pci --sockets 1 --virtio0 local-lvm:32 --startup order=1
-else
-   printf '%s\n' "This is not typhoon-01 so I am not installing pfSense"
-fi
-
-lspci | egrep -i --color 'network|ethernet'
-lspci | grep -i ethernet | wc -l
-
 # Intel Nic Model Count
+#lspci | egrep -i --color 'network|ethernet'
+#lspci | grep -i ethernet | wc -l
 I350=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I350' | wc -l` >/dev/null
 I211=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I211' | wc -l` >/dev/null
 
