@@ -34,8 +34,8 @@ function box_out() {
 # Intro
 clear
 echo
-box_out 'PLEASE READ CAREFULLY' '' 'This script will help you setup your Proxmox host. User input is required.' 'When an optional default is provided you may choose to accept by pressing ENTER on your keyboard.'
-sleep 5
+box_out 'PLEASE READ CAREFULLY' '' 'This script will help you setup your Proxmox host. User input is required.' 'When an optional default setting is provided you may accept the default by pressing ENTER on your keyboard.'
+sleep 3
 echo
 
 # Choose your Ethernet Controller Type
