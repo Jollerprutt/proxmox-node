@@ -30,6 +30,24 @@ pushd $TEMP_DIR >/dev/null
 echo -e "In the next steps you must enter your desired Proxmox host settings. \nOr simply press 'ENTER' to accept our defaults."
 echo
 
+# Choose your Ethernet Controller Type
+TYPE01="Qotom 6x LAN Ports" >/dev/null
+TYPE02="Qotom 4x LAN Ports" >/dev/null
+TYPE03="Qotom 2x LAN Ports" >/dev/null
+TYPE04="Installed PCIe Intel I350-T4 4x Port LAN Card" >/dev/null
+TYPE05="Installed PCIe Intel I350-T2 2x Port LAN Card" >/dev/null
+TYPE06="Installed PCIe 4x Port LAN Card (i.e Any Brand)" >/dev/null
+TYPE07="Installed PCIe 2x Port LAN Card (i.e Any Brand)" >/dev/null
+TYPE08="Standard 1x LAN Port" >/dev/null
+
+echo -e "Select your hardware or ethernet controller type from the list below:"
+select brand in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07" "$TYPE08"
+do
+echo "You have chosen $brand..."
+break
+done
+echo
+
 # Set Proxmox Machine hostname
 read -p "Enter your Proxmox machine hostname: " -e -i $HOSTNAME NEW_HOSTNAME
 info "Your Proxmox hostname is $NEW_HOSTNAME."
@@ -156,22 +174,84 @@ fi
 lspci | egrep -i --color 'network|ethernet'
 lspci | grep -i ethernet | wc -l
 
-I350=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I350' | wc -l`
-I211=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I211' | wc -l`
+# Intel Nic Model Count
+I350=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I350' | wc -l` >/dev/null
+I211=`lspci | grep -i 'Ethernet' | grep -i 'Intel Corporation I211' | wc -l` >/dev/null
 
+# Setting files for /etc/network/interfaces.new
 intel_i350_t4=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i350-t4_interfaces)
-
+intel_i350_t2=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i350-t2_interfaces)
+intel_i211_t6=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i211_t6_interfaces)
+intel_i211_t4=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i211_t4_interfaces)
+intel_i211_t2=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i211_t2_interfaces)
+generic_t4=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/generic_t4_interfaces)
+generic_t2=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/generic_t2_interfaces)
+generic_t1=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/generic_t1_interfaces)
 
 # Proxmox Networking - Intel I350-T4 Nic Version
-if [ "$I350" = 4 ]; then
-  printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
-  intel_i350_t4=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/intel_i350-t4_interfaces)
-  eval "cat << EOF > /etc/network/interfaces.new
-  $intel_i350_t4
-  EOF
-  "
-else
-   printf '%s\n' "No Intel Corporation I350-T4 Gigabit Network Ethernet Controller is installed."
+if [ "$I350" = 4 ] && [ "$brand" = "$TYPE04" ]; then
+printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$intel_i350_t4
+EOF"
+fi
+
+# Proxmox Networking - Intel I350-T2 Nic Version
+if [ "$I350" = 2 ] && [ "$brand" = "$TYPE05" ]; then
+printf '%s\n' "Configuring network for a Intel Corporation I350-T2 Gigabit Network Ethernet Controller - "$I350"x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$intel_i350_t2
+EOF"
+fi
+
+# Proxmox Networking - Qotom 6x LAN Ports Version
+if [ "$I211" = 6 ] && [ "$brand" = "$TYPE01" ]; then
+printf '%s\n' "Configuring network for a Intel Corporation I211-T6 Gigabit Network Ethernet Controller - "$I211"x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$intel_i211_t6
+EOF"
+fi
+
+# Proxmox Networking - Qotom 4x LAN Ports Version
+if [ "$I211" = 4 ] && [ "$brand" = "$TYPE02" ]; then
+printf '%s\n' "Configuring network for a Intel Corporation I211-T4 Gigabit Network Ethernet Controller - "$I211"x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$intel_i211_t4
+EOF"
+fi
+
+# Proxmox Networking - Qotom 2x LAN Ports Version
+if [ "$I211" = 2 ] && [ "$brand" = "$TYPE03" ]; then
+printf '%s\n' "Configuring network for a Intel Corporation I211-T2 Gigabit Network Ethernet Controller - "$I211"x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$intel_i211_t2
+EOF"
+fi
+
+# Proxmox Networking - PCIe 4x Port LAN Card Generic Version
+if [ "$brand" = "$TYPE06" ]; then
+printf '%s\n' "Configuring network for a Generic PCIe 4x Port LAN Card Network Ethernet Controller - 4x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$generic_t4
+EOF"
+fi
+
+# Proxmox Networking - PCIe 2x Port LAN Card Generic Version
+if [ "$brand" = "$TYPE07" ]; then
+printf '%s\n' "Configuring network for a Generic PCIe 2x Port LAN Card Network Ethernet Controller - 2x Nics..."
+eval "cat << EOF > /etc/network/interfaces.new
+$generic_t2
+EOF"
+fi
+
+# Proxmox Networking - PCIe 1x Port LAN Card Generic Version
+if [ "$brand" = "$TYPE08" ]; then
+printf '%s\n' "Configuring network for a Generic PCIe 1x Port LAN Card Network Ethernet Controller - 1x Nics..."
+sed -i "s|address.*|address  $NEW_IPV4|g" /etc/network/interfaces >/dev/null
+sed -i "s|gateway.*|gateway  $NEW_GATEWAY|g" /etc/network/interfaces >/dev/null
+sed -i '/bridge-fd/a \
+\tbridge-vlan-aware yes \
+\tbridge-vids 2-4094' /etc/network/interfaces >/dev/null
 fi
 
 # Reboot the node
