@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# info function
+function info() {
+  local REASON="$1"
+  local FLAG="\e[36m[INFO]\e[39m"
+  msg "$FLAG $REASON"
+}
 # Msg function
 function msg() {
   local TEXT="$1"
