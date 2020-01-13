@@ -139,10 +139,11 @@ fi
 read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
-then
+  then
   hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
   cat << EOF > /etc/hosts
-  $hostsfile EOF
+  $hostsfile
+  EOF
 fi
 
 # Append your public key to /etc/pve/priv/authorized_keys
