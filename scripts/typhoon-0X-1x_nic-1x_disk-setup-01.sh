@@ -5,9 +5,10 @@ function msg() {
   echo -e "$TEXT"
 }
 # Echo output in a box
-function box_out() {
+function box_out()
+{
   local s=("$@") b w
-  for 1 in "${s[@]}"; do
+  for l in "${s[@]}"; do
     ((w<${#l})) && { b="$l"; w="${#l}"; }
   done
   tput setaf 3
