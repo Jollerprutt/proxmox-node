@@ -111,30 +111,6 @@ msg "Renaming local-zfs disk label to typhoon-share..."
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
 echo
 
-# Cyclone-01 NFS Mounts
-if [ "$NEW_HOSTNAME" = "typhoon-04" ]; then
-  echo "The device hostname is set to be $NEW_HOSTNAME which is your primary Proxmox device."
-  echo "The following NFS mount points are available on your NFS server IPV4 $NAS_IPV4."
-  showmount -d "$NAS_IPV4"
-  echo
-  read -p "Create all required NFS mounts to NFS server IPV4 $NAS_IPV4? " -n 1 -r
-  echo    # (optional) move to a new line
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
-    msg "Creating NFS mounts..."
-    pvesm add nfs cyclone-01-audio --path /mnt/pve/cyclone-01-audio --server $NAS_IPV4 --export /volume1/audio --content images --options vers=4.1
-    pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server $NAS_IPV4 --export /volume1/proxmox/backup --content backup --options vers=4.1 --maxfiles 3
-    pvesm add nfs cyclone-01-books --path /mnt/pve/cyclone-01-books --server $NAS_IPV4 --export /volume1/books --content images --options vers=4.1
-    pvesm add nfs cyclone-01-cloudstorage --path /mnt/pve/cyclone-01-cloudstorage --server $NAS_IPV4 --export /volume1/cloudstorage --content images --options vers=4.1
-    pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server $NAS_IPV4 --export /volume1/docker --content images --options vers=4.1
-    pvesm add nfs cyclone-01-downloads --path /mnt/pve/cyclone-01-downloads --server $NAS_IPV4 --export /volume1/downloads --content images --options vers=4.1
-    pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server $NAS_IPV4 --export /volume1/music --content images --options vers=4.1
-    pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server $NAS_IPV4 --export /volume1/photo --content images --options vers=4.1
-    pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server $NAS_IPV4 --export /volume1/public --content images --options vers=4.1
-    pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server $NAS_IPV4 --export /volume1/video/transcode --content images --options vers=4.1
-    pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server $NAS_IPV4 --export /volume1/video --content images --options vers=4.1
-fi
-
 # Edit Proxmox host file
 read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
 echo    # (optional) move to a new line
@@ -242,6 +218,30 @@ sed -i "s|gateway.*|gateway  $NEW_GATEWAY|g" /etc/network/interfaces >/dev/null
 sed -i '/bridge-fd/a \
 \tbridge-vlan-aware yes \
 \tbridge-vids 2-4094' /etc/network/interfaces >/dev/null
+fi
+
+# Cyclone-01 NFS Mounts
+if [ "$NEW_HOSTNAME" = "typhoon-04" ]; then
+  echo "The device hostname is set to be $NEW_HOSTNAME which is your primary Proxmox device."
+  echo "The following NFS mount points are available on your NFS server IPV4 $NAS_IPV4."
+  showmount -d "$NAS_IPV4"
+  echo
+  read -p "Create all required NFS mounts to NFS server IPV4 $NAS_IPV4? " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    msg "Creating NFS mounts..."
+    pvesm add nfs cyclone-01-audio --path /mnt/pve/cyclone-01-audio --server $NAS_IPV4 --export /volume1/audio --content images --options vers=4.1
+    pvesm add nfs cyclone-01-backup --path /mnt/pve/cyclone-01-backup --server $NAS_IPV4 --export /volume1/proxmox/backup --content backup --options vers=4.1 --maxfiles 3
+    pvesm add nfs cyclone-01-books --path /mnt/pve/cyclone-01-books --server $NAS_IPV4 --export /volume1/books --content images --options vers=4.1
+    pvesm add nfs cyclone-01-cloudstorage --path /mnt/pve/cyclone-01-cloudstorage --server $NAS_IPV4 --export /volume1/cloudstorage --content images --options vers=4.1
+    pvesm add nfs cyclone-01-docker --path /mnt/pve/cyclone-01-docker --server $NAS_IPV4 --export /volume1/docker --content images --options vers=4.1
+    pvesm add nfs cyclone-01-downloads --path /mnt/pve/cyclone-01-downloads --server $NAS_IPV4 --export /volume1/downloads --content images --options vers=4.1
+    pvesm add nfs cyclone-01-music --path /mnt/pve/cyclone-01-music --server $NAS_IPV4 --export /volume1/music --content images --options vers=4.1
+    pvesm add nfs cyclone-01-photo --path /mnt/pve/cyclone-01-photo --server $NAS_IPV4 --export /volume1/photo --content images --options vers=4.1
+    pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server $NAS_IPV4 --export /volume1/public --content images --options vers=4.1
+    pvesm add nfs cyclone-01-transcode --path /mnt/pve/cyclone-01-transcode --server $NAS_IPV4 --export /volume1/video/transcode --content images --options vers=4.1
+    pvesm add nfs cyclone-01-video --path /mnt/pve/cyclone-01-video --server $NAS_IPV4 --export /volume1/video --content images --options vers=4.1
 fi
 
 # Reboot the node
