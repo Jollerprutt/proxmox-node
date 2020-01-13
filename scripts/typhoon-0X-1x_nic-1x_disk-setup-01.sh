@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-function msg() {
-  local TEXT="$1"
-  echo -e "$TEXT"
-}
 # Echo output in a box
 function box_out()
 {
