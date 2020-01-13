@@ -53,10 +53,10 @@ TYPE05="Installed PCIe Intel I350-T2 2x Port LAN Card" >/dev/null
 TYPE06="Installed PCIe 4x Port LAN Card (i.e Any Brand)" >/dev/null
 TYPE07="Installed PCIe 2x Port LAN Card (i.e Any Brand)" >/dev/null
 TYPE08="Standard 1x LAN Port" >/dev/null
-
+TYPE09="None of the above. I do not want to configure networking" >/dev/null
 echo -e "Select your hardware or ethernet controller type from the list below (entering numeric 1-8):"
 echo
-select brand in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07" "$TYPE08"
+select brand in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07" "$TYPE08" "$TYPE09"
 do
 echo "You have chosen $brand..."
 break
