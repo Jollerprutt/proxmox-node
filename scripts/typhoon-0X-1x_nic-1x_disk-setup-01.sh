@@ -231,6 +231,6 @@ sed -i '/bridge-fd/a \
 fi
 
 # Reboot the node
-clear
-echo "Looking Good. Rebooting in 5 seconds ......"
-sleep 5 ; reboot
+#clear
+#echo "Looking Good. Rebooting in 5 seconds ......"
+#sleep 5 ; reboot
