@@ -17,9 +17,25 @@ function msg() {
   echo -e "$TEXT"
 }
 
+function box_out()
+{
+  local s=("$@") b w
+  for l in "${s[@]}"; do
+    ((w<${#l})) && { b="$l"; w="${#l}"; }
+  done
+  tput setaf 3
+  echo " -${b//?/-}-
+| ${b//?/ } |"
+  for l in "${s[@]}"; do
+    printf '| %s%*s%s |\n' "$(tput setaf 4)" "-$w" "$l" "$(tput setaf 3)"
+  done
+  echo "| ${b//?/ } |
+ -${b//?/-}-"
+  tput sgr 0
+}
 
 ###################################################################
-# This script is for 1x NIC hardware Only.                        #
+# This script is for setting up your Proxmox Hosts.               #
 #                                                                 #
 # Tested on Proxmox Version : 4.15.18-12-pve                      #
 ###################################################################
@@ -28,7 +44,10 @@ function msg() {
 # bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-1x_nic-1x_disk-setup-01.sh)"
 
 # Intro
-echo -e "In the next steps you must enter your desired Proxmox host settings. \nOr simply press 'ENTER' to accept our defaults."
+clear
+echo
+box_out 'PLEASE READ' 'This script will help you setup your Proxmox host. User input is required.' 'When an optional default is provided you may choose to accept by pressing ENTER on your keyboard.'
+sleep 5
 echo
 
 # Choose your Ethernet Controller Type
@@ -41,7 +60,7 @@ TYPE06="Installed PCIe 4x Port LAN Card (i.e Any Brand)" >/dev/null
 TYPE07="Installed PCIe 2x Port LAN Card (i.e Any Brand)" >/dev/null
 TYPE08="Standard 1x LAN Port" >/dev/null
 
-echo -e "Select your hardware or ethernet controller type from the list below:"
+echo -e "Select your hardware or ethernet controller type from the list below (entering 1-8):"
 select brand in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07" "$TYPE08"
 do
 echo "You have chosen $brand..."
@@ -50,22 +69,22 @@ done
 echo
 
 # Set Proxmox Machine hostname
-read -p "Enter your Proxmox machine hostname: " -e -i $HOSTNAME NEW_HOSTNAME
+read -p "Enter your Proxmox machine hostname or press ENTER to accept default: " -e -i $HOSTNAME NEW_HOSTNAME
 info "Your Proxmox hostname is $NEW_HOSTNAME."
 echo
 
 # Set Proxmox host IP address
-read -p "Enter $NEW_HOSTNAME IPv4 address: " -e -i `hostname -i` NEW_IPV4
+read -p "Enter $NEW_HOSTNAME IPv4 address or press ENTER to accept default: " -e -i `hostname -i` NEW_IPV4
 info "Your $NEW_HOSTNAME IPv4 address is $NEW_IPV4."
 echo
 
 # Set Proxmox host Gateway IP address
-read -p "Enter $NEW_HOSTNAME IPv4 address: " -e -i `ip route | grep default | cut -d\  -f3` NEW_GATEWAY
+read -p "Enter $NEW_HOSTNAME IPv4 address or press ENTER to accept default: " -e -i `ip route | grep default | cut -d\  -f3` NEW_GATEWAY
 info "Your $NEW_HOSTNAME gateway IPv4 address is $NEW_GATEWAY."
 echo
 
 # Set IP address for NAS
-read -p "Enter your Network Attached Storage (NAS) IPv4 address: " -e -i 192.168.1.10 NAS_IPV4
+read -p "Enter your Network Attached Storage (NAS) IPv4 address or press ENTER to accept default: " -e -i 192.168.1.10 NAS_IPV4
 info "Your Network Attached Storage (NAS) IPv4 address is $NAS_IPV4."
 echo
 
@@ -122,14 +141,15 @@ if [ "$NEW_HOSTNAME" = typhoon-04 ]; then
 fi
 
 # Edit Proxmox host file
-#read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
-#echo    # (optional) move to a new line
-#if [[ $REPLY =~ ^[Yy]$ ]]
-#then
-#  hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
-#  cat << EOF > /etc/hosts
-#  $hostsfile EOF
-#fi
+read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+  hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
+  cat << EOF > /etc/hosts
+  $hostsfile
+  EOF
+fi
 
 # Append your public key to /etc/pve/priv/authorized_keys
 echo -e "To append your public SSH key to `hostname` you MUST COPY your public SSH key into your shared 'public folder' on your NAS.\nYour NAS public folder should be NFS mounted by `hostname`."
@@ -232,9 +252,6 @@ sed -i '/bridge-fd/a \
 fi
 
 # Reboot the node
-#clear
-#echo "Looking Good. Rebooting in 5 seconds ......"
-#sleep 5 ; reboot
-
-# Cleanup container
-msg "Cleanup..."
+clear
+echo "Looking Good. Rebooting in 5 seconds ......"
+sleep 5 ; reboot
