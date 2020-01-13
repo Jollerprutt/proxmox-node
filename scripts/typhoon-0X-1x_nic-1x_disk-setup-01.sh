@@ -49,6 +49,7 @@ TYPE07="Installed PCIe 2x Port LAN Card (i.e Any Brand)" >/dev/null
 TYPE08="Standard 1x LAN Port" >/dev/null
 
 echo -e "Select your hardware or ethernet controller type from the list below (entering 1-8):"
+echo
 select brand in "$TYPE01" "$TYPE02" "$TYPE03" "$TYPE04" "$TYPE05" "$TYPE06" "$TYPE07" "$TYPE08"
 do
 echo "You have chosen $brand..."
