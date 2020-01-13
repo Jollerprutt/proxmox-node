@@ -22,7 +22,7 @@ function box_out()
 {
   local s=("$@") b w
   for l in "${s[@]}"; do
-    ((w<${#l})) && { b="$l"; w="${#l}"; }
+    {((w<${#l}))} && { b="$l"; w="${#l}"; }
   done
   tput setaf 3
   echo " -${b//?/-}-
