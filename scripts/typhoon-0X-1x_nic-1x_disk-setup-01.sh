@@ -17,6 +17,7 @@ function msg() {
   echo -e "$TEXT"
 }
 
+# Echo output in a box
 function box_out()
 {
   local s=("$@") b w
