@@ -74,7 +74,7 @@ info "Your $NEW_HOSTNAME IPv4 address is $NEW_IPV4."
 echo
 
 # Set Proxmox host Gateway IP address
-read -p "Enter $NEW_HOSTNAME IPv4 address or press ENTER to accept default: " -e -i `ip route | grep default | cut -d\  -f3` NEW_GATEWAY
+read -p "Enter $NEW_HOSTNAME Gateway IPv4 address or press ENTER to accept default: " -e -i `ip route | grep default | cut -d\  -f3` NEW_GATEWAY
 info "Your $NEW_HOSTNAME gateway IPv4 address is $NEW_GATEWAY."
 echo
 
@@ -104,14 +104,14 @@ apt-get install -y lm-sensors >/dev/null
 
 # Install VAINFO
 msg "Installing VAINFO..."
-apt install -y vainfo >/dev/null
+apt-get install -y vainfo >/dev/null
 
 # Rename ZFS disk label
 msg "Renaming local-zfs disk label to typhoon-share..."
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
 
 # Cyclone-01 NFS Mounts
-if [ "$NEW_HOSTNAME" = typhoon-04 ]; then
+if [ "$NEW_HOSTNAME" = "typhoon-04" ]; then
   echo
   echo "The device hostname is set to be $NEW_HOSTNAME which is your primary Proxmox device."
   echo "The following NFS mount points are available on your NFS server IPV4 $NAS_IPV4."
@@ -142,8 +142,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
   cat << EOF > /etc/hosts
-  $hostsfile
-  EOF
+  $hostsfile EOF
 fi
 
 # Append your public key to /etc/pve/priv/authorized_keys
