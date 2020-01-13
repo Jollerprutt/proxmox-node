@@ -47,7 +47,7 @@ function box_out()
 # Intro
 clear
 echo
-box_out 'PLEASE READ' 'This script will help you setup your Proxmox host. User input is required.' 'When an optional default is provided you may choose to accept by pressing ENTER on your keyboard.'
+box_out 'PLEASE READ CAREFULLY' '' 'This script will help you setup your Proxmox host. User input is required.' 'When an optional default is provided you may choose to accept by pressing ENTER on your keyboard.'
 sleep 5
 echo
 
