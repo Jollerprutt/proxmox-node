@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-
+# Msg function
+function msg() {
+  local TEXT="$1"
+  echo -e "$TEXT"
+}
 # Echo output in a box
 function box_out() {
   local s=("$@") b w
