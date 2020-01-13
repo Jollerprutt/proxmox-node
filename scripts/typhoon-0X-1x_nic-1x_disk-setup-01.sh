@@ -234,3 +234,6 @@ fi
 #clear
 #echo "Looking Good. Rebooting in 5 seconds ......"
 #sleep 5 ; reboot
+
+# Cleanup container
+msg "Cleanup..."
