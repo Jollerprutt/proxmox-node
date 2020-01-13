@@ -127,8 +127,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
   cat << EOF > /etc/hosts
-  $hostsfile
-  EOF
+  $hostsfile EOF
 fi
 
 # Append your public key to /etc/pve/priv/authorized_keys
