@@ -116,10 +116,10 @@ read -p "Overwrite your system hosts file to Ahuacates latest release? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
-eval "cat << EOF > /etc/hosts
-$hostsfile
-EOF"
+  hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
+  cat <<- EOF > /etc/hosts
+  $hostsfile
+  EOF
 fi
 
 # Append your public key to /etc/pve/priv/authorized_keys
@@ -127,15 +127,15 @@ echo -e "To append your public SSH key to `hostname` you MUST COPY your public S
 read -p  "If you have copied your public SSH key into your 'public folder' on your NAS OR want to continue without adding a public SSH key to `hostname` simply press 'ENTER'..."
 RSA_KEY=/mnt/pve/cyclone-01-public/id_rsa*.pub
 if [ -f "$RSA_KEY" ]; then
-    echo "A public RSA key exists in folder $RSA_KEY"
-    read -p "Do you want to add this public SSH key to `hostname` authorized_keys? " -n 1 -r
-    echo    # (optional) move to a new line
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
-        cat /mnt/pve/cyclone-01-public/id_rsa*.pub | cat >> /etc/pve/priv/authorized_keys >/dev/null
-        echo "Your public SSH key has been added to `hostname` authorized_keys..."
-        service sshd restart >/dev/null
-        echo "Restarting sshd service..."
+  echo "A public RSA key exists in folder $RSA_KEY"
+  read -p "Do you want to add this public SSH key to `hostname` authorized_keys? " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    cat /mnt/pve/cyclone-01-public/id_rsa*.pub | cat >> /etc/pve/priv/authorized_keys >/dev/null
+    echo "Your public SSH key has been added to `hostname` authorized_keys..."
+    service sshd restart >/dev/null
+    echo "Restarting sshd service..."
 else 
     echo -e "No public SSH key was found in folder $RSA_KEY.\nNo public SSH key has been added to `hostname` authorized_keys."
 fi
@@ -158,11 +158,11 @@ generic_t1=$(wget -qO- https://raw.githubusercontent.com/ahuacate/proxmox-node/m
 
 # Proxmox Networking - Intel I350-T4 Nic Version
 if [ "$I350" = 4 ] && [ "$brand" = "$TYPE04" ]; then
-printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
-eval "cat << EOF > /etc/network/interfaces.new
-$intel_i350_t4
-EOF"
-fi
+  printf '%s\n' "Configuring network for a Intel Corporation I350-T4 Gigabit Network Ethernet Controller - "$I350"x Nics..."
+  eval "cat << EOF > /etc/network/interfaces.new
+  $intel_i350_t4
+  EOF"
+elif
 
 # Proxmox Networking - Intel I350-T2 Nic Version
 if [ "$I350" = 2 ] && [ "$brand" = "$TYPE05" ]; then
