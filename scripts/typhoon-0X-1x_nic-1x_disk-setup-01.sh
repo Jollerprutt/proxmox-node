@@ -117,10 +117,11 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
-  cat <<- EOF > /etc/hosts
-  $hostsfile
-  EOF
+	cat <<-EOF > /etc/hosts
+	"$hostsfile"
+	EOF
 fi
+
 
 # Append your public key to /etc/pve/priv/authorized_keys
 echo -e "To append your public SSH key to `hostname` you MUST COPY your public SSH key into your shared 'public folder' on your NAS.\nYour NAS public folder should be NFS mounted by `hostname`."
