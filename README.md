@@ -621,7 +621,7 @@ For the webgui method go to Proxmox web interface of your Qotom node (should be 
 | Description | Value |
 | :---  | :---: |
 | Node |`typhoon-01`|
-| VM ID | `251` |
+| VM ID | `253` |
 | Name | `pfsense` |
 | Start at Boot | `Enabled` |
 | Start/Shutdown order | `1` |
@@ -676,7 +676,7 @@ qm create 253 --bootdisk virtio0 --cores 2 --cpu host --ide2 local:iso/pfSense-C
 
 ### 6.03 Install pfSense on the new VM
 
-The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `251 (pfsense)` > `Start`. When running click on the `>_Console tab` and you should see the installation script running. Follow the prompts and fill out the details as shown below:
+The first step is to start the installation. Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `253 (pfsense)` > `Start`. When running click on the `>_Console tab` and you should see the installation script running. Follow the prompts and fill out the details as shown below:
 
 | pfSense Installation Step | Value | Notes
 | :--- | :--- | :---
