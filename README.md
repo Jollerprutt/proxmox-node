@@ -7,6 +7,7 @@ But you can start with a single Proxmox host and add more later.
 
 Here are the types of hardware I use:
 >  **Build A**
+>
 >  *  Synology DS1515+ with 16Gb RAM amd 4x LAN Intel NICs.
 >  *  And;
 >  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC;
