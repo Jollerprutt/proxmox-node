@@ -21,7 +21,7 @@ Here are the types of hardware I use:
 
 Because I had a pre-existing Synology NAS as my file server, **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
-Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use either Intel CPU or AMD Ryzen BUT I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2).
+Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use either Intel or AMD CPU's BUT I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2).
 
 I also use Ubiquiti Network gear which is a dream to configure and maintain. 
 
@@ -77,19 +77,17 @@ Tasks to be performed are:
 
 
 ## 1.00 Proxmox Base OS Installation
-Each Proxmox node requires two SSD hard disks. Basically one is for the Proxmox OS and the other disk is configured as a Proxmox ZFS shared storage disk.
+You can install Proxmox OS on a single SDD or better use two SSDs in Raid 1 for OS redundancy. Whatever you choose always use ZFS disk format.
 
-In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is important because the disk you have chosen to used as your Proxmox ZFS shared storage disk, a SSD size of at least 250 Gb,  should NOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx.
+In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is IMPORTANT for option **Build B** because the disks you will use as your Proxmox ZFS shared NAS storage disks, a Raid 10 array, CANNOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx unless otherwise stated.
 
-Each Proxmox node requires a OS SSD disk, disk 1, minimum size of 60 Gb. But I recommend a 120 Gb SSD disk - the smallest these days. You could use a USB dom for the Proxmox OS but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of Read/Write activity.
-
-For Disk 2 (sdx) I recommend a 500 Gb SSD which will be used as a Proxmox ZFS shared storage disk for the cluster. But my installation uses a 250 Gb SSD.
+Each Proxmox node requires a minimum of one SSD disk for the OS. I recommend a minimum SSD size of 120 Gb - preferably 250Gb. You could use a USB dom for the Proxmox OS but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of Read/Write activity.
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
 For your Synology Virtual Machine Proxmox VM build follow the the instructions [HERE](https://github.com/ahuacate/synobuild/blob/master/README.md#install--configure-synology-virtual-machine-manager).
 
-Remember to remove your USB media on reboot on the hard metal hardware.
+Remember to remove your USB media on reboot.
 
 Configure each node as follows:
 
