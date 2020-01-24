@@ -9,17 +9,17 @@ Here are the types of hardware I use:
 >  **Build A**
 >
 >  *  Synology DS1515+ with 16Gb RAM amd 4x LAN Intel NICs.
->  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC;
->  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
+>  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC (primary host);
+>  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary host); and,
 >  *  Ubiquiti Network Switches.
 >
 >  **Build B**
 >
->  *  Homelab PC Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC; OR
->  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
+>  *  Homelab PC Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary host);
+>  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary host); and,
 >  *  Ubiquiti Network Switches.
 
-Because I had a pre-existing Synology NAS as my file server, **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+Because I had a pre-existing Synology NAS as my file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
 Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use either Intel or AMD CPU's BUT I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2).
 
@@ -77,11 +77,17 @@ Tasks to be performed are:
 
 
 ## 1.00 Proxmox Base OS Installation
-You can install Proxmox OS on a single SDD or better use two SSDs in Raid 1 for OS redundancy. Whatever you choose always use ZFS disk format.
+You should always install Proxmox OS in a Raid 1 configuration using two SSDs on your primary host. Then if one SSD fails you have disk redunancy. 
+
+The primary host is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
+
+Secondary hosts can have single SSDs.
+
+Whatever you choose, single SSD or Raid 1, always use the ZFS disk format.
 
 In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is IMPORTANT for option **Build B** because the disks you will use as your Proxmox ZFS shared NAS storage disks, a Raid 10 array, CANNOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx unless otherwise stated.
 
-Each Proxmox node requires a minimum of one SSD disk for the OS. I recommend a minimum SSD size of 120 Gb - preferably 250Gb. You could use a USB dom for the Proxmox OS but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of Read/Write activity.
+I recommend a minimum SSD size of 120 Gb for the OS - preferably 250Gb. You could also use a USB dom for the Proxmox OS on secondary hosts but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of read/write I/O activity.
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
@@ -94,8 +100,30 @@ Configure each node as follows:
 | Option | Node 1 Value | Node 2 Value | Node 3 Value | Notes |
 | :---  | :---: | :---: | :---: | :--- |
 | **Hardware Type** | **Qotom - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
-| Target Disk | Select `120Gb` | Select `120Gb` | Select `120Gb` | *Not the largest disk for shared storage*
-| Target Disk - Options Filesystem |`ext4`|`ext4`|`ext4`| *Leave Default - ext4 etc*
+| **Raid1 - Two disk installation**
+| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `120Gb` | Select `120Gb` | *Note /dev/sda and /dev/sdb - generally your OS disks*
+| Target Disk - Options
+| Harddisk Options
+| File System | `ZFS (RAID1)` |||| *Leave Default - ext4 etc*
+| Disk Setup 
+| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)`
+| Harddisk 1 | `/dev/sda (name of SSD brand and GB size)`
+| Harddisk 2 | `--do not use--`
+| Harddisk 3 | `--do not use--`
+| Harddisk 4 | `--do not use--`
+| Harddisk 5 | `--do not use--`
+| **Single disk installation**
+| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `120Gb` | Select `120Gb` | *Not the largest disk for shared storage*
+| Target Disk - Options |`ZFS RAID0`|`ext4`|`ext4`| *Leave Default - ext4 etc*
+| Harddisk Options
+| File System | `ZFS (RAID0)`
+| Disk Setup 
+| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)`
+| Harddisk 1 | `--do not use--`
+| Harddisk 2 | `--do not use--`
+| Harddisk 3 | `--do not use--`
+| Harddisk 4 | `--do not use--`
+| Harddisk 5 | `--do not use--`
 | Country |Type your Country|Type your Country|Type your Country
 | Timezone |Select |Select|Select
 | Keymap |`en-us`|`en-us`|`en-us`
