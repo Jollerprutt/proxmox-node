@@ -21,9 +21,9 @@ Here are the types of hardware I use:
 
 Because I had a pre-existing Synology NAS as my file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
-Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use either Intel or AMD CPU's BUT I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2).
+Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use Intel or AMD CPU's but I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2 - you need two or more NICs for pfSense).
 
-I also use Ubiquiti Network gear which is a dream to configure and maintain. 
+I also use Ubiquiti Network gear which is so easy to configure and maintain. 
 
 Network prerequisites are:
 - [x] Layer 2 Network Switches
@@ -77,7 +77,7 @@ Tasks to be performed are:
 
 
 ## 1.00 Proxmox Base OS Installation
-You should always install Proxmox OS in a Raid 1 configuration using two SSDs on your primary host. Then if one SSD fails you have disk redunancy. 
+Its best to install Proxmox OS in a Raid 1 configuration using two SSDs on your primary host. Then if one SSD fails you have disk redunancy. 
 
 The primary host is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
 
@@ -104,8 +104,8 @@ Configure each node as follows:
 | Target Disk | Select `i.e /dev/sda/ (120Gb)` ||| *Note, /dev/sda and /dev/sdb - generally your OS disks*
 | Target Disk - Options | `ZFS (RAID1)`
 | Disk Setup 
-| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)`
-| Harddisk 1 | `/dev/sda (name of SSD brand and GB size)`
+| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
+| Harddisk 1 | `/dev/sdb (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
 | Harddisk 2 | `--do not use--` ||| *Note - MUST CHOOSE --do not use-- on harddisk 2 and greater if disks are present!*
 | Harddisk 3 | `--do not use--`
 | Harddisk 4 | `--do not use--`
