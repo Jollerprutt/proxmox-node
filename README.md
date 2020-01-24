@@ -134,7 +134,7 @@ Configure each node as follows:
 | Gateway |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 | DNS Server |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 
-**Note:** Node 1 MUST BE your Qotom.
+**Note:** Node 1 MUST BE either you multi LAN NIC Qotom or Homelab Server. Its important when configuring your OS ZFS setup you DO NOT include other installed hard disks used by your Proxmox ZFS Raid 10 NAS file server array.
 
 ## 2.00 Configure the Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox. Default login is "root" (realm PAM) and the root password you defined during the installation process.
