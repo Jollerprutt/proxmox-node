@@ -19,13 +19,11 @@ Here are the types of hardware I use:
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
 >  *  Ubiquiti Network Switches.
 
-Because I use a Synology NAS as my file server (had it for years) I have chosen the low wattage power efficiency route for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+Because I had a pre-existing Synology NAS as my file server, **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
-If you choose the **Build B** route 
+Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use either Intel CPU or AMD Ryzen BUT I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2).
 
 I also use Ubiquiti Network gear which is a dream to configure and maintain. 
-
-Obviously you can modify these instructions to meet your own hardware requirements.
 
 Network prerequisites are:
 - [x] Layer 2 Network Switches
@@ -35,7 +33,7 @@ Network prerequisites are:
 - [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
 - [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
 
-Other Prerequisites are:
+Other optional Prerequisites are (if using Build A);
 - [x] Synology NAS is `192.168.1.10`
 - [x] Synology NAS is installed with Synology Virtual Machine Manager
 - [x] Synology NAS is configured, including NFS, as per [synobuild](https://github.com/ahuacate/synobuild)
