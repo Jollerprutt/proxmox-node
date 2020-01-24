@@ -100,26 +100,24 @@ Configure each node as follows:
 | Option | Node 1 Value | Node 2 Value | Node 3 Value | Notes |
 | :---  | :---: | :---: | :---: | :--- |
 | **Hardware Type** | **Qotom - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
-| **Raid1 - Two disk installation**
-| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `120Gb` | Select `120Gb` | *Note /dev/sda and /dev/sdb - generally your OS disks*
-| Target Disk - Options
-| Harddisk Options
-| File System | `ZFS (RAID1)` |||| *Leave Default - ext4 etc*
+| **Raid1 - Two disk OS installation**
+| Target Disk | Select `i.e /dev/sda/ (120Gb)` ||| *Note, /dev/sda and /dev/sdb - generally your OS disks*
+| Target Disk - Options | `ZFS (RAID1)`
 | Disk Setup 
 | Harddisk 0 | `/dev/sda (name of SSD brand and GB size)`
 | Harddisk 1 | `/dev/sda (name of SSD brand and GB size)`
-| Harddisk 2 | `--do not use--`
+| Harddisk 2 | `--do not use--` ||| *Note - MUST CHOOSE --do not use-- on harddisk 2 and greater if disks are present!*
 | Harddisk 3 | `--do not use--`
 | Harddisk 4 | `--do not use--`
 | Harddisk 5 | `--do not use--`
-| **Single disk installation**
-| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `120Gb` | Select `120Gb` | *Not the largest disk for shared storage*
-| Target Disk - Options |`ZFS RAID0`|`ext4`|`ext4`| *Leave Default - ext4 etc*
+| **Single disk OS installation**
+| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `120Gb` | Select `120Gb` | *Note, /dev/sda or /dev/sdb - generally your OS disks*
+| Target Disk - Options |`ZFS RAID0`|`ZFS RAID0`|`ZFS RAID0`
 | Harddisk Options
-| File System | `ZFS (RAID0)`
+| File System | `ZFS (RAID0)` | `ZFS (RAID0)` | `ZFS (RAID0)`
 | Disk Setup 
-| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)`
-| Harddisk 1 | `--do not use--`
+| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)`
+| Harddisk 1 | `--do not use--` | `--do not use--` | `--do not use--` | *Note - MUST CHOOSE --do not use-- on harddisk 1 and greater if disks are present!*
 | Harddisk 2 | `--do not use--`
 | Harddisk 3 | `--do not use--`
 | Harddisk 4 | `--do not use--`
