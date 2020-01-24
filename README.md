@@ -1,8 +1,10 @@
 # Proxmox Node Building
-This recipe builds two physical hardware Proxmox nodes and one Synology VM Proxmox node. Such a group of nodes is called a cluster and has a central management WebGUI by a single URL/IP address. Because a cluster of 3x nodes can form a quorum we have High Availability in the event a node fails.
+Herein are instructions to build and configure your Proxmox hardware. Your choices are for hardmetal Proxmox nodes and or a Proxmox VM hosted on a Synology NAS.
 
-The hardware in this recipe uses:
->  *  1x Qotom Mini PC Q500G6-S05 with 6x Gigabit NICs;
+Yopu can choose to configure 3 or more Proxmox hosts to create a cluster. Management WebGUI is by a single URL/IP address. Because a cluster of 3x nodes can form a quorum you have High Availability (HA) in the event a node fails.
+
+The hardware options in these instruction uses:
+>  *  1x Qotom Mini PC Q500G6-S05 with 4x or 6x Intel NICs;
 >  *  1x Intel i3 NUC model nuc5i3ryh; 
 >  *  1x Synology DS1515+ with 4x NICs; and,
 >  *  Ubiquiti Network Switches.
