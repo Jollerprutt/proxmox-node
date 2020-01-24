@@ -19,9 +19,9 @@ Here are the types of hardware I use:
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
 >  *  Ubiquiti Network Switches.
 
-Because I use a Synology NAS as my file server I have chosen the low wattage power efficiency route for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+Because I use a Synology NAS as my file server (had it for years) I have chosen the low wattage power efficiency route for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
-If you 
+If you choose the **Build B** route 
 
 I also use Ubiquiti Network gear which is a dream to configure and maintain. 
 
