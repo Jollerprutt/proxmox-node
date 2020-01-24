@@ -15,7 +15,7 @@ Here are the types of hardware I use:
 >
 >  **Build B**
 >
->  *  Homelab PC Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary host);
+>  *  Homelab Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary host);
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary host); and,
 >  *  Ubiquiti Network Switches.
 
@@ -99,7 +99,7 @@ Configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value | Notes |
 | :---  | :---: | :---: | :---: | :--- |
-| **Hardware Type** | **Qotom - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
+| **Hardware Type** | **Qotom or Homelab Server - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
 | **Raid1 - Two disk OS installation**
 | Target Disk | Select `i.e /dev/sda/ (120Gb)` ||| *Note, /dev/sda and /dev/sdb - generally your OS disks*
 | Target Disk - Options | `ZFS (RAID1)`
