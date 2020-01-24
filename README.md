@@ -9,13 +9,13 @@ Here are the types of hardware I use:
 >  **Build A**
 >
 >  *  Synology DS1515+ with 16Gb RAM amd 4x LAN Intel NICs.
->  *  And;
 >  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC;
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
 >  *  Ubiquiti Network Switches.
+>
 >  **Build B**
+>
 >  *  Homelab PC Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC; OR
->  *  And;
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
 >  *  Ubiquiti Network Switches.
 
