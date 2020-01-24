@@ -1,15 +1,26 @@
 # Proxmox Node Building
-Herein are instructions to build and configure your Proxmox hardware. Your choices are for hardmetal Proxmox nodes and or a Proxmox VM hosted on a Synology NAS.
+These instructions are for building and configuring Proxmox hardware. You may choose a combination of hardware or even use a Synology NAS to host a Proxmox VM host.
 
-Yopu can choose to configure 3 or more Proxmox hosts to create a cluster. Management WebGUI is by a single URL/IP address. Because a cluster of 3x nodes can form a quorum you have High Availability (HA) in the event a node fails.
+Ideally you want to configure three or more Proxmox hardmetal hosts so you can create a Proxmox cluster. A minimum of three Proxmox hosts is required to form a quorum in the event a node fails.
 
-The hardware options in these instruction uses:
->  *  1x Qotom Mini PC Q500G6-S05 with 4x or 6x Intel NICs;
->  *  1x Intel i3 NUC model nuc5i3ryh; 
->  *  1x Synology DS1515+ with 4x NICs; and,
+But you can start with a single Proxmox host and add more later.
+
+Here are the types of hardware I use:
+>  **Build A**
+>  *  Synology DS1515+ with 16Gb RAM amd 4x LAN Intel NICs.
+>  *  And;
+>  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC;
+>  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
+>  *  Ubiquiti Network Switches.
+>  **Build B**
+>  *  Homelab PC Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC; OR
+>  *  And;
+>  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC; and,
 >  *  Ubiquiti Network Switches.
 
-Both the Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are low wattage at 15W TDP, Intel CPU's are all 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM. 
+Because I use a Synology NAS as my file server I have chosen the low wattage power efficiency route for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC model nuc5i3ryh are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+
+If you 
 
 I also use Ubiquiti Network gear which is a dream to configure and maintain. 
 
