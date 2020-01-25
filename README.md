@@ -9,14 +9,14 @@ Here are the types of hardware I use:
 >  **Build A**
 >
 >  *  Synology DS1515+ with 16Gb RAM amd 4x LAN Intel NICs.
->  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC (primary host);
->  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary host); and,
+>  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC (primary node);
+>  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
 >  *  Ubiquiti Network Switches.
 >
 >  **Build B**
 >
->  *  Homelab Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary host);
->  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary host); and,
+>  *  Homelab Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary node);
+>  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
 >  *  Ubiquiti Network Switches.
 
 Because I had a pre-existing Synology NAS as my file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
@@ -77,9 +77,9 @@ Tasks to be performed are:
 
 
 ## 1.00 Proxmox Base OS Installation
-Its best to install Proxmox OS in a Raid 1 configuration using two SSDs on your primary host. Then if one SSD fails you have disk redunancy. 
+Its best to install Proxmox OS in a Raid 1 configuration using two SSDs on your primary node. Then if one SSD fails you have disk redunancy. 
 
-The primary host is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
+The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
 
 Secondary hosts can have single SSDs.
 
@@ -87,7 +87,7 @@ Whatever you choose, single SSD or Raid 1, always use the ZFS disk format.
 
 In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is IMPORTANT for option **Build B** because the disks you will use as your Proxmox ZFS shared NAS storage disks, a Raid 10 array, CANNOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx unless otherwise stated.
 
-I recommend a minimum SSD size of 120 Gb for the OS - preferably 250Gb. You could also use a USB dom for the Proxmox OS on secondary hosts but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of read/write I/O activity.
+I recommend a minimum SSD size of 120 Gb for the OS - preferably 250Gb. You could also use a USB dom for the Proxmox OS on secondary nodes but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of read/write I/O activity.
 
 Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
 
@@ -101,27 +101,19 @@ Configure each node as follows:
 | :---  | :---: | :---: | :---: | :--- |
 | **Hardware Type** | **Qotom or Homelab Server - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
 | **Raid1 - Two disk OS installation**
-| Target Disk | Select `i.e /dev/sda/ (120Gb)` ||| *Note, /dev/sda and /dev/sdb - generally your OS disks*
+| Target Disk | Select `i.e /dev/sda/ (120Gb)` ||| *Note: /dev/sda and /dev/sdb are normally your OS disks*
 | Target Disk - Options | `ZFS (RAID1)`
 | Disk Setup 
 | Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
 | Harddisk 1 | `/dev/sdb (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
-| Harddisk 2 | `--do not use--` ||| *Note - MUST CHOOSE --do not use-- on harddisk 2 and greater if disks are present!*
-| Harddisk 3 | `--do not use--`
-| Harddisk 4 | `--do not use--`
-| Harddisk 5 | `--do not use--`
-| **Single disk OS installation**
-| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `120Gb` | Select `120Gb` | *Note, /dev/sda or /dev/sdb - generally your OS disks*
+| Harddisk 2 | `--do not use--` ||| *MUST CHOOSE **--do not use--** on all listed harddisks with ID **2** and above if disks are present!*
+| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `i.e /dev/sda/ (120Gb)` | Select `i.e /dev/sda/ (120Gb)` | *Note, /dev/sda or /dev/sdb - generally your OS disks*
 | Target Disk - Options |`ZFS RAID0`|`ZFS RAID0`|`ZFS RAID0`
 | Harddisk Options
 | File System | `ZFS (RAID0)` | `ZFS (RAID0)` | `ZFS (RAID0)`
 | Disk Setup 
 | Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)`
-| Harddisk 1 | `--do not use--` | `--do not use--` | `--do not use--` | *Note - MUST CHOOSE --do not use-- on harddisk 1 and greater if disks are present!*
-| Harddisk 2 | `--do not use--`
-| Harddisk 3 | `--do not use--`
-| Harddisk 4 | `--do not use--`
-| Harddisk 5 | `--do not use--`
+| Harddisk 1 -> upwards | `--do not use--` | `--do not use--` | `--do not use--` | *MUST CHOOSE **--do not use--** on all listed harddisks with ID **1** and above if disks are present!*
 | Country |Type your Country|Type your Country|Type your Country
 | Timezone |Select |Select|Select
 | Keymap |`en-us`|`en-us`|`en-us`
@@ -134,7 +126,7 @@ Configure each node as follows:
 | Gateway |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 | DNS Server |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 
-**Note:** Node 1 MUST BE either you multi LAN NIC Qotom or Homelab Server. Its important when configuring your OS ZFS setup you DO NOT include other installed hard disks used by your Proxmox ZFS Raid 10 NAS file server array.
+**Note:** Node 1 MUST BE your Primary Node multi LAN NIC Qotom or Homelab Server. Its important when configuring your Proxmox OS ZFS setup you DO NOT include other installed hard disks used by your Proxmox ZFS Raid 10 NAS file server array.
 
 ## 2.00 Configure the Proxmox Hardware
 Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox. Default login is "root" (realm PAM) and the root password you defined during the installation process.
