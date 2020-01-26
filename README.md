@@ -154,7 +154,7 @@ Use the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the foll
 sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
 ```
 
-### 2.03 Option - Create a Second Disk Two for typhoon-share
+### 2.03 Optional - Create a Second Disk Two for typhoon-share
 If for whatever reason you want to install a another disk for `typhoon-share` here are the instructions. 
 
 Create the new disk using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
@@ -168,6 +168,16 @@ Create the new disk using the web interface `Disks` > `ZFS` > `Create: ZFS` and 
 | Device |`/dev/sdx`|`/dev/sdx`|`/dev/sdx`
 
 **Note:** If your choose to use a ZFS Raid (2 or more disks) for storage redundancy change accordingly per node but you must retain the Name ID **typhoon-share**.
+
+### 2.04 Optional - Create a NAS Share hosted on Proxmox
+For those who want to build a NAS on `typhoon-01` you need to create a ZFS Raid 10 array of two or more disks. 
+
+*  **RAID0** - Also called “striping”. The capacity of such volume is the sum of the capacities of all disks. But RAID0 does not add any redundancy, so the failure of a single drive makes the volume unusable.
+*  RAID1 - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
+*  RAID10 - A combination of RAID0 and RAID1. Requires at least 4 disks.
+*  RAIDZ-1 - A variation on RAID-5, single parity. Requires at least 3 disks.
+*  RAIDZ-2 - A variation on RAID-5, double parity. Requires at least 4 disks.
+*  RAIDZ-3 - A variation on RAID-5, triple parity. Requires at least 5 disks. 
 
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
 For our primary Proxmox machine, typhoon-01, we use Qotom hardware because it has 2, 4 or 6 network 1Gb NICs depeniding on the model. Standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) has only 1 network NIC.
