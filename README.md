@@ -106,14 +106,14 @@ Configure each node as follows:
 | Disk Setup 
 | Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
 | Harddisk 1 | `/dev/sdb (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
-| Harddisk 2 | `--do not use--` ||| *MUST CHOOSE **--do not use--** on all listed harddisks with ID **2** and above if disks are present!*
+| Harddisk 2 | `--do not use--` ||| *MUST SELECT **--do not use--** on all listed harddisks with ID **2** and above if disks are present!*
 | Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `i.e /dev/sda/ (120Gb)` | Select `i.e /dev/sda/ (120Gb)` | *Note, /dev/sda or /dev/sdb - generally your OS disks*
 | Target Disk - Options |`ZFS RAID0`|`ZFS RAID0`|`ZFS RAID0`
 | Harddisk Options
 | File System | `ZFS (RAID0)` | `ZFS (RAID0)` | `ZFS (RAID0)`
 | Disk Setup 
 | Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)`
-| Harddisk 1 -> upwards | `--do not use--` | `--do not use--` | `--do not use--` | *MUST CHOOSE **--do not use--** on all listed harddisks with ID **1** and above if disks are present!*
+| Harddisk 1 -> upwards | `--do not use--` | `--do not use--` | `--do not use--` | *MUST SELECT **--do not use--** on all listed harddisks with ID **1** and above if disks are present!*
 | Country |Type your Country|Type your Country|Type your Country
 | Timezone |Select |Select|Select
 | Keymap |`en-us`|`en-us`|`en-us`
