@@ -135,7 +135,9 @@ Shown below is a two disk Raid1 ZFS Proxmox OS install setting:
 ![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/os_raid1_install.jpg)
 
 ## 2.00 Configure the Proxmox Hardware
-Further configuration is done via the Proxmox web interface. Just point your browser to the IP address given during installation (https://yournodesipaddress:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox. Default login is "root" (realm PAM) and the root password you defined during the installation process.
+Configuration is done via the Proxmox web interface. Just point your browser to the IP address set during the installation of Proxmox OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
+
+Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 ### 2.01 Update Proxmox OS and enable turnkeylinux templates
 Using the web interface `updates` > `refresh` search for all the latest required updates. You will get a few errors which ignore.
@@ -144,8 +146,18 @@ Next install the updates using the web interface `updates` > `_upgrade` - a pop 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
-### 2.02 Create Disk Two - your shared storage
-Create Disk 2 using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
+### 2.02 Rename Disk Label local-zfs to typhoon-share
+During the installation of Proxmox OS you created a disk label `local-zfs`. For ease of identifying disks we want to relabel this disk to `typhoon-share`. `typhoon-share` is our storage for all VM's and LCX CT's.
+
+Use the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+```
+sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
+```
+
+### 2.03 Option - Create a Second Disk Two for typhoon-share
+If for whatever reason you want to install a another disk for `typhoon-share` here are the instructions. 
+
+Create the new disk using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
 
 | Option | Node 1 Value | Node 2 Value | Node 3 Value |
 | :---  | :---: | :---: | :---: |
