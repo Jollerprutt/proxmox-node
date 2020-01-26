@@ -170,14 +170,39 @@ Create the new disk using the web interface `Disks` > `ZFS` > `Create: ZFS` and 
 **Note:** If your choose to use a ZFS Raid (2 or more disks) for storage redundancy change accordingly per node but you must retain the Name ID **typhoon-share**.
 
 ### 2.04 Optional - Create a NAS Share hosted on Proxmox
-For those who want to build a NAS on `typhoon-01` you need to create a ZFS Raid 10 array of two or more disks. 
+For those who want to build a NAS on `typhoon-01` you need to create a Raid array of two or more disks. You may choose which raid level to use:
 
 *  **RAID0** - Also called “striping”. The capacity of such volume is the sum of the capacities of all disks. But RAID0 does not add any redundancy, so the failure of a single drive makes the volume unusable.
-*  RAID1 - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
-*  RAID10 - A combination of RAID0 and RAID1. Requires at least 4 disks.
-*  RAIDZ-1 - A variation on RAID-5, single parity. Requires at least 3 disks.
-*  RAIDZ-2 - A variation on RAID-5, double parity. Requires at least 4 disks.
-*  RAIDZ-3 - A variation on RAID-5, triple parity. Requires at least 5 disks. 
+*  **RAID1** - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
+*  **RAID10** - A combination of RAID0 and RAID1. Requires at least 4 disks.
+*  **RAIDZ-1** - A variation on RAID-5, single parity. Requires at least 3 disks.
+*  **RAIDZ-2** - A variation on RAID-5, double parity. Requires at least 4 disks.
+*  **RAIDZ-3** - A variation on RAID-5, triple parity. Requires at least 5 disks. 
+
+Create the new NAS share using the web interface `Disks` > `ZFS` > `Create: ZFS` selecting one or more available disks to become members of your ZFS Raid. If your disks are not available read below. Configure as follows:
+
+| Option | Node 1 Value | Notes
+| :---  | :---: | :---
+| Name |`cyclone-01`
+| RAID Level |`.e RAID10` | *Note: Choose from the above raid levels*
+| Compression |`on`|`on`|`on`
+| ashift |`12`|`12`|`12`
+| Device |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+
+If any disks fail to show then the disks may need erasing/wiping. First step is to list all disks installed on your hardware. Use the Proxmox web interface `typhoon-01` > `>_ Shell` and type the command:
+```
+lsblk -f
+```
+You are looking for disks (sdx) which DO NOT belong to Proxmox OS install (i.e not disks /dev/sda or /dev/sdb). Note the size of the disk. Its fair to say NAS disks will be larger exceeding 1000.00G. You can also get more information with the CLI command ` fdisk -l`.
+
+To wipe or erase the chosen disk type the following command replacing `/dev/sdx` with your disk identifier (i.e /dev/sdc) 
+```
+dd if=/dev/zero of=/dev/sdx bs=512 count=1 conv=notrunc &&
+qm recsan
+```
 
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
 For our primary Proxmox machine, typhoon-01, we use Qotom hardware because it has 2, 4 or 6 network 1Gb NICs depeniding on the model. Standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) has only 1 network NIC.
