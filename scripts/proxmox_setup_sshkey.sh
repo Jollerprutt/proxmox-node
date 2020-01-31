@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Append your public key to /etc/pve/priv/authorized_keys
 RSA_FILE=/mnt/pve/cyclone-01-public/id_rsa*.pub
 echo
