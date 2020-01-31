@@ -1,0 +1,61 @@
+# Settings for Intel I350-T4 (4x Nic)
+
+# Please do NOT modify this file directly, unless you know what
+# you're doing.
+#
+# If you want to manage parts of the network configuration manually,
+# please utilize the 'source' or 'source-directory' directives to do
+# so.
+# PVE will preserve these directives, but will NOT read its network
+# configuration from sourced files, so do not attempt to move any of
+# the PVE managed interfaces into external files!
+
+auto lo
+iface lo inet loopback
+
+iface enp1s0 inet manual
+
+iface enp2s0 inet manual
+
+iface enp3s0 inet manual
+
+iface enp4s0 inet manual
+
+#Proxmox LAN Bridge
+auto vmbr0
+iface vmbr0 inet static
+        address  $NEW_IPV4
+        netmask  255.255.255.0
+        gateway  $NEW_GATEWAY
+        bridge-ports enp1s0
+        bridge-stp off
+        bridge-fd 0
+        bridge-vlan-aware yes
+        bridge-vids 2-4094
+
+#VPN-egress Bridge
+auto vmbr1
+iface vmbr1 inet manual
+        bridge-ports enp2s0
+        bridge-stp off
+        bridge-fd 0
+        bridge-vlan-aware yes
+        bridge-vids 2-4094
+
+#vpngate-world
+auto vmbr2
+iface vmbr2 inet manual
+        bridge-ports enp3s0
+        bridge-stp off
+        bridge-fd 0
+        bridge-vlan-aware yes
+        bridge-vids 2-4094
+
+#vpngate-local
+auto vmbr3
+iface vmbr3 inet manual
+        bridge-ports enp4s0
+        bridge-stp off
+        bridge-fd 0
+        bridge-vlan-aware yes
+        bridge-vids 2-4094
