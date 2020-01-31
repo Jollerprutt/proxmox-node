@@ -33,7 +33,6 @@ iface vmbr0 inet static
         bridge-vlan-aware yes
         bridge-vids 2-4094
 
-#VPN-egress Bridge
 auto vmbr1
 iface vmbr1 inet manual
         bridge-ports enp2s0
@@ -42,7 +41,6 @@ iface vmbr1 inet manual
         bridge-vlan-aware yes
         bridge-vids 2-4094
 
-#vpngate-world
 auto vmbr2
 iface vmbr2 inet manual
         bridge-ports enp3s0
@@ -51,7 +49,6 @@ iface vmbr2 inet manual
         bridge-vlan-aware yes
         bridge-vids 2-4094
 
-#vpngate-local
 auto vmbr3
 iface vmbr3 inet manual
         bridge-ports enp4s0
