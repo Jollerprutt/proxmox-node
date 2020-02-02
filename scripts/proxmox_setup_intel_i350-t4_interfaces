@@ -13,7 +13,7 @@
 auto lo
 iface lo inet loopback
 
-iface enp1s0f0 inet manual
+iface enp"$I350_BUS_NO"s"$I350_SLOT_NO"f0 inet manual
 
 iface enp1s0f1 inet manual
 
