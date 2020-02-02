@@ -13,13 +13,13 @@
 auto lo
 iface lo inet loopback
 
-iface enp$I350_BUS_NOs$I350_SLOT_NOf0 inet manual
+iface enp${I350_BUS_NO}s${I350_SLOT_NO}f0 inet manual
 
-iface enp1s0f1 inet manual
+iface enp${I350_BUS_NO}s${I350_SLOT_NO}f1 inet manual
 
-iface enp1s0f2 inet manual
+iface enp${I350_BUS_NO}s${I350_SLOT_NO}f2 inet manual
 
-iface enp1s0f3 inet manual
+iface enp${I350_BUS_NO}s${I350_SLOT_NO}f3 inet manual
 
 #Proxmox LAN Bridge
 auto vmbr0
@@ -27,7 +27,7 @@ iface vmbr0 inet static
         address  $NEW_IPV4
         netmask  255.255.255.0
         gateway  $NEW_GATEWAY
-        bridge-ports enp1s0f0
+        bridge-ports enp${I350_BUS_NO}s${I350_SLOT_NO}f0
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
@@ -36,7 +36,7 @@ iface vmbr0 inet static
 #VPN-egress Bridge
 auto vmbr1
 iface vmbr1 inet manual
-        bridge-ports enp1s0f1
+        bridge-ports enp${I350_BUS_NO}s${I350_SLOT_NO}f1
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
@@ -45,7 +45,7 @@ iface vmbr1 inet manual
 #vpngate-world
 auto vmbr2
 iface vmbr2 inet manual
-        bridge-ports enp1s0f2
+        bridge-ports enp${I350_BUS_NO}s${I350_SLOT_NO}f2
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
@@ -54,7 +54,7 @@ iface vmbr2 inet manual
 #vpngate-local
 auto vmbr3
 iface vmbr3 inet manual
-        bridge-ports enp1s0f3
+        bridge-ports enp${I350_BUS_NO}s${I350_SLOT_NO}f3
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
