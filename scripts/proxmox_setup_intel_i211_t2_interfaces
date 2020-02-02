@@ -13,10 +13,9 @@
 auto lo
 iface lo inet loopback
 
-iface enpXs0 inet manual
+iface enp${I211_BUS_NO}s${I211_SLOT_NO}f0 inet manual
 
-iface enpXs1 inet manual
-
+iface enp${I211_BUS_NO}s${I211_SLOT_NO}f1 inet manual
 
 #Proxmox LAN Bridge
 auto vmbr0
@@ -24,16 +23,15 @@ iface vmbr0 inet static
         address  $NEW_IPV4
         netmask  255.255.255.0
         gateway  $NEW_GATEWAY
-        bridge-ports enpXs0
+        bridge-ports eenp${I211_BUS_NO}s${I211_SLOT_NO}f0
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
         bridge-vids 2-4094
 
-#VPN-egress Bridge
 auto vmbr1
 iface vmbr1 inet manual
-        bridge-ports enpXs0
+        bridge-ports enp${I211_BUS_NO}s${I211_SLOT_NO}f1
         bridge-stp off
         bridge-fd 0
         bridge-vlan-aware yes
