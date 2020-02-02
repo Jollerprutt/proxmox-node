@@ -1,1 +1,40 @@
+# Settings for Intel I211-T2 (2x Nic)
 
+# Please do NOT modify this file directly, unless you know what
+# you're doing.
+#
+# If you want to manage parts of the network configuration manually,
+# please utilize the 'source' or 'source-directory' directives to do
+# so.
+# PVE will preserve these directives, but will NOT read its network
+# configuration from sourced files, so do not attempt to move any of
+# the PVE managed interfaces into external files!
+
+auto lo
+iface lo inet loopback
+
+iface enpXs0 inet manual
+
+iface enpXs1 inet manual
+
+
+#Proxmox LAN Bridge
+auto vmbr0
+iface vmbr0 inet static
+        address  $NEW_IPV4
+        netmask  255.255.255.0
+        gateway  $NEW_GATEWAY
+        bridge-ports enpXs0
+        bridge-stp off
+        bridge-fd 0
+        bridge-vlan-aware yes
+        bridge-vids 2-4094
+
+#VPN-egress Bridge
+auto vmbr1
+iface vmbr1 inet manual
+        bridge-ports enpXs0
+        bridge-stp off
+        bridge-fd 0
+        bridge-vlan-aware yes
+        bridge-vids 2-4094
