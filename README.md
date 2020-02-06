@@ -170,7 +170,7 @@ Create the new disk using the web interface `Disks` > `ZFS` > `Create: ZFS` and 
 **Note:** If your choose to use a ZFS Raid (2 or more disks) for storage redundancy change accordingly per node but you must retain the Name ID **typhoon-share**.
 
 ### 2.04 Optional - Create a NAS Share hosted on Proxmox
-For those who want to build a NAS on `typhoon-01` you need to create a Raid array of two or more disks. You may choose which raid level to use:
+For those who want to build a NAS on `typhoon-01` you need to create a ZFS zpool with one disk or if you have multiple disks a Raid array of two or more disks. You may choose which raid level to use:
 
 *  **RAID0** - Also called “striping”. The capacity of such volume is the sum of the capacities of all disks. But RAID0 does not add any redundancy, so the failure of a single drive makes the volume unusable.
 *  **RAID1** - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
@@ -183,8 +183,8 @@ Create the new NAS share using the web interface `Disks` > `ZFS` > `Create: ZFS`
 
 | Option | Node 1 Value | Notes
 | :---  | :---: | :---
-| Name |`cyclone-01`
-| RAID Level |`.e RAID10` | *Note: Choose from the above raid levels*
+| Name |`tank`
+| RAID Level |`i.e RAID10` | *Note: Choose from the above raid levels*
 | Compression |`on`|`on`|`on`
 | ashift |`12`|`12`|`12`
 | Device |`/dev/sdx`| *Note: Select your disks. Only available disks show*
