@@ -184,6 +184,7 @@ Create the new NAS share using the web interface `Disks` > `ZFS` > `Create: ZFS`
 | Option | Node 1 Value | Notes
 | :---  | :---: | :---
 | Name |`tank`
+| Add Storage | `☑`
 | RAID Level |`i.e RAID10` | *Note: Choose from the above raid levels*
 | Compression |`on`|`on`|`on`
 | ashift |`12`|`12`|`12`
