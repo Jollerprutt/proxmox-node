@@ -60,7 +60,7 @@ TEMP_DIR=$(mktemp -d)
 pushd $TEMP_DIR >/dev/null
 
 # Download Proxmox Template
-wget https://jaist.dl.sourceforge.net/project/openmediavault/4.1.22/openmediavault_4.1.22-amd64.iso -P /var/lib/vz/template/iso
+wget https://jaist.dl.sourceforge.net/project/openmediavault/5.0.5/openmediavault_5.0.5-amd64.iso -P /var/lib/vz/template/iso
 # Download setup script
 wget -qL https://github.com/ahuacate/proxmox-lxc-smarthome/raw/master/scripts/omv_setup.sh
 
@@ -99,28 +99,28 @@ info "Container IPv4 address is $OMV_IP."
 echo
 
 # Set container VLAN tag
-read -p "Enter VLAN ID: " -e -i 1 OMV_TAG
-info "Container VLAN is $OMV_TAG."
+read -p "Enter VLAN ID: " -e -i 1 TAG
+info "Container VLAN is $TAG."
 echo
 
 # Set container Gateway IPv4 Address
-read -p "Enter Gateway IPv4 address: " -e -i 192.168.1.5 OMV_GW
-info "Container Gateway IPv4 address is $OMV_GW."
+read -p "Enter Gateway IPv4 address: " -e -i 192.168.1.5 GW
+info "Container Gateway IPv4 address is $GW."
 echo
 
 # Set container ID
-read -p "Enter container CTID: " -e -i 131 OMV_CTID
-info "Container ID is $OMV_CTID."
+read -p "Enter container CTID: " -e -i 12 CTID
+info "Container ID is $CTID."
 echo
 
 # Set container Virtual Disk Size
-read -p "Enter container Virtual Disk Size (Gb): " -e -i 10 OMV_DISK_SIZE
-info "Container Virtual Disk is $OMV_DISK_SIZE."
+read -p "Enter container Virtual Disk Size (Gb): " -e -i 10 DISK_SIZE
+info "Container Virtual Disk is $DISK_SIZE."
 echo
 
 # Set container Memory
-read -p "Enter amount of container Memory (Gb): " -e -i 2048 OMV_RAM
-info "Container allocated memory is $OMV_RAM."
+read -p "Enter amount of container Memory (Gb): " -e -i 2048 RAM
+info "Container allocated memory is $RAM."
 echo
 
 # Set container password
@@ -129,24 +129,16 @@ info "Container root password is '$PWD'."
 echo
 
 # Download latest OS LXC template
-msg "Updating LXC template list..."
-pveam update >/dev/null
-msg "Downloading LXC template..."
-OSTYPE=ubuntu
-OSVERSION=${OSTYPE}-18
-mapfile -t TEMPLATES < <(pveam available -section system | sed -n "s/.*\($OSVERSION.*\)/\1/p" | sort -t - -k 2 -V)
-TEMPLATE="${TEMPLATES[-1]}"
-pveam download local $TEMPLATE >/dev/null ||
-  die "A problem occured while downloading the LXC template."
+OSTYPE=debian
 ARCH=$(dpkg --print-architecture)
-HOSTNAME=omv
-TEMPLATE_STRING="local:vztmpl/${TEMPLATE}"
+OMV_HOSTNAME=omv
+OMV_TEMPLATE_STRING="local:vztmpl/openmediavault_5.0.5-amd64.iso
 
 # Create LXC
 msg "Creating LXC container..." 
-pct create $CTID $TEMPLATE_STRING --arch $ARCH --cores 2 --hostname $HOSTNAME --cpulimit 1 --memory $RAM --features nesting=1 \
+pct create $CTID $OMV_TEMPLATE_STRING --arch $ARCH --cores 2 --hostname $HOSTNAME --cpulimit 2 --memory $RAM --features nesting=1 \
   --net0 name=eth0,bridge=vmbr0,tag=$TAG,firewall=1,gw=$GW,ip=$IP,type=veth \
-  --ostype $OSTYPE --rootfs $STORAGE:$DISK_SIZE --swap 256 --unprivileged 0 --onboot 1 --startup order=2 --password $PWD >/dev/null
+  --ostype $OSTYPE --rootfs $STORAGE:$DISK_SIZE --swap 256 --unprivileged 0 --onboot 1 --startup order=1 --password $PWD >/dev/null
 
 # Add LXC mount points
 pct set $CTID -mp0 /mnt/pve/cyclone-01-backup/hassio,mp=/mnt/backup
