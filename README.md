@@ -1,9 +1,9 @@
 # Proxmox Node Building
 These instructions are for building and configuring Proxmox hardware.
 
-Ideally you want to configure three or more Proxmox hardmetal hosts so you can create a Proxmox cluster. A minimum of three Proxmox hosts is required to form a quorum in the event a node fails.
+Ideally you want to install three or more hardmetal Proxmox hosts so you can create a Proxmox cluster. A minimum of three Proxmox hosts is needed to form a quorum in the event a node fails.
 
-But you can start with a single Proxmox host and add more later.
+But you can start with a single Proxmox host (primary host) and add more later.
 
 Here are the types of hardware I use:
 >  **Build A**
@@ -19,11 +19,11 @@ Here are the types of hardware I use:
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
 >  *  Ubiquiti Network Switches.
 
-Because I had a pre-existing Synology NAS as my NAS file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+Because I already had Synology NAS installed as my NAS file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
-Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use Intel or AMD CPU's but I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2 - you need two or more NICs for pfSense).
+Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and even as NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use Intel or AMD CPU's but I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2 - you need two or more NICs for pfSense).
 
-I also use Ubiquiti Network gear which is so easy to configure and maintain. 
+I also use Ubiquiti Network gear which is easy to configure and maintain. 
 
 Network prerequisites are:
 - [x] Layer 2 Network Switches
