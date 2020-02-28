@@ -1,5 +1,5 @@
 # Proxmox Node Building
-These instructions are for building and configuring Proxmox hardware. You may choose a combination of hardware or even use a Synology NAS to host a Proxmox VM host.
+These instructions are for building and configuring Proxmox hardware.
 
 Ideally you want to configure three or more Proxmox hardmetal hosts so you can create a Proxmox cluster. A minimum of three Proxmox hosts is required to form a quorum in the event a node fails.
 
@@ -8,18 +8,18 @@ But you can start with a single Proxmox host and add more later.
 Here are the types of hardware I use:
 >  **Build A**
 >
->  *  Synology DS1515+ with 16Gb RAM amd 4x LAN Intel NICs.
+>  *  Synology DS1515+ with 16Gb RAM amd 4x Intel LAN NICs.
 >  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC (primary node);
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
 >  *  Ubiquiti Network Switches.
 >
 >  **Build B**
 >
->  *  Homelab Server installed with 32Gb Ram and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary node);
+>  *  Homelab x86 Server installed with 16Gb Ram (minimum) and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary node);
 >  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
 >  *  Ubiquiti Network Switches.
 
-Because I had a pre-existing Synology NAS as my file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+Because I had a pre-existing Synology NAS as my NAS file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
 
 Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use Intel or AMD CPU's but I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2 - you need two or more NICs for pfSense).
 
