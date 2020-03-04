@@ -1,15 +1,16 @@
-audio
-backup
-books
-cloudstorage
-docker
-downloads
-git
-homes
-music
-openvpn
-photo
-proxmox
-public
-sshkey
-video
+# Proxmox NAS Folder Creation list
+audio medialab
+backup privatelab
+books medialab
+cloudstorage privatelab
+docker medialab
+download medialab
+git privatelab
+homes ignore
+music medialab
+openvpn privatelab
+photo medialab
+proxmox medialab
+public public
+sshkey privatelab
+video medialab
