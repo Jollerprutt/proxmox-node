@@ -202,7 +202,7 @@ You are looking for disks (sdx) which DO NOT belong to Proxmox OS install (i.e n
 To wipe or erase the chosen disk type the following command replacing `/dev/sdx` with your disk identifier (i.e /dev/sdc) 
 ```
 dd if=/dev/zero of=/dev/sdx bs=512 count=1 conv=notrunc &&
-qm recsan
+qm recsan --dryrun
 ```
 
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
