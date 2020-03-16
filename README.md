@@ -146,12 +146,12 @@ Next install the updates using the web interface `updates` > `_upgrade` - a pop 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
-### 2.02 Rename Disk Label local-zfs to typhoon-share
-During the installation of Proxmox OS you created a disk label `local-zfs`. For ease of identifying disks we want to relabel this disk to `typhoon-share`. `typhoon-share` is our storage for all VM's and LCX CT's.
+### 2.02 Rename Disk Label local-zfs to typhoon-share - IGNORE
+~~During the installation of Proxmox OS you created a disk label `local-zfs`. For ease of identifying disks we want to relabel this disk to `typhoon-share`. `typhoon-share` is our storage for all VM's and LCX CT's.~~
 
-Use the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+U~~se the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:~~
 ```
-sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg
+~~sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg~~
 ```
 
 ### 2.03 Optional - Create a Second Disk Two for typhoon-share
