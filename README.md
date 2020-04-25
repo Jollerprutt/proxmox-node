@@ -1,34 +1,45 @@
-# Proxmox Node Building
-These instructions are for building and configuring Proxmox hardware.
+# Proxmox Node Setup
+The purpose of this guide is to document a working Proxmox setup which runs on the following hardware:
 
-Ideally you want to install three or more hardmetal Proxmox hosts so you can create a Proxmox cluster. A minimum of three Proxmox hosts is needed to form a quorum in the event a node fails.
-
-But you can start with a single Proxmox host (primary host) and add more later.
-
-Here are the types of hardware I use:
->  **Build A**
+>  **Build Type A - Proxmox File Server** - Primary Host
 >
->  *  Synology DS1515+ with 16Gb RAM amd 4x Intel LAN NICs.
->  *  Qotom Mini PC Q500G6-S05 with 16Gb RAM and 6x LAN Intel NIC (primary node);
->  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
->  *  Ubiquiti Network Switches.
+>  *  Supermicro Mainboard
+>  *  PCIe Intel I350-T4 (4x LAN)
+>  *  10Gbe Intel NIC (optional)
+>  *  Support for Intel AES-NI
+>  *  32Gb of ECC RAM (Minimum)
+>  *  240Gb Samsung PM883 x2 (Enterprise Grade SSD is a must)
+>  *  8-10TB Rotational Disks
 >
->  **Build B**
+>  **Build Type B - Qotom Mini PC Q500G6-S05** - Primary Host
 >
->  *  Homelab x86 Server installed with 16Gb Ram (minimum) and PCIe Intel I350-T4 (4x LAN) / Intel I350-T2 (2 LAN) NIC (primary node);
->  *  Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC (secondary node); and,
->  *  Ubiquiti Network Switches.
+>  *  Qotom Mini PC Q500G6-S05 - I5 Intel
+>  *  6x LAN Intel NIC
+>  *  Support for Intel AES-NI (16Gb is max for Qotom)
+>  *  16Gb of RAM
+>  *  240Gb Samsung PM883 x1 (Enterprise Grade SSD is a must)
+>
+>  **Build Type C - Cluster Node Hardware** - Secondary Host
+>
+>  *  Any X86 hardware to complete a 3x host Proxmox cluster
+>  *  Hardware example: Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC
+>
+>  **Network Hardware**
+>  *  Ubiquiti UniFi Network Switches (Gen2 preferably).
+>
+>  **Optional Stuff**
+>  * NAS - Synology DiskStation, FreeNAS, File Server - Not required for **Build A**.
 
-Because I already had Synology NAS installed as my NAS file server, the **Build A** route, I have chosen low wattage power efficiency for all my Proxmox hardware. The Qotom Mini PC Q500G6-S05 and Intel NUC's are both low wattage at 15W TDP, Intel CPU's with 2x core / 4x thread Intel CPUs, support for Intel AES-NI instruction sets (for OpenVPN which is single threaded only), all have OEM Intel NIC's, and all have at least 2x SATA 6.0 Gb/s Ports each to support SSD's. Each node is installed with a minimum of 16Gb of RAM.
+In my opinion the better and most cost effective homelab solution is **Build Type A**. Its much more cost effective to assemble a Proxmox Server which is expanable to your growing needs. The most important parts are to use genuine or cloned Intel I350 network card (4x LAN NIC's), EEC Ram and most important are server/enterprise grade SSD drives for the Proxmox root OS (Warning: consumer grade SSDs will wear out FAST!). Such a machine will serve as your primary Proxmox VM host, Pfsense OpenVPN gateway router, high performance ZFS file server (NAS) and much more.
 
-Personally I prefer the **Build B** route. Its much more cost effective to build a Homelab PC Server with a Intel Corporation I350 network card (4x LAN NIC's) to function as your primary Proxmox host, Pfsense OpenVPN gateway router and even as NAS file server. The upside is you are not limited by CPU choice and installed memory capacity. You can use Intel or AMD CPU's but I recommend you always install a genuine Intel PCIe network card like a Intel Corporation I350 (Intel-I350-T4 or Intel-I350-T2 - you need two or more NICs for pfSense).
+Whether you choose **Build Type A** or **Build Type B** you can expand anytime by adding two (2x) low wattage **Build Type C** hosts so you can create a Proxmox cluster. A minimum of three Proxmox nodes is needed to form a quorum in the event a node fails.
 
-I also use Ubiquiti Network gear which is easy to configure and maintain. 
+I use Ubiquiti UniFi Network gear which is easy to configure and maintain. 
 
 Network prerequisites are:
 - [x] Layer 2 Network Switches
 - [x] Network Gateway is `192.168.1.5`
-- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable you to a configure DNS server(s), like a UniFi USG Gateway, so set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or os down)
+- [x] Network DNS server is `192.168.1.5` (Note: your Gateway hardware should enable you to a configure DNS server(s), like a UniFi USG Gateway, so set the following: primary DNS `192.168.1.254` which will be your PiHole server IP address; and, secondary DNS `1.1.1.1` which is a backup Cloudfare DNS server in the event your PiHole server 192.168.1.254 fails or is down)
 - [x] Network DHCP server is `192.168.1.5`
 - [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
 - [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
