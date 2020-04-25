@@ -30,7 +30,7 @@ The purpose of this guide is to document a working Proxmox setup which runs on t
 >  **Optional Stuff**
 >  * NAS - Synology DiskStation, FreeNAS, File Server - Not required for **Build A**.
 
-In my opinion the better homelab solution is **Build Type A**. This solution provides you performance, flexibility, a file server solution and is fully expanadable and upgradable to your growing needs. But when choosing your components always buy genuine or *cloned compatible* Intel I350 network cards (4x LAN NIC's), install EEC Ram and most important only use server or enterprise grade SSD drives for the Proxmox root OS (Warning: consumer grade SSDs will wear out FAST!). Thisc machine will serve as your primary Proxmox VM host, Pfsense OpenVPN gateway router, high performance ZFS file server (NAS) and much more.
+In my opinion the better homelab solution is **Build Type A**. This solution provides you performance, flexibility, a file server solution and is fully expanadable and upgradable to your growing needs. But when choosing your components always buy genuine or *cloned compatible* Intel I350 network cards (4x LAN NIC's), install EEC Ram and most important only use server or enterprise grade SSD drives for the Proxmox root OS (Warning: consumer grade SSDs will wear out FAST!).
 
 Whether you choose **Build Type A** or **Build Type B** you can expand anytime by adding two (2x) low wattage **Build Type C** hosts so you can create a Proxmox cluster. A minimum of three Proxmox nodes is needed to form a quorum in the event a node fails.
 
