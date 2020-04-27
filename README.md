@@ -1,5 +1,5 @@
 # Proxmox Node Setup
-The purpose of this guide is to document a working Proxmox setup which runs on the following hardware types:
+The purpose of this guide is to document a working Proxmox VE setup which runs on the following hardware types:
 
 >  **Build Type A - Proxmox File Server** - Primary Host
 >
@@ -30,7 +30,7 @@ The purpose of this guide is to document a working Proxmox setup which runs on t
 >  **Optional Stuff**
 >  * NAS Storage - Synology DiskStation, FreeNAS, QNAP, File Server - Not required for **Build A**.
 
-In my opinion **Build Type A** is the best long term solution. This build provides the value and performance, flexibility to upgrade LAN (10Gbe), increase RAM as required, change our the CPU for more power and expand storage capacity when needed. Most of all its repairable with off-the-shelf components. But when choosing your components always install genuine or *cloned compatible* Intel LAN network cards, preferably ECC Ram and always only install enterprise grade SSD drives for the Proxmox OS and cache. Consumer grade SSD's wear fast!
+In my opinion **Build Type A** is the best long term solution. This build provides the value and performance, flexibility to upgrade LAN (10Gbe), increase RAM as required, change our the CPU for more power and expand storage capacity when needed. Most of all its repairable with off-the-shelf components. But when choosing your components always install genuine or *cloned compatible* Intel LAN network cards, preferably ECC Ram and always only install enterprise grade SSD drives for the Proxmox VE OS and cache. Consumer grade SSD's wear fast.
 
 Whether you choose **Build Type A** or **Build Type B** you can create a Proxmox cluster by adding two low wattage **Build Type C** hosts. A minimum of three Proxmox hosts is needed to form a quorum in the event a host fails.
 
@@ -88,7 +88,7 @@ Tasks to be performed are:
 
 
 ## 1.00 Proxmox OS Install
-This chapter is about how to install Proxmox on your host type.
+This chapter is about how to install Proxmox VE on your host type.
 
 It is highly recommended you install server grade SSD drives for your Proxmox OS. I use the Samsung SM883 and PM883 240Gb models.
 
@@ -96,17 +96,17 @@ In all build types always use the ZFS disk format.
 
 Within these instructions we refer to SCSi and SATA controller devices designated disk names such as sda,sdb,sdc and so on, a generic linux naming convention, as `sdx` only. Ideally sda (and sdb in respect to Build Type A) should be your Proxmox OS SSD devices.
 
-But Proxmox OS SSDs devices in some hardware builds may not be sda because the drive is not installed on a SCSi and SATA controller. For example, NVMe drives show as /dev/nvme0(n1..). 
+But Proxmox VE OS SSDs devices in some hardware builds may not be sda because the drive is not installed on a SCSi and SATA controller. For example, NVMe drives show as /dev/nvme0(n1..). 
 
 Nevertheless, its most important to check your hardware device schematics and note which device type is designated to which type of hard drive you have installed. 
 
 Now go to the Proxmox site and [download](https://www.proxmox.com/en/downloads) the latest ISO and burn to USB stick. Instructions are [here](https://pve.proxmox.com/wiki/Prepare_Installation_Media).
 
-### 1.01 Proxmox OS Install - Build Type A
+### 1.01 Proxmox VE OS Install - Build Type A
 
-Install two 240Gb SSD's in your host. Proxmox OS is installed in a Raid 1 configuration using both SSDs on this host. Boot from the Proxmox USB stick and configure as follows:
+Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a Raid 1 configuration using both SSDs on this host. Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
 
-1.  
+1.  **Target Harddisk**
 
 The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
 
