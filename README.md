@@ -94,7 +94,7 @@ It is highly recommended you install server grade SSD drives for your Proxmox OS
 
 In all build types always use the ZFS disk format.
 
-Within these instructions we refer to SCSi and SATA controller devices designated disk names such as sda,sdb,sdc and so on, a generic linux naming convention, as `sdx` only. Ideally sda (and sdb in respect to Build Type A) should be your Proxmox OS SSD devices.
+Within these instructions we refer to SCSi and SATA controller devices designated disk names such as sda, sdb, sdc and so on, a generic linux naming convention, as `sdx` only. Ideally sda (and sdb in respect to Build Type A) should be your Proxmox OS SSD devices.
 
 But Proxmox VE OS SSDs devices in some hardware builds may not be sda because the drive is not installed on a SCSi and SATA controller. For example, NVMe drives show as /dev/nvme0(n1..). 
 
@@ -110,11 +110,26 @@ Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a Raid 1 con
 
 | Option | Value | Sata Device | PCIe Device | Notes |
 | :---  | :---: | :--- |
-| **Filesystem** | `zfs (RAID1)`
+| Filesystem | `zfs (RAID1)`
 | **Disk Setup**
 | Harddisk 0 | /dev/sdx | /dev/nvmeXn1 |
 | Harddisk 1 | /dev/sdx | /dev/nvmeXn1 |
+| **Advanced Options**
+| ashift | `12` ||| *4K sector size. To set 8K sector use `13`*
+| compress | `on`
+| checksum | `on`
+| copies | `1`
+| size - 240GB | `148` ||| *Size for 240GB SSD*
+| size - 120GB | `38` ||| *Size for 120GB SSD*
 
+Below are the partition sizes and the Raid type used.
+
+| Option | Value 240GB SSD | Value 120GB SSD | Raid Type | Notes |
+| :---  | :---: | :---: | :---: | :---
+| Actual Capacity | 220GB | 110GB || *This is a estimate of the actual usable space available.*
+| ZFS Logs | 8 | 8 | `Raid1` | *Set later.*
+| ZFS Cache | 64 | 64 | `Raid0` | `Set later`
+| PVE | 148 | 38 | `Raid1`
 
 
 The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
