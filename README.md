@@ -3,8 +3,8 @@ The purpose of this guide is to document a working Proxmox setup which runs on t
 
 >  **Build Type A - Proxmox File Server** - Primary Host
 >
->  *  Supermicro Mainboard
->  *  PCIe Intel I350-T4 (4x LAN)
+>  *  Supermicro Mainboard - X11SSH-F (2x 1Gb LAN) or X11SSH-LN4F (4x 1Gb LAN)
+>  *  PCIe Intel I350-T4 (4x LAN) (optional)
 >  *  10Gbe Intel NIC (optional)
 >  *  Support for Intel AES-NI
 >  *  32Gb of ECC RAM (Minimum)
@@ -24,17 +24,17 @@ The purpose of this guide is to document a working Proxmox setup which runs on t
 >  *  Any X86 hardware to complete a 3x host Proxmox cluster
 >  *  Hardware example: Intel i3/i5/i7 NUC models with 16Gb RAM and 1x LAN NIC
 >
->  **Network Hardware**
+>  **Network Appliances**
 >  *  Ubiquiti UniFi Network Switches (Gen2 preferably).
 >
 >  **Optional Stuff**
->  * NAS - Synology DiskStation, FreeNAS, File Server - Not required for **Build A**.
+>  * NAS Storage - Synology DiskStation, FreeNAS, QNAP, File Server - Not required for **Build A**.
 
-In my opinion the better homelab solution is **Build Type A**. This solution provides you performance, flexibility, a file server solution and is fully expanadable and upgradable to your growing needs. But when choosing your components always buy genuine or *cloned compatible* Intel I350 network cards (4x LAN NIC's), install EEC Ram and most important only use server or enterprise grade SSD drives for the Proxmox root OS (Warning: consumer grade SSDs will wear out FAST!).
+In my opinion the better solution is **Build Type A**. This build provides the best value and performance, flexibility to upgrade LAN (10Gbe), RAM, CPU and expand storage capacity in phases when required. Most of all its repairable with off-the-shelf components. But when choosing your components always install genuine or *cloned compatible* Intel LAN network cards, preferably EEC Ram and most definitely only ever install enterprise grade SSD drives for the Proxmox OS and cache. Consumer grade SSD will wear fast!
 
-Whether you choose **Build Type A** or **Build Type B** you can expand anytime by adding two (2x) low wattage **Build Type C** hosts so you can create a Proxmox cluster. A minimum of three Proxmox nodes is needed to form a quorum in the event a node fails.
+Whether you choose **Build Type A** or **Build Type B** you can expand anytime by adding two (2x) low wattage **Build Type C** hosts to create a Proxmox cluster. A minimum of three Proxmox hosts is needed to form a quorum in the event a host fails.
 
-I use Ubiquiti UniFi Network gear which is easy to configure and maintain. 
+I use Ubiquiti UniFi Network appliances because its easy to configure and for me reliable. 
 
 Network prerequisites are:
 - [x] Layer 2 Network Switches
@@ -44,7 +44,7 @@ Network prerequisites are:
 - [x] A DDNS service is fully configured and enabled (I recommend you use the free Synology DDNS service)
 - [x] A ExpressVPN account (or any preferred VPN provider) is valid and its smart DNS feature is working (public IP registration is working with your DDNS provider)
 
-Other optional Prerequisites are (if using Build A);
+Other optional Prerequisites are (if using Build Type B);
 - [x] Synology NAS is `192.168.1.10`
 - [x] Synology NAS is installed with Synology Virtual Machine Manager
 - [x] Synology NAS is configured, including NFS, as per [synobuild](https://github.com/ahuacate/synobuild)
@@ -87,8 +87,12 @@ Tasks to be performed are:
 
 
 
-## 1.00 Proxmox Base OS Installation
-Its best to install Proxmox OS in a Raid 1 configuration using two SSDs on your primary node. Then if one SSD fails you have disk redunancy. 
+## 1.00 Proxmox OS Install
+Only use enterprise or server grade SSD drives for your Proxmox OS.
+
+### 1.01 Proxmox OS Install - Build Type A
+
+The Samsung SM883 or PM883 240Gb is ideal in a Raid 1 configuration using two SSDs on your primary node. Then if one SSD fails you have disk redunancy. 
 
 The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
 
