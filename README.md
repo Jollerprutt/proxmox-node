@@ -125,7 +125,7 @@ Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a ZFS Raid 1
 | size - 240GB | `148` ||| *Size for 240GB SSD*
 | size - 120GB | `38` ||| *Size for 120GB SSD*
 
-The PVE partition `size` required above is calculated in the following table. The unallocated space is required for later partitioning which is used for ZFS Logs and Cache.  
+The above PVE partition `size` is calculated in the following table. The unallocated space is required for later partitioning for ZFS Logs and Cache.  
 
 | Option | Value 240GB SSD | Value 120GB SSD | Notes |
 | :---  | :---: | :---: | :---
