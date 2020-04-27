@@ -135,13 +135,12 @@ The PVE partition `size` required above is calculated in the following table. Th
 | ZFS Logs size | 8 | 8 | 
 | ZFS Cache size | 64 | 64 |
 
-2.  **Location and Time Zone Selection**
-
-![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/pve-select-location.png)
 
 ### 1.02 Proxmox VE OS Install - Build Type B
 
-Install one 240Gb SSD in your Qotom hardware. Proxmox VE OS is installed in a ZFS Raid 0 configuration. Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
+Some Qotom models have two Sata 3.0 ports but I only use one. The issue is device /dev/sdb is msata type and I could not find a server grade 240GB msata SSD. So its best to use /dev/sda and install 2,5" form factor SSD.
+
+Install one Sata 240Gb SSD in your Qotom hardware. Proxmox VE OS is installed in a ZFS Raid 0 configuration. Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
 
 1.  **Proxmox Virtualisation Environment (PVE)** - At this stage you must select your Proxmox VE OS installation drive, and Raid type. Click 'options' and complete as follows:
 
@@ -149,28 +148,17 @@ Install one 240Gb SSD in your Qotom hardware. Proxmox VE OS is installed in a ZF
 | :---  | :---: | :---
 | Filesystem | `zfs (RAID0)`
 | **Disk Setup - SATA**
-| Harddisk 0 | /dev/sdx ||
-| Harddisk 1 | /dev/sdx ||
-| **Disk Setup - PCIe NVMe**
-| Harddisk 0 || /dev/nvmeXn1 |
-| Harddisk 1 || /dev/nvmeXn1 |
+| Harddisk 0 | /dev/sda ||
+| Harddisk 1 | --do not use-- ||
 | **Advanced Options**
 | ashift | `12` | *4K sector size. For 8K sectors use `13`*
 | compress | `on`
 | checksum | `on`
 | copies | `1`
-| size - 240GB | `148` ||| *Size for 240GB SSD*
-| size - 120GB | `38` ||| *Size for 120GB SSD*
+| size - 240GB | `240` ||| *Max the size*
+| size - 120GB | `120` ||| *Max the size*
 
-The PVE partition `size` required above is calculated in the following table. The unallocated space is required for later partitioning which is used for ZFS Logs and Cache.  
 
-| Option | Value 240GB SSD | Value 120GB SSD | Notes |
-| :---  | :---: | :---: | :---
-| Actual Capacity | 220GB | 110GB | *This is a estimate of the actual usable space available.*
-| PVE size | 148 | 38 | 
-| **Unallocated space**
-| ZFS Logs size | 8 | 8 | 
-| ZFS Cache size | 64 | 64 |
 
 The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
 
