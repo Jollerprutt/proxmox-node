@@ -109,7 +109,7 @@ Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a Raid 1 con
 1.  **Target Harddisk** - At this stage you must select your Proxmox VE OS installation drives, Raid type and partition sizes. Click 'options' and complete as follows:
 
 | Option | Value | Sata Device | PCIe Device | Notes |
-| :---  | :---: | :--- |
+| :---  | :---: | :---: | :---: | :---
 | Filesystem | `zfs (RAID1)`
 | **Disk Setup**
 | Harddisk 0 | /dev/sdx | /dev/nvmeXn1 |
@@ -122,14 +122,15 @@ Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a Raid 1 con
 | size - 240GB | `148` ||| *Size for 240GB SSD*
 | size - 120GB | `38` ||| *Size for 120GB SSD*
 
-Below are the partition sizes and the Raid type used.
+The PVE partition `size` required above is calculated in the following table. The unallocated space is required for later partitioning which is used for ZFS Logs and Cache.  
 
-| Option | Value 240GB SSD | Value 120GB SSD | Raid Type | Notes |
-| :---  | :---: | :---: | :---: | :---
-| Actual Capacity | 220GB | 110GB || *This is a estimate of the actual usable space available.*
-| ZFS Logs | 8 | 8 | `Raid1` | *Set later.*
-| ZFS Cache | 64 | 64 | `Raid0` | `Set later`
-| PVE | 148 | 38 | `Raid1`
+| Option | Value 240GB SSD | Value 120GB SSD | Notes |
+| :---  | :---: | :---: | :---
+| Actual Capacity | 220GB | 110GB | *This is a estimate of the actual usable space available.*
+| PVE size | 148 | 38 | 
+| **Unallocated space for partitioning for ZFS logs and cache**
+| ZFS Logs size | 8 | 8 | 
+| ZFS Cache size | 64 | 64 |
 
 
 The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
