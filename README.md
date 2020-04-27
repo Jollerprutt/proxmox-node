@@ -106,7 +106,16 @@ Now go to the Proxmox site and [download](https://www.proxmox.com/en/downloads) 
 
 Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a Raid 1 configuration using both SSDs on this host. Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
 
-1.  **Target Harddisk**
+1.  **Target Harddisk** - At this stage you must select your Proxmox VE OS installation drives, Raid type and partition sizes. Click 'options' and complete as follows:
+
+| Option | Value | Sata Device | PCIe Device | Notes |
+| :---  | :---: | :--- |
+| **Filesystem** | `zfs (RAID1)`
+| **Disk Setup**
+| Harddisk 0 | /dev/sdx | /dev/nvmeXn1 |
+| Harddisk 1 | /dev/sdx | /dev/nvmeXn1 |
+
+
 
 The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
 
