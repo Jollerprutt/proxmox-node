@@ -188,12 +188,11 @@ Configure each host as follows:
 
 | Option | Build Type A - Value | Build Type B - Value | Build Type C - Value | Build Type C - Value | Notes |
 | :---  | :---: | :---: | :---: | :---: | :--- |
-| **Hardware Type** |  **Build Type A** | **Build Type B - Qotom** | **Build Type C - Single NIC** | **Build Type C - Synology VM**
 | Country |Type your Country|Type your Country|Type your Country|Type your Country
 | Timezone |Select|Select|Select|Select
 | Keymap |`en-us`|`en-us`|`en-us`|`en-us`
-| Password | Enter your new password | Enter your new password | 	Enter your new password |  	Enter your new password | *Same root password on all nodes*
-| E-mail |Enter your Email|Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a invalid email type mail@example.com*
+| Password | Enter your new password | Enter your new password | Enter your new password | Enter your new password | *Same root password on all nodes*
+| E-mail |Enter your Email|Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a valid email type mail@example.com*
 | Management interface |Leave Default|Leave Default|Leave Default|Leave Default
 | Hostname |`typhoon-01.localdomain`|`typhoon-01.localdomain`|`typhoon-02.localdomain`|`typhoon-03.local.domain`
 |IP Address |`192.168.1.101`|`192.168.1.101`|`192.168.1.102`|`192.168.1.103`
