@@ -203,15 +203,15 @@ Configure each host as follows:
 
 **Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
 
-#![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/os_raid1_install.jpg)
 
-## 2.00 Configure the Proxmox Hardware
-Configuration is done via the Proxmox web interface. Just point your browser to the IP address set during the installation of Proxmox OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
+## 2.00 Configure your Proxmox Hardware
+Configuration is done via the Proxmox web interface. Just point your browser to the IP address set during the installation of Proxmox VE OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
 
 Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
 ### 2.01 Update Proxmox OS and enable turnkeylinux templates
 Using the web interface `updates` > `refresh` search for all the latest required updates. You will get a few errors which ignore.
+
 Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates and it will prompt you to type `Y` so do so.
 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
