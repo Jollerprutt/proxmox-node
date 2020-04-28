@@ -86,12 +86,12 @@ Tasks to be performed are:
 	- [00.03 Simple bash script to APT update all LXC containers which are stopped or running status](#0003-simple-bash-script-to-apt-update-all-lxc-containers-which-are-stopped-or-running-status)
 
 
-## 1.00 Selecting Hardware
-For what its worth here are my hardware builds.
+## 1.00 Hardware Specifications
+Hardware specifications for Build Types.
 
-### 1.01 Hardware - Build Type A
+### 1.01 Hardware Specifications - Build Type A
 | Component | Part Description | Part Number | Units | Notes
-| :---  | :---: | :---: |  :---: | :---: | :---
+| :---  | :---: | :---: |  :---: | :---
 | Mainboard | Supermicro X11SSH-F | MBD-X11SSH-F
 | CPU | 
 | PCIe Network Card (1Gbe)
@@ -105,7 +105,7 @@ For what its worth here are my hardware builds.
 | Server Case
 
 
-## 1.00 Proxmox OS Install
+## 2.00 Proxmox OS Install
 This chapter is about how to install Proxmox VE on your host type.
 
 It is highly recommended you install server grade SSD drives for your Proxmox OS. I use the Samsung SM883 and PM883 240Gb models.
@@ -120,7 +120,7 @@ Nevertheless, its most important to check your hardware device schematics and no
 
 Now go to the Proxmox site and [download](https://www.proxmox.com/en/downloads) the latest ISO and burn to USB stick. Instructions are [here](https://pve.proxmox.com/wiki/Prepare_Installation_Media).
 
-### 1.01 Proxmox VE OS Install - Build Type A
+### 2.01 Proxmox VE OS Install - Build Type A
 
 Install two 240Gb SSD's in your host. Proxmox VE OS is installed in a ZFS Raid 1 configuration using both SSDs on this host. Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
 
@@ -154,7 +154,7 @@ The above PVE partition `size` is calculated in the following table. The unalloc
 | ZFS Cache size | 64 | 64 |
 
 
-### 1.02 Proxmox VE OS Install - Build Type B
+### 2.02 Proxmox VE OS Install - Build Type B
 
 Despite Qotom hardware having two internal SATA slots they are of different types. This is a problem because device /dev/sdb is mSATA. So I only use /dev/sda installed with a single 2,5" form factor SSD.
 
@@ -176,7 +176,7 @@ Proxmox VE OS is installed in a ZFS Raid0 configuration (Raid0 with 1x SSD is ok
 | size - 240GB | `240` ||| *Max the size*
 | size - 120GB | `120` ||| *Max the size*
 
-### 1.03 Proxmox VE OS Install - Build Type C
+### 2.03 Proxmox VE OS Install - Build Type C
 
 Build Type C can be any x86 hardware of your choosing. Its main role is for creating a cluster so I use low wattage Intel NUC's. If you have a Synology NAS with a Intel CPU you can save on hardware costs by creating a Synology Virtual Machine Proxmox VM build with these instructions [HERE](https://github.com/ahuacate/synobuild/blob/master/README.md#install--configure-synology-virtual-machine-manager).
 
@@ -198,7 +198,7 @@ Proxmox VE OS is installed in a ZFS Raid0 configuration (Raid0 with 1x SSD is ok
 | size - 240GB | `240` ||| *Max the size*
 | size - 120GB | `120` ||| *Max the size*
 
-### 1.04 Proxmox VE OS Install - Final Steps
+### 2.04 Proxmox VE OS Install - Final Steps
 
 The remaining steps in installing Proxmox VE are self explanatory. 
 
@@ -221,12 +221,12 @@ Configure each host as follows:
 **Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
 
 
-## 2.00 Configure your Proxmox Hardware
+## 3.00 Configure your Proxmox Hardware
 Configuration is done via the Proxmox web interface. Just point your browser to the IP address set during the installation of Proxmox VE OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
 
 Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
-### 2.01 Update Proxmox OS and enable turnkeylinux templates
+### 3.01 Update Proxmox OS and enable turnkeylinux templates
 Using the web interface `updates` > `refresh` search for all the latest required updates. You will get a few errors which ignore.
 
 Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates and it will prompt you to type `Y` so do so.
