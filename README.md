@@ -30,7 +30,7 @@ The purpose of this guide is to document a working Proxmox VE setup which runs o
 >  **Optional Stuff**
 >  * NAS Storage - Synology DiskStation, FreeNAS, QNAP, File Server - Not required for **Build A**.
 
-In my opinion **Build Type A** is the best long term solution. This build provides the value and performance, flexibility to upgrade LAN (10Gbe), increase RAM as required, change our the CPU for more power and expand storage capacity when needed. Most of all its repairable with off-the-shelf components. But when choosing your components always install genuine or *cloned compatible* Intel LAN network cards, preferably ECC Ram and always only install enterprise grade SSD drives for the Proxmox VE OS and cache. Consumer grade SSD's wear fast.
+In my opinion **Build Type A** is the best long term solution. This build provides the user good value and performance, flexibility to upgrade LAN (10Gbe), upgradable RAM, and expandable storage capacity when needed. I recommend when selecting your components always install hardware with genuine Intel NICs, preferably ECC Ram and always use enterprise grade SSD drives for the Proxmox VE OS and cache. Consumer grade SSD's wear fast.
 
 Whether you choose **Build Type A** or **Build Type B** you can create a Proxmox cluster by adding two low wattage **Build Type C** hosts. A minimum of three Proxmox hosts is needed to form a quorum in the event a host fails.
 
@@ -203,11 +203,7 @@ Configure each host as follows:
 
 **Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
 
-Shown below is single disk Raid0 ZFS Proxmox OS install setting:
-![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/os_raid0_install.jpg)
-
-Shown below is a two disk Raid1 ZFS Proxmox OS install setting:
-![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/os_raid1_install.jpg)
+#![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/os_raid1_install.jpg)
 
 ## 2.00 Configure the Proxmox Hardware
 Configuration is done via the Proxmox web interface. Just point your browser to the IP address set during the installation of Proxmox OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
