@@ -30,7 +30,7 @@ The purpose of this guide is to document a working Proxmox VE setup which runs o
 >  **Optional Stuff**
 >  * NAS Storage - Synology DiskStation, FreeNAS, QNAP, File Server - Not required for **Build A**.
 
-In my opinion **Build Type A** is the best long term solution. With the right components you can obtain a better value to performance mark over and above OEM NAS hardware, retain the flexibility to always be able upgrade any component such as LAN (10Gbe), RAM, CPU and expand storage capacity when needed. I recommend when selecting your components always install genuine Intel NICs, preferably ECC Ram and always select enterprise grade SSD drives for the Proxmox VE OS and cache. Consumer grade SSD's wear fast.
+In my opinion **Build Type A** is the best long term solution. Because with quality components you can obtain a better value to performance mark over and above most OEM NAS hardware, retain the flexibility to always be able upgrade any component at any time, such as LAN (10Gbe), RAM, CPU and expand storage capacity when needed. But I recommend when possible select or install install genuine Intel NICs, use ECC Ram and install enterprise grade SSD drives for the Proxmox VE OS and cache.
 
 Whether you choose **Build Type A** or **Build Type B** you can create a Proxmox cluster by adding two low wattage **Build Type C** hosts. A minimum of three Proxmox hosts is needed to form a quorum in the event a host fails.
 
