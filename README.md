@@ -8,7 +8,7 @@ The purpose of this guide is to document a working Proxmox VE setup which runs o
 >  *  10Gbe Intel NIC (optional)
 >  *  Support for Intel AES-NI
 >  *  32Gb of ECC RAM (Minimum)
->  *  240Gb Samsung PM883 x2 (Enterprise Grade SSD is a must)
+>  *  240Gb Samsung SM/PM883 x2 (Enterprise Grade SSD is a must)
 >  *  8-10TB Rotational Disks
 >
 >  **Build Type B - Qotom Mini PC Q500G6-S05** - Primary Host
@@ -138,9 +138,9 @@ The above PVE partition `size` is calculated in the following table. The unalloc
 
 ### 1.02 Proxmox VE OS Install - Build Type B
 
-Some Qotom models have two Sata 3.0 ports but I only use one. The issue is device /dev/sdb is msata type and I could not find a server grade 240GB msata SSD. So its best to use /dev/sda and install 2,5" form factor SSD.
+Despite Qotom hardware having two internal SATA slots they are of different types. This is a problem because device /dev/sdb is mSATA. So I only use /dev/sda installed with a single 2,5" form factor SSD.
 
-Install one Sata 240Gb SSD in your Qotom hardware. Proxmox VE OS is installed in a ZFS Raid 0 configuration. Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
+Proxmox VE OS is installed in a ZFS Raid0 configuration (Raid0 with 1x SSD is okay). Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
 
 1.  **Proxmox Virtualisation Environment (PVE)** - At this stage you must select your Proxmox VE OS installation drive, and Raid type. Click 'options' and complete as follows:
 
@@ -158,56 +158,50 @@ Install one Sata 240Gb SSD in your Qotom hardware. Proxmox VE OS is installed in
 | size - 240GB | `240` ||| *Max the size*
 | size - 120GB | `120` ||| *Max the size*
 
+### 1.03 Proxmox VE OS Install - Build Type C
 
+Build Type C can be any x86 hardware of your choosing. Its main role is for creating a cluster so I use low wattage Intel NUC's. If you have a Synology NAS with a Intel CPU you can save on hardware costs by creating a Synology Virtual Machine Proxmox VM build with these instructions [HERE](https://github.com/ahuacate/synobuild/blob/master/README.md#install--configure-synology-virtual-machine-manager).
 
-The primary node is your work horse with the fastest CPU and most memory because its hosts pfSense (OpenVPN gateway, HA Proxy, pfBlockerNG & PiHole blocker etc) and if your chose the **Route B** option its also your NAS file server.
+Proxmox VE OS is installed in a ZFS Raid0 configuration (Raid0 with 1x SSD is okay). Boot from the Proxmox installation USB stick and configure Proxmox VE as follows:
 
-Secondary hosts can have single SSDs.
+1.  **Proxmox Virtualisation Environment (PVE)** - At this stage you must select your Proxmox VE OS installation drive, and Raid type. Click 'options' and complete as follows:
 
-Whatever you choose, single SSD or Raid 1, always use the ZFS disk format.
+| Option | Value | Notes |
+| :---  | :---: | :---
+| Filesystem | `zfs (RAID0)`
+| **Disk Setup - SATA**
+| Harddisk 0 | /dev/sda ||
+| Harddisk 1 | --do not use-- ||
+| **Advanced Options**
+| ashift | `12` | *4K sector size. For 8K sectors use `13`*
+| compress | `on`
+| checksum | `on`
+| copies | `1`
+| size - 240GB | `240` ||| *Max the size*
+| size - 120GB | `120` ||| *Max the size*
 
-In these instructions SCSi and SATA controller devices designate disk names such as sda,sdb,sdc and so on, a generic linux naming convention, are referred to as `sdx` only. This is because despite Disk 1 often being device sda in some hardware it may not be. So its best to first check your hardware and note which device is designated to which type of hard disk you have installed. This is IMPORTANT for option **Build B** because the disks you will use as your Proxmox ZFS shared NAS storage disks, a Raid 10 array, CANNOT have your OS installed on it. So for ease of writing and to avoid confusion all SATA disk devices are referred to as sdx unless otherwise stated.
+### 1.04 Proxmox VE OS Install - Final Steps
 
-I recommend a minimum SSD size of 120 Gb for the OS - preferably 250Gb. You could also use a USB dom for the Proxmox OS on secondary nodes but a generic consumer USB thumbdrive or SDcard is **NOT RECOMMENDED** because Proxmox has a fair amount of read/write I/O activity.
+The remaining steps in installing Proxmox VE are self explanatory. 
 
-Create your Proxmox installation USB media (instructions [here](https://pve.proxmox.com/wiki/Install_from_USB_Stick)), set your nodes bios boot loader order to Hard Disk first / USB second (so you can boot from your proxmox installation USB media), and install proxmox.
+Configure each host as follows:
 
-For your Synology Virtual Machine Proxmox VM build follow the the instructions [HERE](https://github.com/ahuacate/synobuild/blob/master/README.md#install--configure-synology-virtual-machine-manager).
+| Option | Build Type A - Value | Build Type B - Value | Build Type C - Value | Build Type C - Value | Notes |
+| :---  | :---: | :---: | :---: | :---: | :--- |
+| **Hardware Type** |  **Build Type A** | **Build Type B - Qotom** | **Build Type C - Single NIC** | **Build Type C - Synology VM**
+| Country |Type your Country|Type your Country|Type your Country|Type your Country
+| Timezone |Select|Select|Select|Select
+| Keymap |`en-us`|`en-us`|`en-us`|`en-us`
+| Password | Enter your new password | Enter your new password | 	Enter your new password |  	Enter your new password | *Same root password on all nodes*
+| E-mail |Enter your Email|Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a invalid email type mail@example.com*
+| Management interface |Leave Default|Leave Default|Leave Default|Leave Default
+| Hostname |`typhoon-01.localdomain`|`typhoon-01.localdomain`|`typhoon-02.localdomain`|`typhoon-03.local.domain`
+|IP Address |`192.168.1.101`|`192.168.1.101`|`192.168.1.102`|`192.168.1.103`
+| Netmask |`255.255.255.0`|`255.255.255.0`|`255.255.255.0`|`255.255.255.0`
+| Gateway |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
+| DNS Server |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 
-Remember to remove your USB media on reboot.
-
-Configure each node as follows:
-
-| Option | Node 1 Value | Node 2 Value | Node 3 Value | Notes |
-| :---  | :---: | :---: | :---: | :--- |
-| **Hardware Type** | **Qotom or Homelab Server - Multi NIC** | **Generic PC - Single NIC** | **Synology VM**
-| **Raid1 - Two disk OS installation**
-| Target Disk | Select `i.e /dev/sda/ (120Gb)` ||| *Note: /dev/sda and /dev/sdb are normally your OS disks*
-| Target Disk - Options | `ZFS (RAID1)`
-| Disk Setup 
-| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
-| Harddisk 1 | `/dev/sdb (name of SSD brand and GB size)` ||| *Note, both /dev/sda and /dev/sdb should be about the same disk size*
-| Harddisk 2 | `--do not use--` ||| *MUST SELECT **--do not use--** on all listed harddisks with ID **2** and above if disks are present!*
-| Target Disk | Select `i.e /dev/sda/ (120Gb)` | Select `i.e /dev/sda/ (120Gb)` | Select `i.e /dev/sda/ (120Gb)` | *Note, /dev/sda or /dev/sdb - generally your OS disks*
-| Target Disk - Options |`ZFS RAID0`|`ZFS RAID0`|`ZFS RAID0`
-| Harddisk Options
-| File System | `ZFS (RAID0)` | `ZFS (RAID0)` | `ZFS (RAID0)`
-| Disk Setup 
-| Harddisk 0 | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)` | `/dev/sda (name of SSD brand and GB size)`
-| Harddisk 1 -> upwards | `--do not use--` | `--do not use--` | `--do not use--` | *MUST SELECT **--do not use--** on all listed harddisks with ID **1** and above if disks are present!*
-| Country |Type your Country|Type your Country|Type your Country
-| Timezone |Select |Select|Select
-| Keymap |`en-us`|`en-us`|`en-us`
-| Password | Enter your new password | 	Enter your new password |  	Enter your new password | *Same root password on all nodes*
-| E-mail |Enter your Email|Enter your Email|Enter your Email | *If you dont want to enter a invalid email type mail@example.com*
-| Management interface |Leave Default|Leave Default|Leave Default
-| Hostname |`typhoon-01.localdomain`|`typhoon-02.localdomain`|`typhoon-03.local.domain`
-|IP Address |`192.168.1.101`|`192.168.1.102`|`192.168.1.103`
-| Netmask |`255.255.255.0`|`255.255.255.0`|`255.255.255.0`
-| Gateway |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
-| DNS Server |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
-
-**Note:** Node 1 MUST BE your Primary Node multi LAN NIC Qotom or Homelab Server. Its important when configuring your Proxmox OS ZFS setup you DO NOT include other installed hard disks used by your Proxmox ZFS Raid 10 NAS file server array.
+**Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
 
 Shown below is single disk Raid0 ZFS Proxmox OS install setting:
 ![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/os_raid0_install.jpg)
