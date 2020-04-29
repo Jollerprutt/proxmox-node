@@ -538,6 +538,145 @@ Next install the updates using the web interface `updates` > `_upgrade` - a pop 
 Next install turnkeylinux container templates by using the web interface CLI `shell` and type
 `pveam update`
 
+### 5.02 Manual Configuration - Edit your Proxmox hosts file
+I've stored my hosts file on GitHub for easy updating. You can view it [HERE](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts)
+
+Go to Proxmox web interface of your node `typhoon-0X` > `>_Shell` and type the following to fully replace and update your hosts file:
+
+```
+hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -) &&
+cat << EOF > /etc/hosts
+$hostsfile
+EOF
+```
+
+### 5.03 Manual Configuration - Edit Proxmox inotify limits
+Go to Proxmox web interface of your node `typhoon-0X` > `>_Shell` and type the following to fully replace and update your hosts file:
+```
+echo -e "fs.inotify.max_queued_events = 16384
+fs.inotify.max_user_instances = 512
+fs.inotify.max_user_watches = 8192" >> /etc/sysctl.conf
+```
+
+### 5.04 Manual Configuration - Configure Proxmox bridge networking
+This section is for **Build Type A** or **B** - hosts with multiple LAN NIC's. If you configuring **Build Type C**, a single NIC host or a Synology VM then you can skip this step.
+
+
+1.  **Build Type A** - 4x LAN 1Gb plus 10Gbe
+A 4x LAN 1Gb plus 10Gbe configuration is as follows.
+
+| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
+| :--- | :---:  | :---: | :---:  | :---: |
+|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
+
+2.  **Build Type A** - 4x LAN 1Gb
+A 4x LAN 1Gb configuration is as follows.
+
+| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
+| :--- | :---:  | :---: | :---:  | :---: |
+|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
+
+The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
+
+| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
+| :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
+|**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
+|**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
+
+If you are using the Qotom 4x Gigabit NIC model version then you dont have enough NIC ports to create LAGS because we require 4x physical connection addresses. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
+
+| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
+| :--- | :---:  | :---: | :---:  | :---: |
+|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
+
+The following recipes are for the 6x Gigabit NIC Qotom Mini PC Q500G6-S05 unit. Amend for other hardware.
+
+Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bond` and fill out the details as shown below (must be in order). Here we are going to create two LAGs/Bonds.
+
+| Description | Value |
+| :---  | :---: |
+| Name |`bond0`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |`☑`|
+| Slaves |`enp1s0 enp2s0`|
+| Mode |`LACP (802.3ad)`|
+| Hash policy |`layer2`|
+| Comment |`Proxmox LAN Bond`|
+|||
+| Name |`bond1`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |`☑`|
+| Slaves |`enp3s0 enp4s0`|
+| Mode |`LACP (802.3ad)`|
+| Hash policy |`layer2`|
+| Comment |`VPN-egress Bond`|
+
+Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bridge` and fill out the details as shown below (must be in order) but note vmbr0 will be a edit, not create.
+
+| Description | Value |
+| :---  | :---: |
+| Name |`vmbr0`|
+| IP address |`192.168.1.101`|
+| Subnet mask |`255.255.255.0`|
+| Gateway |`192.168.1.5`|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
+|Bridge ports |`bond0`|
+| Comment |`Proxmox LAN Bridge/Bond`|
+|||
+| Name |`vmbr1`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
+| Bridge ports |`bond1`|
+| Comment |`VPN-egress Bridge/Bond`|
+|||
+| Name |`vmbr2`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
+| Bridge ports |`enp5s0`|
+| Comment |`vpngate-world`|
+|||
+| Name |`vmbr3`|
+| IP address |leave blank|
+| Subnet mask |leave blank|
+| Gateway |leave blank|
+| IPv6 address |leave blank|
+| Prefix length |leave blank|
+| Gateway |leave blank|
+| Autostart |`☑`|
+| VLAN aware |`☑`|
+| Bridge ports |`enp6s0`|
+| Comment |`vpngate-local`|
+
+Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
+
+Reboot the Proxmox node to invoke the system changes.
+
 
 ## 6.00 Manual Configuration - Create a NAS Share hosted on Proxmox
 For those who want to manually build a NAS on `typhoon-01` you need to create a ZFS zpool with one or more drives. If you have two or more drives a Raid type can be created. You may choose which raid level to use:
@@ -672,121 +811,9 @@ Now using the web interface `Datacenter` > `Storage` > `Add` > `NFS` configure t
 | Nodes |leave as default|
 | Enable |leave as default|
 
-### 5.02 Configure Proxmox bridge networking
-If you using a single NIC hardware or a Synology VM you can skip this step.
 
-The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
 
-| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
-| :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
-|**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
-|**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-If you are using the Qotom 4x Gigabit NIC model version then you dont have enough NIC ports to create LAGS because we require 4x physical connection addresses. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
-
-| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
-| :--- | :---:  | :---: | :---:  | :---: |
-|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
-
-The following recipes are for the 6x Gigabit NIC Qotom Mini PC Q500G6-S05 unit. Amend for other hardware.
-
-Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bond` and fill out the details as shown below (must be in order). Here we are going to create two LAGs/Bonds.
-
-| Description | Value |
-| :---  | :---: |
-| Name |`bond0`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| Slaves |`enp1s0 enp2s0`|
-| Mode |`LACP (802.3ad)`|
-| Hash policy |`layer2`|
-| Comment |`Proxmox LAN Bond`|
-|||
-| Name |`bond1`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| Slaves |`enp3s0 enp4s0`|
-| Mode |`LACP (802.3ad)`|
-| Hash policy |`layer2`|
-| Comment |`VPN-egress Bond`|
-
-Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bridge` and fill out the details as shown below (must be in order) but note vmbr0 will be a edit, not create.
-
-| Description | Value |
-| :---  | :---: |
-| Name |`vmbr0`|
-| IP address |`192.168.1.101`|
-| Subnet mask |`255.255.255.0`|
-| Gateway |`192.168.1.5`|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-|Bridge ports |`bond0`|
-| Comment |`Proxmox LAN Bridge/Bond`|
-|||
-| Name |`vmbr1`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-| Bridge ports |`bond1`|
-| Comment |`VPN-egress Bridge/Bond`|
-|||
-| Name |`vmbr2`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-| Bridge ports |`enp5s0`|
-| Comment |`vpngate-world`|
-|||
-| Name |`vmbr3`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-| Bridge ports |`enp6s0`|
-| Comment |`vpngate-local`|
-
-Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
-
-Reboot the Proxmox node to invoke the system changes.
-
-### 5.03 Edit your Proxmox hosts file
-I've stored my hosts file on GitHub for easy updating. You can view it [HERE](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts)
-
-Go to Proxmox web interface of your node `typhoon-0X` > `>_Shell` and type the following to fully replace and update your hosts file:
-
-```
-hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -) &&
-cat << EOF > /etc/hosts
-$hostsfile
-EOF
-```
 
 ### 5.04 Create a new Proxmox user
 For ease of management I have created a specific user and group explicitly for Proxmox and Virtual Machines in my cluster with a username storm and group called homelab. You only have to complete this task on typhoon-01 because Proxmox PVE users (not PAM users) are deployed across the cluster.
@@ -829,12 +856,7 @@ service sshd restart &&
 rm /mnt/pve/cyclone-01-public/id_rsa*.pub
 ```
 
-### 5.06 Edit Proxmox inotify limits
-```
-echo -e "fs.inotify.max_queued_events = 16384
-fs.inotify.max_user_instances = 512
-fs.inotify.max_user_watches = 8192" >> /etc/sysctl.conf
-```
+
 
 ## 6.00 Create a Proxmox pfSense VM on typhoon-01
 In this step you will create two OpenVPN Gateways for the whole network using pfSense. These two OpenVPN Gateways will be accessible by any connected devices, LAN or WiFi. The two OpenVPN Gateways are integated into separate VLAN networks:
