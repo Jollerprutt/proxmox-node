@@ -497,10 +497,10 @@ As you've probably concluded you must add any new HAProxy backend server IPv4 ad
 ## 4.00 Configure your Proxmox Host - Easy Script Method
 If you have completed Steps 1.00 thru to 3.05 you can proceed to build your Proxmox by using pre-configured bash scripts. The scripts should work for:
 
->  **Build Type A** - 4x LAN 1Gb PLUS 10Gbe
->  **Build Type A** - 4x LAN 1Gb
->  **Build Type B** - 6x LAN 1Gb (*Qotom Mini PC model Q500G6-S05*)
->  **Build Type C** - 1x LAN 1Gb
+*  **Build Type A** - 4x LAN 1Gb PLUS 10Gbe
+*  **Build Type A** - 4x LAN 1Gb
+*  **Build Type B** - 6x LAN 1Gb (*Qotom Mini PC model Q500G6-S05*)
+*  **Build Type C** - 1x LAN 1Gb
 
 If your hardware doesn't match the above specifications then my Easy Scripts may not work. You best proceed to Step 5.0 and build manually.
 
