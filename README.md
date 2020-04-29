@@ -221,78 +221,6 @@ Configure each host as follows:
 **Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
 
 
-## 3.00 Configure your Proxmox Hardware
-Configuration is done via the Proxmox web interface. Just point your browser to the IP address you set during the installation of Proxmox VE OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
-
-Default login is "root" (realm PAM) and the root password you defined during the installation process.
-
-### 3.01 Update Proxmox OS and enable turnkeylinux templates
-Using the web interface `updates` > `refresh` search for all the latest required updates. You will get a few errors which ignore.
-
-Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates and it will prompt you to type `Y` so do so.
-
-Next install turnkeylinux container templates by using the web interface CLI `shell` and type
-`pveam update`
-
-### 2.02 Rename Disk Label local-zfs to typhoon-share - IGNORE
-~~During the installation of Proxmox OS you created a disk label `local-zfs`. For ease of identifying disks we want to relabel this disk to `typhoon-share`. `typhoon-share` is our storage for all VM's and LCX CT's.~~
-
-U~~se the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:~~
-```
-~~sed -i 's|zfspool: local-zfs|zfspool: typhoon-share|g' /etc/pve/storage.cfg~~
-```
-
-### 2.03 Optional - Create a Second Disk Two for typhoon-share
-If for whatever reason you want to install a another disk for `typhoon-share` here are the instructions. 
-
-Create the new disk using the web interface `Disks` > `ZFS` > `Create: ZFS` and configure each node as follows:
-
-| Option | Node 1 Value | Node 2 Value | Node 3 Value |
-| :---  | :---: | :---: | :---: |
-| Name |`typhoon-share`|`typhoon-share`|`typhoon-share`
-| RAID Level |`Single Disk`|`Single Disk`|`Single Disk`
-| Compression |`on`|`on`|`on`
-| ashift |`12`|`12`|`12`
-| Device |`/dev/sdx`|`/dev/sdx`|`/dev/sdx`
-
-**Note:** If your choose to use a ZFS Raid (2 or more disks) for storage redundancy change accordingly per node but you must retain the Name ID **typhoon-share**.
-
-### 2.04 Optional - Create a NAS Share hosted on Proxmox
-For those who want to build a NAS on `typhoon-01` you need to create a ZFS zpool with one disk or if you have multiple disks a Raid array of two or more disks. You may choose which raid level to use:
-
-*  **RAID0** - Also called “striping”. The capacity of such volume is the sum of the capacities of all disks. But RAID0 does not add any redundancy, so the failure of a single drive makes the volume unusable.
-*  **RAID1** - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
-*  **RAID10** - A combination of RAID0 and RAID1. Requires at least 4 disks.
-*  **RAIDZ-1** - A variation on RAID-5, single parity. Requires at least 3 disks.
-*  **RAIDZ-2** - A variation on RAID-5, double parity. Requires at least 4 disks.
-*  **RAIDZ-3** - A variation on RAID-5, triple parity. Requires at least 5 disks. 
-
-Create the new NAS share using the web interface `Disks` > `ZFS` > `Create: ZFS` selecting one or more available disks to become members of your ZFS Raid. If your disks are not available read below. Configure as follows:
-
-| Option | Node 1 Value | Notes
-| :---  | :---: | :---
-| Name |`tank`
-| Add Storage | `☑`
-| RAID Level |`i.e RAID10` | *Note: Choose from the above raid levels*
-| Compression |`on`|`on`|`on`
-| ashift |`12`|`12`|`12`
-| Device |`/dev/sdx`| *Note: Select your disks. Only available disks show*
-| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
-| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
-| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
-
-If any disks fail to show then the disks may need erasing/wiping. First step is to list all disks installed on your hardware. Use the Proxmox web interface `typhoon-01` > `>_ Shell` and type the command:
-```
-lsblk -f
-```
-You are looking for disks (sdx) which DO NOT belong to Proxmox OS install (i.e not disks /dev/sda or /dev/sdb). Note the size of the disk. Its fair to say NAS disks will be larger exceeding 1000.00G. You can also get more information with the CLI command ` fdisk -l`.
-
-To wipe or erase the chosen disk type the following command replacing `/dev/sdx` with your disk identifier (i.e /dev/sdc) 
-```
-dd if=/dev/zero of=/dev/sdx bs=512 count=1 conv=notrunc &&
-qm recsan --dryrun
-```
-
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
 For our primary Proxmox host, typhoon-01, we use Build Type A or B hardware. The host should have a minimum of 4x LAN 1Gb and preferably 1x LAN 10Gbe. 
 
@@ -316,14 +244,14 @@ In the setup for **Build Type A** or **B** you have the following options depend
 *  1x LAN-vpngate-local
 *  1x LAN-vpngate-world
 
-The network is configured to use VLANs in accordance to my network road map shown [here](https://github.com/ahuacate/network-roadmap).
+The network is configured to use VLANs in accordance to the network road map shown [here](https://github.com/ahuacate/network-roadmap).
 
-Where our hosts have multiple NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
+Where the hosts have multiple NICs you can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
 
-On the network switch appliance side we are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
+On the network switch appliance side you are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
 ### 3.01 Configure your Network Switch
-These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and always the first 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
+These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use.
 
 For ease of port management I always use switch ports 1-4/6 for my primary Proxmox host (typhoon-01). Configure your network switch port profiles and LAG groups as follows:
 
@@ -382,7 +310,7 @@ Note: The **Switch Port Profile / VLAN** must be preconfigured in your network s
 
 
 ### 3.02 Create Network Switch VLANs
-Three 3x VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). My instructions are specifically for UniFi controller `Settings` > `Networks` > `Create New Network`
+Three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The instructions are specifically for UniFi controller `Settings` > `Networks` > `Create New Network`.
 
 *  Create a new network to be used for Egress of encrypted traffic out of network to your VPN servers.
 
@@ -395,7 +323,7 @@ Three 3x VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (V
 | DHCP Server | `Enabled` | *Just use default range 192.168.2.1 -- 192.168.2.14* |
 | Other Settings | *Just leave as Default* | |
 
-* Create **two** new VLAN only networks to be used as gateways to connect to OpenVPN clients running on the Qotom and pfSense router.
+* Create **two** new VLAN only networks to be used as VPN gateways by OpenVPN clients in pfSense.
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
@@ -448,22 +376,22 @@ Because we have two VPN VLAN's we can create two VPN WiFI SSIDs. All traffic on 
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| Name/SSID |**`hello-vpngate-world`**| *Call it whatever you like* |
+| Name/SSID |**`hello-vpngate-world`**| *Call it whatever you want.* |
 | Enabled |`☑`| |
-| Security | `WPA Personal` | *Wouldn't recommend anything less* |
-| Security Key | password | *Your choosing* |
-| VLAN |`30`| *Must be set as 30* |
+| Security | `WPA Personal` | *Wouldn't recommend anything less.* |
+| Security Key | password | *Your choosing.* |
+| VLAN |`30`| *Must be set as 30.* |
 | Other Settings | Leave as default| |
 |||
-| Name/SSID |**`hello-vpngate-local`**| *Call it whatever you like* |
+| Name/SSID |**`hello-vpngate-local`**| *Call it whatever you want.* |
 | Enabled |`☑`| |
-| Security | `WPA Personal` | *Wouldn't recommend anything less* |
-| Security Key | password | *Your choosing* |
-| VLAN |`40`| *Must be set as 40* |
+| Security | `WPA Personal` | *Wouldn't recommend anything less.* |
+| Security Key | password | *Your choosing.* |
+| VLAN |`40`| *Must be set as 40.* |
 | Other Settings | leave as default| |
 
 ### 3.05 Edit your UniFi network firewall
-When you install pfSense on typhoon-01 both pfSense and HAProxy software must be assigned a WAN interface NIC. This WAN interface will correspond to a Proxmox Linux Bridge of your choosing (i.e vmbrX).
+When you install pfSense on host typhoon-01 both pfSense and HAProxy software must be assigned a WAN interface NIC. This WAN interface will correspond to a Proxmox Linux Bridge of your choosing (i.e vmbrX).
 
 pfSense WAN interface must be VLAN2 which is labelled in your UniFi controller as `VPN-egress`. Because it's configured with network `Guest security policies` in the UniFi controller it has no access to other network VLANs. The reason for this is explained build recipe for `VPN-egress` shown [here](https://github.com/ahuacate/proxmox-node#32-create-network-switch-vlans).
 
@@ -597,15 +525,64 @@ bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/m
 If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-0X machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-0X.
 
 
-## 5.00 Basic Proxmox node configuration
-Some of the basic Proxmox OS configuration tasks are common across all three nodes. The variable is with typhoon-01, the multi NIC device, which will alone have a guest pfSense VM installed to manage your networks OpenVPN Gateway services (no redundancy for OpenVPN services as its deemed non critical).
+## 5.00 Manual Configuration - Basic setup of your Proxmox Hosts
+Configuration is done via the Proxmox web interface. Just point your browser to the IP address you set during the installation of Proxmox VE OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
 
-Configuration options are determined by hardware types:
-   * Node 1 - typhoon-01 - Qotom Mini PC Q500G6-S05 is a 6x Gigabit NIC Router (6 LAN ports).
-   * Node 2 - typhoon-02 - A single NIC x86 machine (1 LAN port).
-   * Node 3 - typhoon-03 - Synology VM (1 Virtio LAN port)
+Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
-### 5.01  Create NFS mounts to NAS
+### 5.01 Manual Configuration - Update Proxmox OS and enable turnkeylinux templates
+Using the web interface `updates` > `refresh` search for all the latest required updates. You will get a few errors which ignore.
+
+Next install the updates using the web interface `updates` > `_upgrade` - a pop up terminal will show the installation steps of all your required updates and it will prompt you to type `Y` so do so.
+
+Next install turnkeylinux container templates by using the web interface CLI `shell` and type
+`pveam update`
+
+
+## 6.00 Manual Configuration - Create a NAS Share hosted on Proxmox
+For those who want to manually build a NAS on `typhoon-01` you need to create a ZFS zpool with one or more drives. If you have two or more drives a Raid type can be created. You may choose which raid level to use:
+
+*  **RAID0** - Also called “striping”. The capacity of such volume is the sum of the capacities of all disks. But RAID0 does not add any redundancy, so the failure of a single drive makes the volume unusable.
+*  **RAID1** - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
+*  **RAID10** - A combination of RAID0 and RAID1. Requires at least 4 disks.
+*  **RAIDZ-1** - A variation on RAID-5, single parity. Requires at least 3 disks.
+*  **RAIDZ-2** - A variation on RAID-5, double parity. Requires at least 4 disks.
+*  **RAIDZ-3** - A variation on RAID-5, triple parity. Requires at least 5 disks. 
+
+### 6.01 Manual Configuration - Create ZFS NAS Share
+Create the new NAS share using the web interface `Disks` > `ZFS` > `Create: ZFS` selecting one or more available disks to become members of your ZFS Raid. If your disks are not available read below. Configure as follows:
+
+| Option | Node 1 Value | Notes
+| :---  | :---: | :---
+| Name |`tank`
+| Add Storage | `☑`
+| RAID Level |`i.e RAIDZ-1` | *Note: Choose from the above raid levels*
+| Compression |`on`|`on`|`on`
+| ashift |`12`|`12`|`12`| *12 is for 4K sector size. Use 13 for 8K.*
+| Device |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+| |`/dev/sdx`| *Note: Select your disks. Only available disks show*
+
+If some disks are unavailable then the disks may need erasing/wiping. First step is to list all disks installed on your hardware. Use the Proxmox web interface `typhoon-01` > `>_ Shell` and type the command:
+```
+lsblk -f
+```
+You are looking for disks (sdx) which DO NOT belong to Proxmox OS install (i.e not disks /dev/sda or /dev/sdb). Note the size of the disk. Its fair to say NAS disks will be larger exceeding 1000.00G. You can also get more information with the CLI command ` fdisk -l`.
+
+To wipe or erase the chosen disk type the following command replacing `/dev/sdx` with your disk identifier (i.e /dev/sdc) 
+```
+dd if=/dev/zero of=/dev/sdx bs=512 count=1 conv=notrunc &&
+qm recsan --dryrun
+```
+
+## 7.00 Manual Configuration - NFS Mounts to NAS
+There are two scenarios for NAS file serving in these instructions. They are:
+
+1.  **Build Type A** - A Proxmox VM running Ubuntu 18.04 File Server on typhoon-01 proving NFS and Samba access to network clients - PC's, notebooks and Proxmox VM's and CTs; and,
+2.  **Build Type B** and **C** - Both these build types depend on a existing and current NAS or File Server on your network. The NAS or File Server must be configured for Samba and NFSv4.1.
+
+### 5.01  Create NFS mounts to an existing NAS
 All three Proxmox nodes use NFS to mount data stored on a NAS so these instructions are applicable for all proxmox nodes. Your NFS server should be prepared and ready - Synology NFS Server instructions are available [HERE](https://github.com/ahuacate/synobuild#create-the-required-synology-shared-folders-and-nfs-shares).
 
 The NFS mounts to be configured are: | `audio` | `backup` | `books` | `docker`| `music` | `cloudstorage` | `photo` | `public` | `transcode` | `video` |
