@@ -310,7 +310,7 @@ In the setup for **Build Type A** or **B** you have the following options depend
 *  1x VPN-egress
 *  1x LAN-vpngate-local
 *  1x LAN-vpngate-world
->  **Build Type A** - 6x LAN 1Gb
+>  **Build Type B** - 6x LAN 1Gb
 *  2x LAN (LAG bonded)
 *  2x VPN-egress (LAG bonded)
 *  1x LAN-vpngate-local
@@ -471,7 +471,7 @@ On your Proxmox host (typhoon-01) the corresponding Proxmox Linux Bridges piped 
 
 | pfSense WAN | Build Type A - 4x LAN 1Gb & SFP+ | Build Type A - 4x LAN 1Gb | Build Type B - 6x LAN 1Gb
 | :---  | :---: | :---: | :---:
-| Proxmox Bridge |`vmbr0` (bond0)|`vmbr1`|`vmbr2` (bond1)
+| Proxmox Bridge |`vmbr0` (bond0)|`vmbr1`|`vmbr1` (bond1)
 
 So when you install pfSense VM on typhoon-01 the pfSense/HAProxy software must be assigned the above Proxmox Bridge ID as its WAN interface NIC. Use the Proxmox virtio MAC address to match vmbr(x) up with pfSense vtnet(x) assignments.
 
@@ -495,17 +495,62 @@ And click `Apply Changes`.
 As you've probably concluded you must add any new HAProxy backend server IPv4 address(s) to the Unifi Pre-Authorization Access list for HAProxy frontend to have access to these servers.
 
 ## 4.00 Configure your Proxmox Host - Easy Script Method
-If you have gotten this far and completed Steps 1.00 thru to 3.05 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
+If you have completed Steps 1.00 thru to 3.05 you can proceed to build your Proxmox by using pre-configured bash scripts. The scripts should work for:
 
-I currently have the following CLI bash scripts available on GitHub to fastrack the build process:
+>  **Build Type A** - 4x LAN 1Gb PLUS 10Gbe
+>  **Build Type A** - 4x LAN 1Gb
+>  **Build Type B** - 6x LAN 1Gb (*Qotom Mini PC model Q500G6-S05*)
+>  **Build Type C** - 1x LAN 1Gb
 
-Script (A) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-01 (node-01), a Qotom Mini PC model Q500G6-S05 only. This script will perform the following tasks:
-*  Steps 4.0 through to Step 5.2 performing the following tasks:
+If your hardware doesn't match the above specifications then my Easy Scripts may not work. You best proceed to Step 5.0 and build manually.
+
+### 4.01 Build Type A - 4x LAN 1Gb PLUS 10Gbe
+This script is for the Build Type A only. This script will perform the following tasks:
 *  Create a New User **storm**
 *  Create a new password for user **storm**
 *  Create a new user group called **homelab**
 *  Update/enable the Proxmox turnkey appliance list
-*  Update and upgrade your Proxmox node
+*  Update and upgrade your Proxmox host
+*  Install lm sensors SW
+*  Update the hosts file
+*  Download pfsense ISO to Proxmox templates
+*  Create a pfSense Proxmox VM
+*  Configure all 4x Proxmox NICS to LAGS/Bonds and network interface configurations
+*  Configure 1x SFP+ network interface configuration
+
+To execute the script SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-sfp_4x_NIC-setup-01.sh)"
+```
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. You can now proceed to Step 6.0.
+
+### 4.02 Build Type A - 4x LAN 1Gb
+This script is for the Build Type A only. This script will perform the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox host
+*  Install lm sensors SW
+*  Update the hosts file
+*  Download pfsense ISO to Proxmox templates
+*  Create a pfSense Proxmox VM
+*  Configure all 4x Proxmox NICS to LAGS/Bonds and network interface configurations
+*  Configure 1x SFP+ network interface configuration
+
+To execute the script SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+```
+bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-4x_NIC-setup-01.sh)"
+```
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. You can now proceed to Step 6.0.
+
+### 4.03 Build Type B - Qotom Mini PC model Q500G6-S05 build script
+This script is for the Qotom Mini PC model Q500G6-S05 model ONLY. This script will perform the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox host
 *  Install lm sensors SW
 *  Create NFS mounts to your NAS
 *  Update the hosts file
@@ -513,53 +558,44 @@ Script (A) `typhoon-01-6x_NIC-setup-01.sh` which is for typhoon-01 (node-01), a 
 *  Create a pfSense Proxmox VM
 *  Configure all 6x Proxmox NICS to LAGS/Bonds and network interface configurations
 
-After executing this Script (A) you must continue manually to Step 6.0 to finish building typhoon-01.
-
-Script (B) `typhoon-0X-Single_NIC-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which MUST BE single NIC hardware only. The script will perform the following tasks:
-*  Create a New User **storm**
-*  Create a new password for user **storm**
-*  Create a new user group called **homelab**
-*  Update/enable the Proxmox turnkey appliance list
-*  Update and upgrade your Proxmox node
-*  Install lm sensors SW
-*  Create NFS mounts to your NAS
-*  Update the hosts file
-
-Script (C) `typhoon-0X-VM-setup-01.sh` which is for typhoon-02/03 (node-02/03/04 etc), which **MUST BE Synology or NAS VM BUILD ONLY**. The script will perform the following tasks:
-*  Create a New User **storm**
-*  Create a new password for user **storm**
-*  Create a new user group called **homelab**
-*  Update/enable the Proxmox turnkey appliance list
-*  Update and upgrade your Proxmox node
-*  Create NFS mounts to your NAS
-*  Update the hosts file
-
-### 4.01 Script (A) - Qotom Mini PC model Q500G6-S05 build script
-This script is for the Qotom Mini PC model Q500G6-S05 model ONLY. 
-
-To execute the script use the Proxmox web interface `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+To execute the script SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
 ```
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-01-6x_NIC-setup-01.sh)"
 ```
 If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. You can now proceed to Step 6.0.
 
-### 4.02 Script (B) - Single NIC Hardware build script
-This script is for single NIC hardware ONLY (i.e Intel NUC etc). 
+### 4.04 Build Type C - Single NIC Hardware build script
+This script is for single NIC hardware ONLY (i.e Intel NUC etc). The script will perform the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox host
+*  Create NFS mounts to your NAS
+*  Update the hosts file
 
-To execute the script use the Proxmox web interface `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+To execute the script SSH into `typhoon-0X`(ssh root@192.168.1.10X) or use the Proxmox web interface CLI shell `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
 ```
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-Single_NIC-setup-01.sh)"
 ```
-If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-01.
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-0X machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-0X.
 
-### 4.03 Script (C) - Synology or NAS VM build script
-This script is for a Proxmox VM build only (i.e Synology Virtual Machine Manager VM). 
+### 4.05 Build Type C - Synology or NAS VM build script
+This script is for a Proxmox VM build only (i.e Synology Virtual Machine Manager VM). The script will perform the following tasks:
+*  Create a New User **storm**
+*  Create a new password for user **storm**
+*  Create a new user group called **homelab**
+*  Update/enable the Proxmox turnkey appliance list
+*  Update and upgrade your Proxmox host
+*  Create NFS mounts to your NAS
+*  Update the hosts file
 
-To execute the script use the Proxmox web interface `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
+To execute the script SSH into `typhoon-0X`(ssh root@192.168.1.10X) or use the Proxmox web interface CLI shell `typhoon-02/03/04` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
 ```
 bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-VM-setup-01.sh)"
 ```
-If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-01.
+If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-0X machine will reboot. This hardware is now ready to deploy into a cluster assumming you have fully built typhoon-0X.
+
 
 ## 5.00 Basic Proxmox node configuration
 Some of the basic Proxmox OS configuration tasks are common across all three nodes. The variable is with typhoon-01, the multi NIC device, which will alone have a guest pfSense VM installed to manage your networks OpenVPN Gateway services (no redundancy for OpenVPN services as its deemed non critical).
