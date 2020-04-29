@@ -361,7 +361,7 @@ Note: The **Switch Port Profile / VLAN** must be preconfigured in your network s
 
 Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller).
 
-**Build Type A** - 6x LAN 1Gb
+**Build Type B** - 6x LAN 1Gb (i.e Qotom Hardware)
 
 | UniFi US-24 | Port ID | Port ID | Port ID
 | :--- | :---: | :---: | :---:
@@ -380,15 +380,15 @@ Note: The **Switch Port Profile / VLAN** must be preconfigured in your network s
 
 ![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/qotom_6port.png)
 
-Steps to configuring your network switch are as follows.
 
 ### 3.02 Create Network Switch VLANs
-In this example three VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). The below instructions are for the UniFi controller `Settings` > `Networks` > `Create New Network`
-*  Create a new network to be used for Egress of encypted traffic out of network to your VPN servers.
+Three 3x VLANs are created - 1x WAN/VPN-egress (VLAN2) | 1x LAN-vpngate-world (VLAN30) | 1x LAN-vpngate-local (VLAN40). My instructions are specifically for UniFi controller `Settings` > `Networks` > `Create New Network`
+
+*  Create a new network to be used for Egress of encrypted traffic out of network to your VPN servers.
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
-| Name |`VPN-egress`| *This network will be used as the WAN for Qotom pfSense OpenVPN clients (encrypted exit).* |
+| Name |`VPN-egress`| *This network will be used as the WAN for pfSense OpenVPN clients (encrypted exit).* |
 | Purpose |`Guest`| *Network Guest security policies.* |
 | VLAN |`2`| *A dedicated VLAN for the WAN used by OpenVPN client(s) for network paths and firewall rules use Guest security policies.* |
 | Gateway/Subnet |`192.168.2.5/28`| *Only 2 addresses on this subnet so /29 is ideal* |
@@ -416,59 +416,66 @@ Here we need to configure the network switch ports.
 
 The instructions are for the UniFi controller `Devices` > `Select device - i.e UniFi Switch 24/48` > `Ports`  and select your port and `edit` and `apply` as follows:
 
-| Description | Value | Notes |
-| :---  | :---: | :--- |
-| Name |**`Port 1 & 2`**|  |
-| Switch Port Profile |`All`| *This is default* |
+| Description | Build Type A - 4x LAN 1Gb & SFP+ | Build Type A - 4x LAN 1Gb | Build Type B - 6x LAN 1Gb
+| :---  | :---: | :---: | :---:
+| Name |**`Port 25`**|**`Port 1`**|**`Port 1 & 2`**
+| Switch Port Profile |`All`|`All`|`All`
 | **Profile Overrides**
-| Operation | `☑` Aggregate
-| Agregate Ports | `1-2`
-| Link Speed | Autonegotiation
+| Operation |`☐` Aggregate|`☐` Aggregate|`☑` Aggregate
+| Agregate Ports |N/A|N/A|`1-2`
+| Link Speed |Autonegotiation|Autonegotiation|Autonegotiation
 |||
-| Name |**`Port 3 & 4`**|  |
-| Switch Port Profile |`VPN-egress(2)`
+| Name |**`Port 1 & 2`**|**`Port 2`**|**`Port 3 & 4`**
+| Switch Port Profile |`VPN-egress(2)`|`VPN-egress(2)`|`VPN-egress(2)`
 | **Profile Overrides**
-| Operation | `☑` Aggregate
-| Agregate Ports | `3-4`
-| Link Speed | Autonegotiation
+| Operation |`☑` Aggregate| `☐` Aggregate | `☑` Aggregate
+| Agregate Ports |`1-2`| N/A | `3-4`
+| Link Speed | Autonegotiation | Autonegotiation | Autonegotiation
 |||
-| Name |**`Port 5`**|  |
-| Switch Port Profile |`LAN-vpngate-world (30)`| *This will put switch port 5 on VLAN30* |
-| Profile Overrides | Leave Default
+| Name |**`Port 3`**|**`Port 3`**|**`Port 5`**
+| Switch Port Profile |`LAN-vpngate-world (30)`|`LAN-vpngate-world (30)`|`LAN-vpngate-world (30)`
+| Profile Overrides |Leave Default|Leave Default|Leave Default
 |||
-| Name |**`Port 6`**|  |
-| Switch Port Profile |`LAN-vpngate-local (40)`| *This will put switch port 6 on VLAN40* |
-| Profile Overrides | Leave Default
+| Name |**`Port 4`**|**`Port 4`**|**`Port 6`**
+| Switch Port Profile |`LAN-vpngate-local (40)`|`LAN-vpngate-local (40)`|`LAN-vpngate-local (40)`
+| Profile Overrides |Leave Default|Leave Default|Leave Default
 
+Shown below is a sample of **Build Type B** - 6x LAN 1Gb.
 ![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/unifi_ports_01.png)
 
 ### 3.04 Setup network WiFi SSiDs for the VPN service
-In this example two VPN secure WiFI SSIDs are created. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN. The below instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
+Because we have two VPN VLAN's we can create two VPN WiFI SSIDs. All traffic on these WiFi connections will exit to the internet via your preset VPN VLAN (30 or 40). The following instructions are for the UniFi controller `Settings` > `Wireless Networks` > `Create New Wireless Network` and fill out the form details as shown below:
 
 | Description | Value | Notes |
 | :---  | :---: | :--- |
 | Name/SSID |**`hello-vpngate-world`**| *Call it whatever you like* |
 | Enabled |`☑`| |
-| Security | `WPA Personal` | *Wouldnt recommend anything less* |
+| Security | `WPA Personal` | *Wouldn't recommend anything less* |
 | Security Key | password | *Your choosing* |
 | VLAN |`30`| *Must be set as 30* |
 | Other Settings | Leave as default| |
 |||
 | Name/SSID |**`hello-vpngate-local`**| *Call it whatever you like* |
 | Enabled |`☑`| |
-| Security | `WPA Personal` | *Wouldnt recommend anything less* |
+| Security | `WPA Personal` | *Wouldn't recommend anything less* |
 | Security Key | password | *Your choosing* |
 | VLAN |`40`| *Must be set as 40* |
 | Other Settings | leave as default| |
 
 ### 3.05 Edit your UniFi network firewall
-On your Proxmox Qotom build (typhoon-01) NIC ports enp3s0 & enp4s0 are bonded to create LAG `bond1`. You will then create in Proxmox a Linux Bridge using `bond1` called `vmbr2`. When you install pfSense VM on typhoon-01 the pfSense and HAProxy software will assign `vmbr2` (bond1) as its WAN interface NIC.
+When you install pfSense on typhoon-01 both pfSense and HAProxy software must be assigned a WAN interface NIC. This WAN interface will correspond to a Proxmox Linux Bridge of your choosing (i.e vmbrX).
 
-This WAN interface is VLAN2 and named in the UniFi controller software as `VPN-egress`. It's configured with network `Guest security policies` in the UniFi controller therefore it has no access to other network VLANs. The reason for this is explained build recipe for `VPN-egress` shown [HERE](https://github.com/ahuacate/proxmox-node#22-create-network-switch-vlans).
+pfSense WAN interface must be VLAN2 which is labelled in your UniFi controller as `VPN-egress`. Because it's configured with network `Guest security policies` in the UniFi controller it has no access to other network VLANs. The reason for this is explained build recipe for `VPN-egress` shown [here](https://github.com/ahuacate/proxmox-node#32-create-network-switch-vlans).
 
-For HAProxy to work you must authorise VLAN2 (WAN in pfSense HAProxy) to have access to your Proxmox LXC server nodes with static IPv4 addresses on VLAN50.
+On your Proxmox host (typhoon-01) the corresponding Proxmox Linux Bridges piped to pfSense WAN interface are as follows:
 
-The below instructions are for a UniFi controller `Settings` > `Guest Control`  and look under the `Access Control` section. Under `Pre-Authorization Access` click`**+** Add IPv4 Hostname or subnet` to add the following IPv4 addresses to authorise access for VLAN2 clients:fill out the form details as shown below:
+| pfSense WAN | Build Type A - 4x LAN 1Gb & SFP+ | Build Type A - 4x LAN 1Gb | Build Type B - 6x LAN 1Gb
+| :---  | :---: | :---: | :---:
+| Proxmox Bridge |`vmbr0` (bond0)|`vmbr1`|`vmbr2` (bond1)
+
+So when you install pfSense VM on typhoon-01 the pfSense/HAProxy software must be assigned the above Proxmox Bridge ID as its WAN interface NIC. Use the Proxmox virtio MAC address to match vmbr(x) up with pfSense vtnet(x) assignments.
+
+For HAProxy to work you must authorise UniFi VLAN2 (WAN in pfSense HAProxy) to have access to your Proxmox LXC & CT static IPv4 addresses. These instructions are for a UniFi controller `Settings` > `Guest Control`  and look under the `Access Control` section. Under `Pre-Authorization Access` click`**+** Add IPv4 Hostname or subnet` to add the following IPv4 addresses to authorise access for VLAN2 clients:fill out the form details as shown below:
 
 | + Add IPv4 Hostname or subnet | Value | Notes
 | :---  | :---: | :---
@@ -485,9 +492,9 @@ The below instructions are for a UniFi controller `Settings` > `Guest Control`  
 
 And click `Apply Changes`.
 
-As you've probably concluded you must add any new HAProxy backend server IPv4 address(s) to the Unifi Pre-Authorization Access list for HAProxy frontend to have access to those backend VLAN50 servers.
+As you've probably concluded you must add any new HAProxy backend server IPv4 address(s) to the Unifi Pre-Authorization Access list for HAProxy frontend to have access to these servers.
 
-## 4.00 Easy Installation Option
+## 4.00 Configure your Proxmox Host - Easy Script Method
 If you have gotten this far and completed Steps 1.00 thru to 3.05 you can proceed to Step 4.0 to manually build your nodes or skip some steps by using CLI build bash scripts. But my bash scripts are written for the Qotom Mini PC model Q500G6-S05 (6x NIC variant) and single NIC hardware only. If you have different hardware, such as a 2x or 4x NIC Qotom or similiar hardware, then my scripts will not work and you best proceed to Step 4.0 and build manually.
 
 I currently have the following CLI bash scripts available on GitHub to fastrack the build process:
