@@ -222,7 +222,7 @@ Configure each host as follows:
 
 
 ## 3.00 Configure your Proxmox Hardware
-Configuration is done via the Proxmox web interface. Just point your browser to the IP address set during the installation of Proxmox VE OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
+Configuration is done via the Proxmox web interface. Just point your browser to the IP address you set during the installation of Proxmox VE OS (https://your_nodes_ip_address:8006) and ignore the security warning by clicking `Advanced` then `Accept the Risk and Continue` -- this is the warning I get in Firefox.
 
 Default login is "root" (realm PAM) and the root password you defined during the installation process.
 
@@ -294,41 +294,93 @@ qm recsan --dryrun
 ```
 
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
-For our primary Proxmox machine, typhoon-01, we use Qotom hardware because it has 2, 4 or 6 network 1Gb NICs depeniding on the model. Standard hardware, such as a  a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) has only 1 network NIC.
+For our primary Proxmox host, typhoon-01, we use Build Type A or B hardware. The host should have a minimum of 4x LAN 1Gb and preferably 1x LAN 10Gbe. 
 
-In the following setup we use a Qotom Mini PC model Q500G6-S0 which has 6x Gigabit LAN ports connected to our network switch.
+Build Type C hardware such as a Intel Nuc, or any other single network NIC host (including Synology Virtual Machines) only requires 1x LAN NIC.
 
-In order to create VLANs within a Virtual Machine (VM) for containers like Docker or a LXC, you need to have a Linux Bridge. Because we use a Qotom with 6x Gigabit NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
+In the setup for **Build Type A** or **B** you have the following options depending on your network components (ranked best first):
 
-If you are using a Qotom 4x Gigabit NIC model then you CANNOT create LAGS/Bonds because you do not have enough ports. So configure Proxmox bridges only.
+>  **Build Type A** - 4x LAN 1Gb PLUS 10Gbe
+*  1x LAN 10Gbe
+*  2x VPN-egress (LAG Bonded)
+*  1x LAN-vpngate-local
+*  1x LAN-vpngate-world
+>  **Build Type A** - 4x LAN 1Gb
+*  1x LAN
+*  1x VPN-egress
+*  1x LAN-vpngate-local
+*  1x LAN-vpngate-world
+>  **Build Type A** - 6x LAN 1Gb
+*  2x LAN (LAG bonded)
+*  2x VPN-egress (LAG bonded)
+*  1x LAN-vpngate-local
+*  1x LAN-vpngate-world
 
-We are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
+The network is configured to use VLANs in accordance to my network road map shown [here](https://github.com/ahuacate/network-roadmap).
+
+Where our hosts have multiple NICs we can use NIC bonding (also called NIC teaming or Link Aggregation, LAG) which is a technique for binding multiple NIC’s to a single network device. By doing link aggregation, two NICs can appear as one logical interface, resulting in double speed. This is a native Linux kernel feature that is supported by most smart L2/L3 switches with IEEE 802.3ad support.
+
+On the network switch appliance side we are going to use 802.3ad Dynamic link aggregation (802.3ad)(LACP) so your switch must be 802.3ad compliant. This creates aggregation groups of NICs which share the same speed and duplex settings as each other. A link aggregation group (LAG) combines a number of physical ports together to make a single high-bandwidth data path, so as to implement the traffic load sharing among the member ports in the group and to enhance the connection reliability.
 
 ### 3.01 Configure your Network Switch
 These instructions are based on a UniFi US-24 port switch. Just transpose the settings to UniFi US-48 or whatever brand of Layer 2 switch you use. As a matter of practice I make the last switch ports 21-24 (on a UniFi US-24 port switch) a LAG Bond or Link Aggregation specically for the Synology NAS connection (referred to as 'balanced-TCP | Dynamic Link Aggregation IEEE 802.3ad' in the Synology network control panel) and always the first 6x ports are reserved for the Qotom (typhoon-01) hosting the pfSense OpenVPN Gateways.
 
-Configure your network switch LAG groups as per following table.
+For ease of port management I always use switch ports 1-4/6 for my primary Proxmox host (typhoon-01).
 
-| 24 Port Switch | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
+Configure your network switch LAG groups as per your **Build Type A** or **B**.
+
+**Build Type A** - 4x LAN 1Gb PLUS 10Gbe
+
+| UniFi US-24 Gen2 | SFP+ Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|**Port Number** | `25` | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
+|**Port Number** | `26` | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
+|**LAG Bond** | | LAG 1-2  | | |  | |  |  |  |  |  | | |
+|**Switch Port Profile / VLAN** | All | VPN-egress (2) | LAN-vpngate-world (30) : LAN-vpngate-local (40) |  |  |  |  |  |  |  |  | |
+|**LAN CAT6A cable connected to** | N/A | Port1+2 -> typhoon-01 (NIC1+2) | Port3 -> typhoon-01 (NIC3) : Port4 -> typhoon-01 (NIC4) |  |  |  |  |  |  |  |  |  |
+|**LAN SFP+ cable connected to** | Port 25 > typhoon-01 (SFP+) |
+||||||||||||
+|**Host NIC Ports** | SFP+ | Port 1+2 | Port 3+4 | |  | |  |  |  |  |  |  |  |
+|**Proxmox Linux Bond** | | `bond0` | | |  | |  |  |  |  |  |  |  |
+|**Proxmox Bridge** | `vmbr0` | `vmbr1` | `vmbr2 : vmbr3` |  | |  |  |  |  |  |  |  |
+|**Proxmox Comment** | Proxmox LAN SFP+ | VPN-egress Bond | vpngate-world : vpngate-local |  | |  |  |  |  |  |  |  |
+
+Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. So ports 1 to 6 numbering on your switch correspond with the Qotom numbering for all 6 ports on the Qotom.
+
+**Build Type A** - 4x LAN 1Gb
+
+| UniFi US-24 | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 |**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
 |**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
-|**LAG Bond** | LAG 1-2  | LAG 3-4 | |  | |  |  |  |  |  | LAG 21-24 | LAG 21-24 |
+|**LAG Bond** | | | |  | |  |  |  |  |  | | |
+|**Switch Port Profile / VLAN** | All : VPN-egress (2) | LAN-vpngate-world (30) : LAN-vpngate-local (40) |  |  |  |  |  |  |  | | |
+|**LAN CAT6A cable connected to** | Port1 -> typhoon-01 (NIC1) : Port2 -> typhoon-01 (NIC2) | Port3 -> typhoon-01 (NIC3) : Port4 -> typhoon-01 (NIC4) |  |  |  |  |  |  |  |  |  |
+||||||||||||
+|**Proxmox Linux Bond** | | | |  | |  |  |  |  |  |  |  |
+|**Proxmox Bridge** | `vmbr0` : `vmbr1` | `vmbr2 : vmbr3` |  | |  |  |  |  |  |  |  |
+|**Proxmox Comment** | Proxmox LAN : VPN-egress | vpngate-world : vpngate-local |  | |  |  |  |  |  |  |  |
+
+Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller).
+
+**Build Type A** - 6x LAN 1Gb
+
+| UniFi US-24 | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|**Port Number** | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
+|**Port Number** | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
+|**LAG Bond** | LAG 1-2  | LAG 3-4 | |  | |  |  |  |  |  | | |
 |**Switch Port Profile / VLAN** | All | VPN-egress (2) | LAN-vpngate-world (30) : LAN-vpngate-local (40) |  |  |  |  |  |  |  | All | All |
-|**LAN CAT6A cable connected to** | Port1+2 -> typhoon-01 (NIC1+2) | Port3+4 -> typhoon-01 (NIC3+4) | Port5 -> typhoon-01 (NIC5) : Port6 -> typhoon-01 (NIC6) |  |  |  | Port14 -> typhoon-02 |  |  |  |  |  |
+|**LAN CAT6A cable connected to** | Port1+2 -> typhoon-01 (NIC1+2) | Port3+4 -> typhoon-01 (NIC3+4) | Port5 -> typhoon-01 (NIC5) : Port6 -> typhoon-01 (NIC6) |  |  |  |  |  |  |  |  |  |
 ||||||||||||
 |**Qotom NIC Ports** | Port 1+2 | Port 3+4 | Port 5+6 |  | |  |  |  |  |  |  |  |
 |**Proxmox Linux Bond** | `bond0` | `bond1` | |  | |  |  |  |  |  |  |  |
 |**Proxmox Bridge** | `vmbr0` | `vmbr1` | `vmbr2 : vmbr3` |  | |  |  |  |  |  |  |  |
 |**Proxmox Comment** | Proxmox LAN Bond | VPN-egress Bond | vpngate-world : vpngate-local |  | |  |  |  |  |  |  |  |
 
-Note the **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. 
-
-So ports 1 to 6 numbering on your switch correspond with the Qotom numbering for all 6 ports on the Qotom.
+Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. So ports 1 to 6 numbering on your switch correspond with the Qotom numbering for all 6 ports on the Qotom.
 
 ![alt text](https://raw.githubusercontent.com/ahuacate/proxmox-node/master/images/qotom_6port.png)
-
-The other LAG, ports 21-24 are used by the Synology.
 
 Steps to configuring your network switch are as follows.
 
