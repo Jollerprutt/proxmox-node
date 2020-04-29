@@ -331,19 +331,19 @@ Configure your network switch LAG groups as per your **Build Type A** or **B**.
 
 **Build Type A** - 4x LAN 1Gb PLUS 10Gbe
 
-| UniFi US-24 Gen2 | SFP+ Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |Port ID | Port ID |Port ID | Port ID | Port ID |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-|**Port Number** | `25` | `1` | `3` |`5` | `7` |`9` | `11` | `13` | `15` |`17` | `19` |`21` | `23` |
-|**Port Number** | `26` | `2` | `4` |`6` | `8` |`10` | `12` | `14` | `16` |`18` | `20` |`22` | `24` |
-|**LAG Bond** | | LAG 1-2  | | |  | |  |  |  |  |  | | |
-|**Switch Port Profile / VLAN** | All | VPN-egress (2) | LAN-vpngate-world (30) : LAN-vpngate-local (40) |  |  |  |  |  |  |  |  | |
-|**LAN CAT6A cable connected to** | N/A | Port1+2 -> typhoon-01 (NIC1+2) | Port3 -> typhoon-01 (NIC3) : Port4 -> typhoon-01 (NIC4) |  |  |  |  |  |  |  |  |  |
-|**LAN SFP+ cable connected to** | Port 25 > typhoon-01 (SFP+) |
-||||||||||||
-|**Host NIC Ports** | SFP+ | Port 1+2 | Port 3+4 | |  | |  |  |  |  |  |  |  |
-|**Proxmox Linux Bond** | | `bond0` | | |  | |  |  |  |  |  |  |  |
-|**Proxmox Bridge** | `vmbr0` | `vmbr1` | `vmbr2 : vmbr3` |  | |  |  |  |  |  |  |  |
-|**Proxmox Comment** | Proxmox LAN SFP+ | VPN-egress Bond | vpngate-world : vpngate-local |  | |  |  |  |  |  |  |  |
+| UniFi US-24 Gen2 | SFP+ Port ID | Port ID | Port ID | Port ID
+| :--- | :---: | :---: | :---: | :---: 
+|**Port Number** | `25` | `1` | `3` |`5`
+|**Port Number** | `26` | `2` | `4` |`6`
+|**LAG Bond** | | LAG 1-2  
+|**Switch Port Profile / VLAN** | All | VPN-egress (2) | LAN-vpngate-world (30) : LAN-vpngate-local (40)
+|**LAN CAT6A cable connected to** | N/A | Port1+2 -> typhoon-01 (NIC1+2) | Port3 -> typhoon-01 (NIC3) : Port4 -> typhoon-01 (NIC4)
+|**LAN SFP+ cable connected to** | Port 25 > typhoon-01 (SFP+)
+|
+|**Host NIC Ports** | SFP+ | Port 1+2 | Port 3+4
+|**Proxmox Linux Bond** | | `bond0`
+|**Proxmox Bridge** | `vmbr0` | `vmbr1` | `vmbr2 : vmbr3`
+|**Proxmox Comment** | Proxmox LAN SFP+ | VPN-egress Bond | vpngate-world : vpngate-local
 
 Note: The **Switch Port Profile / VLAN** must be preconfigured in your network switch (UniFi Controller). The above table, based on a UniFi US-24 model, shows port 1+2 are link agregated (LAG), port 3+4 are another LAG and ports 5 and 6 are not LAG'd. So ports 1 to 6 numbering on your switch correspond with the Qotom numbering for all 6 ports on the Qotom.
 
