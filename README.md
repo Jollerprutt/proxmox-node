@@ -558,128 +558,129 @@ fs.inotify.max_user_instances = 512
 fs.inotify.max_user_watches = 8192" >> /etc/sysctl.conf
 ```
 
-### 5.04 Manual Configuration - Configure Proxmox bridge networking
+### 5.04 Manual Configuration - Configure Proxmox bridge & bond networking
 This section is for **Build Type A** or **B** - hosts with multiple LAN NIC's. If you configuring **Build Type C**, a single NIC host or a Synology VM then you can skip this step.
 
-
-1.  **Build Type A** - 4x LAN 1Gb plus 10Gbe
+####  Build Type A - 4x LAN 1Gb plus 10Gbe
 A 4x LAN 1Gb plus 10Gbe configuration is as follows.
 
-| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
+| Proxmox NIC ID | enp1s0 (SPF+) | enp2s0 |enp3s0 | enp4s0 | enp5s0
 | :--- | :---:  | :---: | :---:  | :---: |
-|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
+|**Proxmox Linux Bond** || `bond0` | `bond0`
+|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3`
 
-2.  **Build Type A** - 4x LAN 1Gb
+####  Build Type A - 4x LAN 1Gb
 A 4x LAN 1Gb configuration is as follows.
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
 | :--- | :---:  | :---: | :---:  | :---: |
 |**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-The Qotom Mini PC Q500G6-S05 has 6x Gigabit NICs. 
+####  Build Type B - 6x LAN 1Gb
+A 6x LAN 1Gb configuration (Qotom Mini PC Q500G6-S05) is as follows.
 
 | Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |enp5s0 | enp6s0 |
 | :--- | :---:  | :---: | :---:  | :---: | :---:  | :---: |
-|**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1` | |  |
+|**Proxmox Linux Bond** | `bond0` | `bond0` | `bond1` | `bond1`
 |**Proxmox Linux Bridge** | `vmbr0` | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3` |
 
-If you are using the Qotom 4x Gigabit NIC model version then you dont have enough NIC ports to create LAGS because we require 4x physical connection addresses. A Qotom 4x Gigabit NIC PC router configuration would be as follows.
+This next step only applies to **Build Type A - 4x LAN 1Gb & SFP+** and **Build Type B - 6x LAN 1Gb**. Go to Proxmox web interface of your host (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bond` and fill out the details as shown below (must be in order).
 
-| Proxmox NIC ID | enp1s0 | enp2s0 |enp3s0 | enp4s0 |
-| :--- | :---:  | :---: | :---:  | :---: |
-|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr2` | `vmbr3` |
-
-The following recipes are for the 6x Gigabit NIC Qotom Mini PC Q500G6-S05 unit. Amend for other hardware.
-
-Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bond` and fill out the details as shown below (must be in order). Here we are going to create two LAGs/Bonds.
-
-| Description | Value |
-| :---  | :---: |
-| Name |`bond0`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| Slaves |`enp1s0 enp2s0`|
-| Mode |`LACP (802.3ad)`|
-| Hash policy |`layer2`|
-| Comment |`Proxmox LAN Bond`|
+| Description | Build Type A - 4x LAN 1Gb & SFP+ | Build Type A - 4x LAN 1Gb | Build Type B - 6x LAN 1Gb
+| :---  | :---: | :---: | :---: |
+| Name |`bond0`|-|`bond0`|
+| IP address |-|-|-|
+| Subnet mask |-|-|-|
+| Gateway |-|-|-|
+| IPv6 address |-|-|-|
+| Prefix length |-|-|-|
+| Gateway |-|-|-|
+| Autostart |`☑`|-|`☑`|
+| Slaves |`enp2s0 : enp3s0`||`enp1s0 : enp2s0`|
+| Mode |`LACP (802.3ad)`|-|`LACP (802.3ad)`|
+| Hash policy |`layer2`|-|`layer2`|
+| Comment |`VPN-egress Bond`|-|`Proxmox LAN Bond`|
 |||
-| Name |`bond1`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| Slaves |`enp3s0 enp4s0`|
-| Mode |`LACP (802.3ad)`|
-| Hash policy |`layer2`|
-| Comment |`VPN-egress Bond`|
+| Name |-|-|`bond1`|
+| IP address |-|-|-|
+| Subnet mask |-|-|-|
+| Gateway |-|-|-|
+| IPv6 address |-|-|-|
+| Prefix length |-|-|-|
+| Gateway |-|-|-|
+| Autostart |-|-|`☑`|
+| Slaves |-|-|`enp3s0 enp4s0`|
+| Mode |-|-|`LACP (802.3ad)`|
+| Hash policy |-|-|`layer2`|
+| Comment |-|-|`VPN-egress Bond`|
 
-Go to Proxmox web interface of your Qotom node (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bridge` and fill out the details as shown below (must be in order) but note vmbr0 will be a edit, not create.
+Go to Proxmox web interface of host typhoon-01 (should be https://192.168.1.101:8006/ ) `typhoon-01` > `System` > `Network` > `Create` > `Linux Bridge` and fill out the details as shown below (must be in order) but note vmbr0 will be a edit, not create.
 
-| Description | Value |
-| :---  | :---: |
-| Name |`vmbr0`|
-| IP address |`192.168.1.101`|
-| Subnet mask |`255.255.255.0`|
-| Gateway |`192.168.1.5`|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-|Bridge ports |`bond0`|
-| Comment |`Proxmox LAN Bridge/Bond`|
+| Description | Build Type A - 4x LAN 1Gb & SFP+ | Build Type A - 4x LAN 1Gb | Build Type B - 6x LAN 1Gb
+| :---  | :---: | :---: | :---: |
+| Name |`vmbr0`|`vmbr0`|`vmbr0`|
+| IP address |`192.168.1.101`|`192.168.1.101`|`192.168.1.101`|
+| Subnet mask |`255.255.255.0`|`255.255.255.0`|`255.255.255.0`|
+| Gateway |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`|
+| IPv6 address |-|-|-|
+| Prefix length |-|-|-|
+| Gateway |-|-|-|
+| Autostart |`☑`|`☑`|`☑`|
+| VLAN aware |`☑`|`☑`|`☑`|
+| Bridge ports |`enp1s0`|`enp1s0`|`bond0`|
+| Comment |`Proxmox LAN Bridge`|`Proxmox LAN Bridge`|`Proxmox LAN Bridge/Bond`|
 |||
-| Name |`vmbr1`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-| Bridge ports |`bond1`|
-| Comment |`VPN-egress Bridge/Bond`|
+| Name |`vmbr1`|`vmbr1`|`vmbr1`|
+| IP address |-|-|-|
+| Subnet mask |-|-|-|
+| Gateway |-|-|-|
+| IPv6 address |-|-|-|
+| Prefix length |-|-|-|
+| Gateway |-|-|-|
+| Autostart |`☑`|`☑`|`☑`|
+| VLAN aware |`☑`|`☑`|`☑`|
+| Bridge ports |`bond0`|`enp2s0`|`bond1`|
+| Comment |`VPN-egress Bridge/Bond`|`VPN-egress Bridge`|`VPN-egress Bridge/Bond`|
 |||
-| Name |`vmbr2`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-| Bridge ports |`enp5s0`|
-| Comment |`vpngate-world`|
+| Name |`vmbr2`|`vmbr2`|`vmbr2`|
+| IP address |-|-|-|
+| Subnet mask |-|-|-|
+| Gateway |-|-|-|
+| IPv6 address |-|-|-|
+| Prefix length |-|-|-|
+| Gateway |-|-|-|
+| Autostart|`☑`|`☑`|`☑`| 
+| VLAN aware |`☑`|`☑`|`☑`|
+| Bridge ports |`enp4s0`|`enp3s0`|`enp5s0`|
+| Comment |`vpngate-world`|`vpngate-world`|`vpngate-world`|
 |||
-| Name |`vmbr3`|
-| IP address |leave blank|
-| Subnet mask |leave blank|
-| Gateway |leave blank|
-| IPv6 address |leave blank|
-| Prefix length |leave blank|
-| Gateway |leave blank|
-| Autostart |`☑`|
-| VLAN aware |`☑`|
-| Bridge ports |`enp6s0`|
-| Comment |`vpngate-local`|
+| Name |`vmbr3`|`vmbr3`|`vmbr3`|
+| IP address |-|-|-|
+| Subnet mask |-|-|-|
+| Gateway |-|-|-|
+| IPv6 address |-|-|-|
+| Prefix length |-|-|-|
+| Gateway |-|-|-|
+| Autostart |`☑`|`☑`|`☑`| 
+| VLAN aware|`☑`|`☑`|`☑`| 
+| Bridge ports |`enp5s0`|`enp4s0`|`enp6s0`|
+| Comment |`vpngate-local`|`vpngate-local`|`vpngate-local`|
 
-Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which wouldve been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0`.
+Note the bridge port corresponds to a physical interface identified above. The name for Linux Bridges must follow the format of vmbrX with ‘X’ being a number between 0 and 9999. Last but not least, `vmbr0` is the default Linux Bridge which would've been setup when first installing Proxmox and DOES NOT need to be created. Simply edit the existing `vmbr0` by changing `Bridge port ==> bond0` for **Build Type B** - 6x LAN 1Gb.
 
-Reboot the Proxmox node to invoke the system changes.
+Reboot the Proxmox host to invoke the system changes.
 
 
-## 6.00 Manual Configuration - Create a NAS Share hosted on Proxmox
-For those who want to manually build a NAS on `typhoon-01` you need to create a ZFS zpool with one or more drives. If you have two or more drives a Raid type can be created. You may choose which raid level to use:
+## 6.00 Manual Configuration - NAS File Serving
+There are two options for NAS file serving in these instructions. They are:
+
+1.  **Build Type A** - A Proxmox VM running Ubuntu 18.04 File Server on typhoon-01 serving NFS and Samba access to network clients - PC's, notebooks and Proxmox all VM's and CTs; *or,*
+2.  **Build Type B** and **C** - Both these build types require on a existing NAS or File Server on your network. The NAS or File Server shares must be configured for Samba and NFSv4.1.
+
+### 6.01 Create NAS NFS Storage pool
+These instructions apply to **Build Type A** only.
+
+To build a NAS ZFS storage on host `typhoon-01` you need to create a ZFS zpool with one or more drives. If you have two or more drives a Raid type can be created. You may choose which raid level to use:
 
 *  **RAID0** - Also called “striping”. The capacity of such volume is the sum of the capacities of all disks. But RAID0 does not add any redundancy, so the failure of a single drive makes the volume unusable.
 *  **RAID1** - Also called “mirroring”. Data is written identically to all disks. This mode requires at least 2 disks with the same size. The resulting capacity is that of a single disk.
@@ -688,10 +689,9 @@ For those who want to manually build a NAS on `typhoon-01` you need to create a 
 *  **RAIDZ-2** - A variation on RAID-5, double parity. Requires at least 4 disks.
 *  **RAIDZ-3** - A variation on RAID-5, triple parity. Requires at least 5 disks. 
 
-### 6.01 Manual Configuration - Create ZFS NAS Share
-Create the new NAS share using the web interface `Disks` > `ZFS` > `Create: ZFS` selecting one or more available disks to become members of your ZFS Raid. If your disks are not available read below. Configure as follows:
+To create a new NAS ZFS storage pool use the web interface `Disks` > `ZFS` > `Create: ZFS` selecting one or more available disks to become members of your ZFS Raid. If your disks are not available read below. Configure as follows:
 
-| Option | Node 1 Value | Notes
+| Option | Build Type A | Notes
 | :---  | :---: | :---
 | Name |`tank`
 | Add Storage | `☑`
@@ -707,7 +707,7 @@ If some disks are unavailable then the disks may need erasing/wiping. First step
 ```
 lsblk -f
 ```
-You are looking for disks (sdx) which DO NOT belong to Proxmox OS install (i.e not disks /dev/sda or /dev/sdb). Note the size of the disk. Its fair to say NAS disks will be larger exceeding 1000.00G. You can also get more information with the CLI command ` fdisk -l`.
+You are looking for drives which DO NOT belong to Proxmox OS install (i.e generally not disks /dev/sda, /dev/sdb or /dev/nvme0n1, /dev/nvme1n1). Note the size of the disk. Its fair to say NAS disks will be large exceeding 1000.00G. You can also get more information with the CLI command ` fdisk -l`.
 
 To wipe or erase the chosen disk type the following command replacing `/dev/sdx` with your disk identifier (i.e /dev/sdc) 
 ```
