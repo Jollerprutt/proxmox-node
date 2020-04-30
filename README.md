@@ -565,9 +565,9 @@ This section is for **Build Type A** or **B** - hosts with multiple LAN NIC's. I
 A 4x LAN 1Gb plus 10Gbe configuration is as follows.
 
 | Proxmox NIC ID | enp1s0 (SPF+) | enp2s0 |enp3s0 | enp4s0 | enp5s0
-| :--- | :---:  | :---: | :---:  | :---: |
-|**Proxmox Linux Bond** || `bond0` | `bond0`
-|**Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3`
+| :--- | :---:  | :---: | :---:  | :---: | :---: |
+| **Proxmox Linux Bond** || `bond0` | `bond0`
+| **Proxmox Linux Bridge** | `vmbr0` | `vmbr1` | `vmbr1` | `vmbr2` | `vmbr3`
 
 ####  Build Type A - 4x LAN 1Gb
 A 4x LAN 1Gb configuration is as follows.
@@ -674,8 +674,8 @@ Reboot the Proxmox host to invoke the system changes.
 ## 6.00 Manual Configuration - NAS File Serving
 There are two options for NAS file serving in these instructions. They are:
 
-1.  **Build Type A** - A Proxmox VM running Ubuntu 18.04 File Server on typhoon-01 serving NFS and Samba access to network clients - PC's, notebooks and Proxmox all VM's and CTs; *or,*
-2.  **Build Type B** and **C** - Both these build types require on a existing NAS or File Server on your network. The NAS or File Server shares must be configured for Samba and NFSv4.1.
+1.  **Build Type A** - Proxmox ZFS Raid pool hosted on typhoon-01. Data served by a Proxmox Ubuntu 18.04 CT on typhoon-01 running NFS and Samba network servers; *or,*
+2.  **Existing NAS Hardware** - An existing NAS, Synology, Qnap, FreeNAS etc, is available on the network om IPv4 192.168.1.10. The NAS or File Server must be configured with Samba and NFSv4.1 network servers.
 
 ### 6.01 Create NAS NFS Storage pool
 These instructions apply to **Build Type A** only.
@@ -714,6 +714,31 @@ To wipe or erase the chosen disk type the following command replacing `/dev/sdx`
 dd if=/dev/zero of=/dev/sdx bs=512 count=1 conv=notrunc &&
 qm recsan --dryrun
 ```
+
+### 6.02 Create ZFS Storage Pool Shared Folders
+These instructions apply to **Build Type A** only.
+
+Shared folders are the basic directories where you can store files and folders on your NAS. Below is a list of shared folders that are created automatically in this build:
+
+*  /tank/cyclone-01/"audio"
+*  /tank/CT_HOSTNAME/"backup"
+*  /tank/CT_HOSTNAME/"books"
+*  /srv/CT_HOSTNAME/"cloudstorage"
+*  /srv/CT_HOSTNAME/"docker"
+*  /srv/CT_HOSTNAME/"downloads"
+*  /srv/CT_HOSTNAME/"git"
+*  /srv/CT_HOSTNAME/"homes"
+*  /srv/CT_HOSTNAME/"music"
+*  /srv/CT_HOSTNAME/"openvpn"
+*  /srv/CT_HOSTNAME/"photo"
+*  /srv/CT_HOSTNAME/"proxmox"
+*  /srv/CT_HOSTNAME/"public"
+*  /srv/CT_HOSTNAME/"sshkey"
+*  /srv/CT_HOSTNAME/"video"
+
+ZFS storage pool folders are your default volume level File Server folders such as homes, downloads, video, photos. These folders are created under the folder path /tank/cyclone-01/.
+
+
 
 ## 7.00 Manual Configuration - NFS Mounts to NAS
 There are two scenarios for NAS file serving in these instructions. They are:
