@@ -52,6 +52,8 @@ Other optional Prerequisites are (if using Build Type B);
 Tasks to be performed are:
 - [1.00 Hardware Specifications](#100-hardware-specifications)
 	- [1.01 Hardware Specifications - Build Type A](#101-hardware-specifications---build-type-a)
+	- [1.02 Hardware Specifications - Build Type B](#102-hardware-specifications---build-type-b)
+	- [1.03 Hardware Specifications - Build Type C](#103-hardware-specifications---build-type-c)
 - [2.00 Proxmox OS Install](#200-proxmox-os-install)
 	- [2.01 Proxmox VE OS Install - Build Type A](#201-proxmox-ve-os-install---build-type-a)
 	- [2.02 Proxmox VE OS Install - Build Type B](#202-proxmox-ve-os-install---build-type-b)
@@ -83,20 +85,52 @@ Tasks to be performed are:
 	- [7.01 Build Type A - Local Mount points](#701-build-type-a---local-mount-points)
 	- [7.02 Build Type B & C](#702-build-type-b--c)
 - [8.00 Manual Configuration - Add SSH Keys](#800-manual-configuration---add-ssh-keys)
-- [9.00 Manual Configuration - Create a new Proxmox user](#900-manual-configuration---create-a-new-proxmox-user)
-- [10.00 Create a Proxmox VE Cluster](#1000-create-a-proxmox-ve-cluster)
-	- [10.01 Create a Cluster](#1001-create-a-cluster)
-	- [10.02 Join the other Nodes to the New Cluster](#1002-join-the-other-nodes-to-the-new-cluster)
-	- [10.03 How to delete a existing cluster on a node](#1003-how-to-delete-a-existing-cluster-on-a-node)
+- [9.00 Manual Configuration - Create a pfSense VM](#900-manual-configuration---create-a-pfsense-vm)
+- [10.00 Manual Configuration - Create a new Proxmox user](#1000-manual-configuration---create-a-new-proxmox-user)
+- [11.00 Create a Proxmox VE Cluster](#1100-create-a-proxmox-ve-cluster)
+	- [11.01 Create a Cluster](#1101-create-a-cluster)
+	- [11.02 Join the other Nodes to the New Cluster](#1102-join-the-other-nodes-to-the-new-cluster)
+	- [11.03 How to delete a existing cluster on a node](#1103-how-to-delete-a-existing-cluster-on-a-node)
 - [00.00 Patches and Fixes](#0000-patches-and-fixes)
 	- [00.01 pfSense – disable firewall with pfctl -d](#0001-pfsense--disable-firewall-with-pfctl--d)
 	- [00.02 Proxmox Backup Error - Permissions](#0002-proxmox-backup-error---permissions)
 	- [00.03 Simple bash script to APT update all LXC containers which are stopped or running status](#0003-simple-bash-script-to-apt-update-all-lxc-containers-which-are-stopped-or-running-status)
 
+
 ## 1.00 Hardware Specifications
 Hardware specifications for Build Types.
 
 ### 1.01 Hardware Specifications - Build Type A
+| Component | Part Description | Part Number | Units | Notes
+| :---  | :---: | :---: |  :---: | :---
+| Mainboard | Supermicro X11SSH-F | MBD-X11SSH-F
+| CPU | 
+| PCIe Network Card (1Gbe)
+| PCIe Network Card (10Gbe)
+| IPMI LAN
+| RAM
+| PSU
+| PVE SSD
+| PCIe NVMe Card
+| Storage Drives
+| Server Case
+
+### 1.02 Hardware Specifications - Build Type B
+| Component | Part Description | Part Number | Units | Notes
+| :---  | :---: | :---: |  :---: | :---
+| Mainboard | Supermicro X11SSH-F | MBD-X11SSH-F
+| CPU | 
+| PCIe Network Card (1Gbe)
+| PCIe Network Card (10Gbe)
+| IPMI LAN
+| RAM
+| PSU
+| PVE SSD
+| PCIe NVMe Card
+| Storage Drives
+| Server Case
+
+### 1.03 Hardware Specifications - Build Type C
 | Component | Part Description | Part Number | Units | Notes
 | :---  | :---: | :---: |  :---: | :---
 | Mainboard | Supermicro X11SSH-F | MBD-X11SSH-F
@@ -820,7 +854,10 @@ service sshd restart &&
 rm /mnt/pve/cyclone-01-public/id_rsa*.pub
 ```
 
-## 9.00 Manual Configuration - Create a new Proxmox user
+## 9.00 Manual Configuration - Create a pfSense VM
+Complete instructions for installing and configuring pfSense available [here](https://github.com/ahuacate/pfsense-setup/blob/master/README.md).
+
+## 10.00 Manual Configuration - Create a new Proxmox user
 For ease of management I have created a specific user and group explicitly for Proxmox and Virtual Machines in my cluster with a username storm and group called homelab. You only have to complete this task on typhoon-01 because Proxmox PVE users (not PAM users) are deployed across the cluster.
 
 To create a new group go to Proxmox web interface of your node (should be https://192.168.1.101:8006/ ) `Datacenter` > `Permissions` > `Groups` > `Create` and complete the form fields as follows:
@@ -850,10 +887,10 @@ Next create the new user so go to Proxmox web interface of your node (should be 
 
 And click `Add`.
 
-## 10.00 Create a Proxmox VE Cluster
+## 11.00 Create a Proxmox VE Cluster
 You need to have a minimum of three fully built and ready Proxmox VE hosts on the same network - Typhoon-01, Typhoon-02 and Typhoon-03.
 
-### 10.01 Create a Cluster
+### 11.01 Create a Cluster
 Now using the Proxmox VE web interface on host typhoon-01, go to `Datacenter` > `Cluster` > `Create Cluster` and fill out the fields as follows:
 
 | Create Cluster | Value | Notes
@@ -863,7 +900,7 @@ Now using the Proxmox VE web interface on host typhoon-01, go to `Datacenter` > 
 
 And Click `Create`.
 
-### 10.02 Join the other Nodes to the New Cluster
+### 11.02 Join the other Nodes to the New Cluster
 The first step in joining other nodes to your cluster, `typhoon-cluster`, is to copy typhoon-01 cluster manager fingerprint/join information into your clipboard.
 
 **Step One:**
@@ -907,7 +944,7 @@ Membership information
 0x00000003          1 192.168.1.103
 ```
 
-### 10.03 How to delete a existing cluster on a node
+### 11.03 How to delete a existing cluster on a node
 I made an error when creating the cluster name and it was headache to delete the cluster. But if you paste the following into a CLI terminal your cluster settings should be reset to default.
 
 ```
