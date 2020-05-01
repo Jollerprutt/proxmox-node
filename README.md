@@ -269,17 +269,17 @@ Configure each host as follows:
  
 To create the partitions SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and type the following into the CLI terminal window:
 
-1.  Type `cfdisk` in the CLI. the cfdisk window dialogue will appear in the terminal.
-2.  Highlight the row `Free Space` and `New` and press `ENTER`.
+1.  Type `cfdisk` in the CLI. The cfdisk window dialogue will appear in the terminal.
+2.  Highlight row `Free Space` and option `New` and press `ENTER`.
 3.  Set the `Partition Size` to 64G and press `ENTER`.
-4.  Repeat highlighting the row `Free Space` and `New` and press `ENTER`.
+4.  Repeat highlighting the row `Free Space` and option `New` and press `ENTER`.
 5.  Set the `Partition Size` to 8G and press `ENTER`.
 
-At this stage you should have created: 2x new partitions 64G and 8G size of type Linux filesystem.
+At this stage you should have created: 2x new partitions sized 64G and 8G with type set to Linux filesystem.
 
-6.  Highlight `Write` and press `ENTER`.
-7.  Type `yes` to "Are you sure you want to write the partition table to disk?"
-8.  Highlight `Quit` and press `ENTER`.
+6.  Highlight option `Write` and press `ENTER`.
+7.  Type `yes` to prompt "Are you sure you want to write the partition table to disk?"
+8.  Highlight option `Quit` and press `ENTER`.
 
 
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
