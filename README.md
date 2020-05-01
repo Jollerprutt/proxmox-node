@@ -256,7 +256,7 @@ Configure each host as follows:
 
 **Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
 
-### 2.05 Partition Hard Drive - Build Type A
+### 2.05 Partition Hard Drive(s) - Build Type A
 **Build Type A** has unallocated SSD drive space reserved for ZFS Logs and Cache. This unallocated needs to be partitioned as follows:
 
 | Option | Value 240GB SSD | Value 120GB SSD | Notes |
@@ -266,10 +266,21 @@ Configure each host as follows:
 | **Unallocated space**
 | Partition 1 - ZFS Cache size | 64 | 64 |
 | Partition 2 - ZFS Logs size | 8 | 8 |
- 
-To create the partitions SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and type the following into the CLI terminal window:
 
-1.  Type `cfdisk` in the CLI. The cfdisk window dialogue will appear in the terminal.
+First identify which drive devices are used for your Proxmox VE OS. If you selected ZFS Raid1 during the Proxmox install then you have two drives to partition. To identify the drives to partition SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and type the following into the CLI terminal window:
+```
+fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System'| awk '{ print $1 }' | sort | sed 's/[0-9]*//g' | awk '!seen[$0]++'
+```
+```
+# Command Results will show:
+/dev/sda
+/dev/sdb
+```
+The above means you must partition devices /dev/sda and /dev/sdb. If only one device shows thats okay as it means you installed Proxmox VE OS on one drive only (i.e ZFS Raid0).
+
+To create the partitions SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and type the following into the CLI terminal window. Repeat steps 1 to 8 for the above device ID(s) (i.e `cfdisk /dev/sda` and `cfdisk /dev/sdb`).
+
+1.  Type `cfdisk /dev/sdx` in the CLI. Replace the `x` with the correct ID (i.e /dev/sda). The cfdisk window dialogue will appear in the terminal.
 2.  Highlight row `Free Space` and option `New` and press `ENTER`.
 3.  Set the `Partition Size` to 64G and press `ENTER`.
 4.  Repeat highlighting the row `Free Space` and option `New` and press `ENTER`.
