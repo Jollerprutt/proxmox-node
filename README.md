@@ -59,6 +59,7 @@ Tasks to be performed are:
 	- [2.02 Proxmox VE OS Install - Build Type B](#202-proxmox-ve-os-install---build-type-b)
 	- [2.03 Proxmox VE OS Install - Build Type C](#203-proxmox-ve-os-install---build-type-c)
 	- [2.04 Proxmox VE OS Install - Final Steps](#204-proxmox-ve-os-install---final-steps)
+	- [2.05 Partition Hard Drive - Build Type A](#205-partition-hard-drive---build-type-a)
 - [3.00 Prepare your Network Hardware - Ready for Typhoon-01](#300-prepare-your-network-hardware---ready-for-typhoon-01)
 	- [3.01 Configure your Network Switch](#301-configure-your-network-switch)
 	- [3.02 Create Network Switch VLANs](#302-create-network-switch-vlans)
@@ -118,23 +119,17 @@ Hardware specifications for Build Types.
 ### 1.02 Hardware Specifications - Build Type B
 | Component | Part Description | Part Number | Units | Notes
 | :---  | :---: | :---: |  :---: | :---
-| Mainboard | Supermicro X11SSH-F | MBD-X11SSH-F
-| CPU | 
-| PCIe Network Card (1Gbe)
-| PCIe Network Card (10Gbe)
-| IPMI LAN
-| RAM
-| PSU
-| PVE SSD
-| PCIe NVMe Card
-| Storage Drives
-| Server Case
+| Mainboard | Qotom Mini PC Q500G6-S05 - I5 Intel 
+| CPU | Intel I5 7300U
+| PCIe Network Card (1Gbe) | 6x LAN
+| RAM | 16GB
+| PVE SSD | Samsung SM883 240GB
 
 ### 1.03 Hardware Specifications - Build Type C
 | Component | Part Description | Part Number | Units | Notes
 | :---  | :---: | :---: |  :---: | :---
-| Mainboard | Supermicro X11SSH-F | MBD-X11SSH-F
-| CPU | 
+| Mainboard
+| CPU 
 | PCIe Network Card (1Gbe)
 | PCIe Network Card (10Gbe)
 | IPMI LAN
@@ -260,6 +255,31 @@ Configure each host as follows:
 | DNS Server |`192.168.1.5`|`192.168.1.5`|`192.168.1.5`|`192.168.1.5`
 
 **Note:** Build Type A or B must be your Primary Host, assigned hostname `typhoon-01.localdomain` and IP `192.168.1.101`, and if your want to create a OpenVPN Gateway for your network clients then you must have 4x LAN available (i.e PCIe Intel I350-T4 card installed). Qotom models are available with 4x or 6x Intel LAN ports.
+
+### 2.05 Partition Hard Drive - Build Type A
+**Build Type A** has unallocated SSD drive space reserved for ZFS Logs and Cache. This unallocated needs to be partitioned as follows:
+
+| Option | Value 240GB SSD | Value 120GB SSD | Notes |
+| :---  | :---: | :---: | :---
+| Actual Capacity | 220GB | 110GB | *This is a estimate of the actual usable space available.*
+| PVE size | 148 | 38 | 
+| **Unallocated space**
+| Partition 1 - ZFS Cache size | 64 | 64 |
+| Partition 2 - ZFS Logs size | 8 | 8 |
+ 
+To create the partitions SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and type the following into the CLI terminal window:
+
+1.  Type `cfdisk` in the CLI. the cfdisk window dialogue will appear in the terminal.
+2.  Highlight the row `Free Space` and `New` and press `ENTER`.
+3.  Set the `Partition Size` to 64G and press `ENTER`.
+4.  Repeat highlighting the row `Free Space` and `New` and press `ENTER`.
+5.  Set the `Partition Size` to 8G and press `ENTER`.
+
+At this stage you should have created: 2x new partitions 64G and 8G size of type Linux filesystem.
+
+6.  Highlight `Write` and press `ENTER`.
+7.  Type `yes` to "Are you sure you want to write the partition table to disk?"
+8.  Highlight `Quit` and press `ENTER`.
 
 
 ## 3.00 Prepare your Network Hardware - Ready for Typhoon-01
