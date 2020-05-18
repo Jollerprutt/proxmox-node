@@ -45,6 +45,9 @@ NC=$'\033[0m'
 # Download external scripts
 wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/proxmox_setup_sharedfolderlist
 
+#### Creating File Server Users and Groups ####
+section "Creating File Server Users and Groups."
+
 
 # Create users and groups
 msg "Creating CT default user groups..."
@@ -154,6 +157,46 @@ done
 fi
 
 
+# Create kodi_rsync user
+box_out '#### PLEASE READ CAREFULLY - KODI_RSYNC USER ####' '' 'Do you want to make a CoreElec Kodi player portable for use in remote' 'locations? Like homes with no internet or LAN network.' '''This is achieved by attaching a USB3 hard disk to your CoreElec hardware and' 'running Linux native RSYNC to synchronise your selected File Server media' 'library to the attached USB3 hard disk.'
+echo
+read -p "Create the user kodi_rsync on your File Server (NAS)[yes/no]?: " -r
+if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
+  msg "Creating user kodi_rsync..."
+  KODI_RSYNC=0
+  id -u kodi_rsync >/dev/null
+  if [ $? -ne 0 ]; then
+    useradd -m -d /srv/$HOSTNAME/homes/kodi_rsync -g medialab -s /bin/bash kodi_rsync >/dev/null
+    info "User created: ${YELLOW}kodi_rsync${NC} of group medialab"
+  else
+    info "User ${YELLOW}kodi_rsync${NC} already exists. Skipping this step."
+    KODI_RSYNC=1
+  fi
+else
+  KODI_RSYNC=1
+  info "Skipping this step."
+  echo
+fi
+if [ $KODI_RSYNC == 0 ]; then
+  msg "Editing SSH server configuration file..."
+  sudo sed -i 's|#PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+  sudo sed -i 's|#AuthorizedKeysFile.*|AuthorizedKeysFile     .ssh/authorized_keys|g' /etc/ssh/sshd_config
+  msg "Creating authorised keys folders for user kodi_rsync..."
+  mkdir /srv/$HOSTNAME/homes/kodi_rsync/.ssh
+  chmod 700 /srv/$HOSTNAME/homes/kodi_rsync/.ssh
+  touch /srv/$HOSTNAME/homes/kodi_rsync/.ssh/authorized_keys
+  chmod 600 /srv/$HOSTNAME/homes/kodi_rsync/.ssh/authorized_keys
+  chmod 700 /srv/$HOSTNAME/homes/kodi_rsync
+  msg "Restarting SSH service..."
+  sudo synoservicectl --reload sshd
+  echo
+fi
+
+
+#### Setting Folder Permissions ####
+section "Setting File Server Folder Permissions."
+
+
 # Set Medialab Folder Permissions
 msg "Setting medialab folder share permissions..."
 echo
@@ -225,11 +268,18 @@ while read dir; do
   fi
 done < proxmox_setup_sharedfolderlist-public # file listing of privatelab folders to modify
 
+
+#### Install and Configure Samba ####
+section "Installing and configuring Samba."
+
+
 # Install Samba
+msg "Installing Samba..."
 apt update >/dev/null
 apt install -y samba >/dev/null
 
 # Configure Samba Basics
+msg "Configuring Samba..."
 service smbd stop
 cat << EOF > /etc/samba/smb.conf
 [global]
@@ -292,21 +342,24 @@ while read dir; do
 		valid users = %S,@$dirgrp
 	EOF"
   else
-	echo "${dir01} does not exist: skipping..."
+	info "${dir01} does not exist: skipping."
 	echo
   fi
 done < proxmox_setup_sharedfolderlist-samba_dir # file listing of folders to create
 service smbd start # Restart Samba
 
 
+#### Install and Configure NFS ####
+section "Installing and configuring NFS Server."
+
+
 # Install nfs
-info "Installing NFS Server..."
-echo
+msg "Installing NFS Server..."
 apt update >/dev/null
 apt install -y nfs-kernel-server >/dev/null
 
 # Edit Exports
-info "Modifying /etc/exports file..."
+msg "Modifying /etc/exports file..."
 echo
 if [ "$XTRA_SHARES" = 0 ]; then
 	echo
@@ -368,7 +421,7 @@ while read dir; do
 	/srv/$HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100)
 	EOF"
   else
-	echo "${dir01} does not exist: skipping..."
+	info "${dir01} does not exist: skipping..."
 	echo
   fi
 done < proxmox_setup_sharedfolderlist-nfs_default_dir # file listing of folders to create
@@ -384,26 +437,30 @@ while read dir; do
 	/srv/$HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.50.0/24(rw,async,no_wdelay,crossmnt,insecure,all_squash,insecure_locks,sec=sys,anonuid=1024,anongid=100)
 	EOF"
   else
-	echo "${dir01} does not exist: skipping..."
+	info "${dir01} does not exist: skipping..."
 	echo
   fi
 done < proxmox_setup_sharedfolderlist-nfs_media_dir # file listing of folders to create
 
 
 # NFS Server Restart
-info "Restarting NFS Server..."
+msg "Restarting NFS Server..."
 service nfs-kernel-server restart
 if [ "$(systemctl is-active --quiet nfs-kernel-server; echo $?) -eq 0" ]; then
-	info "NFS is active (running)..."
+	info "NFS is active (running)."
 	echo
 elif [ "$(systemctl is-active --quiet nfs-kernel-server; echo $?) -eq 3" ]; then
-	warn "NFS is inactive (dead). Your intervention is required..."
+	warn "NFS is inactive (dead). Your intervention is required."
 	echo
 fi
 
+
+#### Install and Configure Webmin ####
+section "Installing and configuring Webmin."
+
+
 # Install Webmin Prerequisites
-info "Installing Webmin prerequisites..."
-echo
+msg "Installing Webmin prerequisites..."
 apt-get install -y gnupg2 >/dev/null
 bash -c 'echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/apt/sources.list' >/dev/null
 wget -qL http://www.webmin.com/jcameron-key.asc
@@ -411,8 +468,7 @@ apt-key add jcameron-key.asc
 apt-get update >/dev/null
 
 # Install Webmin
-info "Installing Webmin..."
-echo
+msg "Installing Webmin..."
 apt-get install -y webmin >/dev/null
 if [ "$(systemctl is-active --quiet webmin; echo $?) -eq 0" ]; then
 	info "Webmin is active (running)..."
