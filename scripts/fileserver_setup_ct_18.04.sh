@@ -71,17 +71,17 @@ echo
 msg "Creating CT default users..."
 id -u media >/dev/null
 if [ $? -ne 0 ]; then
-	useradd -m -d /srv/$CT_HOSTNAME/homes/media -u 1605 -g medialab -s /bin/bash media >/dev/null
+	useradd -m -d /srv/$HOSTNAME/homes/media -u 1605 -g medialab -s /bin/bash media >/dev/null
   info "Default user created: ${YELLOW}media${NC} of group medialab"
 fi
 id -u storm >/dev/null
 if [ $? -ne 0 ]; then
-	useradd -m -d /srv/$CT_HOSTNAME/homes/storm -u 1606 -g homelab -G medialab -s /bin/bash storm >/dev/null
+	useradd -m -d /srv/$HOSTNAME/homes/storm -u 1606 -g homelab -G medialab -s /bin/bash storm >/dev/null
   info "Default user created: ${YELLOW}storm${NC} of groups medialab, homelab"
 fi
 id -u typhoon >/dev/null
 if [ $? -ne 0 ]; then
-	useradd -m -d /srv/$CT_HOSTNAME/homes/typhoon -u 1607 -g privatelab -G medialab,homelab -s /bin/bash typhoon >/dev/null
+	useradd -m -d /srv/$HOSTNAME/homes/typhoon -u 1607 -g privatelab -G medialab,homelab -s /bin/bash typhoon >/dev/null
   info "Default user created: ${YELLOW}typhoon${NC} of groups medialab, homelab and privatelab"
 fi
 echo
@@ -135,7 +135,7 @@ done
 
 if [ $(id -u) -eq 0 ] && [ "$NEW_NAS_USER" = 0 ]; then
 NEW_USERS=usersfile.txt
-HOME_BASE="/srv/$NAS_HOSTNAME/homes/"
+HOME_BASE="/srv/$HOSTNAME/homes/"
 cat ${NEW_USERS} |
 while read USER PASSWORD GROUP
 do
@@ -158,7 +158,7 @@ fi
 msg "Setting medialab folder share permissions..."
 echo
 cat proxmox_setup_sharedfolderlist | awk '$2 ~ "medialab" { print $1 }' > proxmox_setup_sharedfolderlist-medialab
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
   if [ -d "$dir" ]; then
@@ -176,7 +176,7 @@ done < proxmox_setup_sharedfolderlist-medialab # file listing of medialab folder
 msg "Setting homelab folder share permissions..."
 echo
 cat proxmox_setup_sharedfolderlist | awk '$2 ~ "homelab" { print $1 }' > proxmox_setup_sharedfolderlist-homelab
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
   if [ -d "$dir" ]; then
@@ -194,7 +194,7 @@ done < proxmox_setup_sharedfolderlist-homelab # file listing of homelab folders 
 msg "Setting privatelab folder share permissions..."
 echo
 cat proxmox_setup_sharedfolderlist | awk '$2 ~ "privatelab" { print $1 }' > proxmox_setup_sharedfolderlist-privatelab
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
   if [ -d "$dir" ]; then
@@ -212,7 +212,7 @@ done < proxmox_setup_sharedfolderlist-privatelab # file listing of privatelab fo
 msg "Setting public folder share permissions..."
 echo
 cat proxmox_setup_sharedfolderlist | awk '$2 ~ "public" { print $1 }' > proxmox_setup_sharedfolderlist-public
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
   if [ -d "$dir" ]; then
@@ -234,7 +234,7 @@ service smbd stop
 cat << EOF > /etc/samba/smb.conf
 [global]
 	workgroup = WORKGROUP
-	server string = $NAS_HOSTNAME
+	server string = $HOSTNAME
 	server role = standalone server
 	disable netbios = yes
 	dns proxy = no
@@ -263,7 +263,7 @@ cat << EOF > /etc/samba/smb.conf
 
 [public]
 	comment = public anonymous access
-	path = /srv/$NAS_HOSTNAME/public
+	path = /srv/$HOSTNAME/public
 	browsable =yes
 	public = yes
 	read only = no
@@ -275,7 +275,7 @@ EOF
 msg "Creating default and custom Samba folder shares..."
 echo
 cat proxmox_setup_sharedfolderlist | awk '{ print $1 }' | sed '/homes/d;/public/d' > proxmox_setup_sharedfolderlist-samba_dir
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
@@ -358,14 +358,14 @@ grep -Ff nfs_xtra_choices proxmox_setup_sharedfolderlist | sed '/medialab/!d' > 
 
 # Create Default NFS exports
 grep -vxFf rejected_folders-all proxmox_setup_sharedfolderlist | sed '/backup/d;/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/music/d;/photo/d;/video/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
 	eval "cat <<-EOF >> exports
 
 	# $dir export
-	/srv/$NAS_HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100)
+	/srv/$HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100)
 	EOF"
   else
 	echo "${dir01} does not exist: skipping..."
@@ -374,14 +374,14 @@ while read dir; do
 done < proxmox_setup_sharedfolderlist-nfs_default_dir # file listing of folders to create
 # Create Media NFS exports
 cat proxmox_setup_sharedfolderlist | grep -i 'music\|photo\|\video' | sed '$r included_folders-media_dir' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_media_dir 
-schemaExtractDir="/srv/$NAS_HOSTNAME"
+schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
 	eval "cat <<-EOF >> exports
 
 	# $dir export
-	/srv/$NAS_HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.50.0/24(rw,async,no_wdelay,crossmnt,insecure,all_squash,insecure_locks,sec=sys,anonuid=1024,anongid=100)
+	/srv/$HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.50.0/24(rw,async,no_wdelay,crossmnt,insecure,all_squash,insecure_locks,sec=sys,anonuid=1024,anongid=100)
 	EOF"
   else
 	echo "${dir01} does not exist: skipping..."
