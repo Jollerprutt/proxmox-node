@@ -55,6 +55,9 @@ wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/
 # Move tmp files to TEMP
 cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
 
+# Download and Instal Prerequisites
+apt-get install -y samba-common-bin  >/dev/null
+
 
 #### Creating File Server Users and Groups ####
 section "File Server CT - Creating Users and Groups."
@@ -114,57 +117,54 @@ else
 	info "You have chosen to skip this step."
 fi
 echo
-
 while [[ "$REPLY" != "no" ]] && [ "$NEW_NAS_USER" = 0 ]; do
-read -p "Enter new username you want to create : " username
-echo
-msg "Choose your new user's group permissions."
-GRP01="Homelab - Standard User - Personal Home Folder & Public Folder only." >/dev/null
-GRP02="Privatelab - Admin User - Full access to all data." >/dev/null
-PS3="Select your new users group permission rights (entering numeric) : "
-echo
-select grp_type in "$GRP01" "$GRP02"
-do
-echo
-info "You have selected: $grp_type ..."
-echo
-break
+  read -p "Enter new username you want to create : " username
+  echo
+  msg "Choose your new user's group permissions."
+  GRP01="Homelab - Standard User - Personal Home Folder & Public Folder only." >/dev/null
+  GRP02="Privatelab - Admin User - Full access to all data." >/dev/null
+  PS3="Select your new users group permission rights (entering numeric) : "
+  echo
+  select grp_type in "$GRP01" "$GRP02"
+  do
+  echo
+  info "You have selected: $grp_type ..."
+  echo
+  break
+  done
+  if [ "$grp_type" = "$GRP01" ]; then
+    USERGRP="homelab"
+  elif [ "$grp_type" = "$GRP02" ]; then
+    USERGRP="privatelab -G medialab,homelab"
+  fi
+  while true; do
+    read -s -p "Enter Password: " password
+    echo
+    read -s -p "Enter Password (again): " password2
+    echo
+    [ "$password" = "$password2" ] && echo "$username $password $USERGRP" >> usersfile.txt && break
+    warn "Passwords do not match. Please try again."
+  done
+  echo
+    read -p "Do you want to create another new user account (type yes/no)?"
 done
-if [ "$grp_type" = "$GRP01" ]; then
-	USERGRP="homelab"
-elif [ "$grp_type" = "$GRP02" ]; then
-	USERGRP="privatelab -G medialab,homelab"
-fi
-while true; do
-	read -s -p "Enter Password: " password
-	echo
-	read -s -p "Enter Password (again): " password2
-	echo
-	[ "$password" = "$password2" ] && echo "$username $password $USERGRP" >> usersfile.txt && break
-	warn "Passwords do not match. Please try again."
-done
-echo
-  read -p "Do you want to create another new user account (type yes/no)?"
-done
-
 if [ $(id -u) -eq 0 ] && [ "$NEW_NAS_USER" = 0 ]; then
-NEW_USERS=usersfile.txt
-HOME_BASE="/srv/$HOSTNAME/homes/"
-cat ${NEW_USERS} |
-while read USER PASSWORD GROUP
-do
-pass=$(perl -e 'print crypt($ARGV[0], 'password')' $PASSWORD)
-egrep “^$USER[0]” /etc/passwd > /dev/null
-if [ $? -eq 0 ]; then
-warn “User $USER exists!”
-exit 1
-else
-useradd -g ${GROUP} -p ${pass} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
-sudo -iu ${USER} xdg-user-dirs-update
-(echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
-[ $? -eq 0 ] && info “User $USER has been added to the system” || warn “Failed adding user $USER!”
-fi
-done
+  NEW_USERS=usersfile.txt
+  HOME_BASE="/srv/$HOSTNAME/homes/"
+  cat ${NEW_USERS} | while read USER PASSWORD GROUP
+  do
+  pass=$(perl -e 'print crypt($ARGV[0], 'password')' $PASSWORD)
+  egrep “^$USER[0]” /etc/passwd > /dev/null
+  if [ $? -eq 0 ]; then
+    warn “User $USER exists!”
+    exit 1
+  else
+    useradd -g ${GROUP} -p ${pass} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
+    sudo -iu ${USER} xdg-user-dirs-update
+    (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
+    [ $? -eq 0 ] && info “User $USER has been added to the system” || warn “Failed adding user $USER!”
+  fi
+  done
 fi
 
 
