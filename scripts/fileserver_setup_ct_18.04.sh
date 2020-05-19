@@ -16,6 +16,10 @@ function section() {
   printf -- '-%.0s' {1..100}; echo ""
   echo
 }
+function cleanup() {
+  popd >/dev/null
+  rm -rf $TEMP_DIR
+}
 function box_out() {
   set +u
   local s=("$@") b w
@@ -41,12 +45,19 @@ GREEN=$'\033[0;32m'
 WHITE=$'\033[1;37m'
 NC=$'\033[0m'
 
+# Set Temp Folder
+TEMP_DIR=$(mktemp -d)
+pushd $TEMP_DIR >/dev/null
 
 # Download external scripts
 wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/proxmox_setup_sharedfolderlist
 
+# Move tmp files to TEMP
+cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
+
+
 #### Creating File Server Users and Groups ####
-section "Creating File Server Users and Groups."
+section "File Server CT - Creating Users and Groups."
 
 
 # Create users and groups
@@ -188,13 +199,13 @@ if [ $KODI_RSYNC == 0 ]; then
   chmod 600 /srv/$HOSTNAME/homes/kodi_rsync/.ssh/authorized_keys
   chmod 700 /srv/$HOSTNAME/homes/kodi_rsync
   msg "Restarting SSH service..."
-  sudo synoservicectl --reload sshd
+  sudo systemctl restart ssh.service
   echo
 fi
 
 
 #### Setting Folder Permissions ####
-section "Setting File Server Folder Permissions."
+section "File Server - Setting Folder Permissions."
 
 
 # Set Medialab Folder Permissions
@@ -270,13 +281,13 @@ done < proxmox_setup_sharedfolderlist-public # file listing of privatelab folder
 
 
 #### Install and Configure Samba ####
-section "Installing and configuring Samba."
+section "File Server - Installing and configuring Samba."
 
 
 # Install Samba
 msg "Installing Samba..."
-apt update >/dev/null
-apt install -y samba >/dev/null
+apt-get update >/dev/null
+apt-get install -y samba >/dev/null
 
 # Configure Samba Basics
 msg "Configuring Samba..."
@@ -350,67 +361,66 @@ service smbd start # Restart Samba
 
 
 #### Install and Configure NFS ####
-section "Installing and configuring NFS Server."
+section "File Server - Installing and configuring NFS Server."
 
 
 # Install nfs
 msg "Installing NFS Server..."
-apt update >/dev/null
-apt install -y nfs-kernel-server >/dev/null
+apt-get update >/dev/null
+apt-get install -y nfs-kernel-server >/dev/null
 
 # Edit Exports
-msg "Modifying /etc/exports file..."
+msg "Modifying $HOSTNAME /etc/exports file..."
 echo
-if [ "$XTRA_SHARES" = 0 ]; then
+if [ "$XTRA_SHARES" == 0 ]; then
 	echo
-	box_out '#### PLEASE READ CAREFULLY - ADDITIONAL NFS SHARED FOLDERS ####' '' 'In a previous step you created additional shared folders.' '' 'You can choose to select which additional folders are to be made available as NFS shares.'
+	box_out '#### PLEASE READ CAREFULLY - ADDITIONAL NFS SHARED FOLDERS ####' '' 'In a previous step you created additional shared folders.' '' 'You can now choose which additional folders are to be included as NFS shares.'
 	echo
 	read -p "Do you want to create NFS shares for your additional shared folders [y/n]? " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    NFS_XTRA_SHARES=0 >/dev/null
+  else
+    NFS_XTRA_SHARES=1 >/dev/null
+    info "Your additional shared folders will not be available as NFS shares (default shared folders only) ..."
+    echo
+  fi
 	echo
 fi
 
-if [ "$XTRA_SHARES" = 0 ] && [[ $REPLY =~ ^[Yy]$ ]]
-then
-	NFS_XTRA_SHARES=0 >/dev/null
-else
-	NFS_XTRA_SHARES=1 >/dev/null
-	info "Your additional shared folders will not be available as NFS shares (default shared folders only) ..."
-	echo
-fi
-
-if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
-echo "Please select which additional folders are to be made available as NFS shares."
-menu() {
-    echo "Avaliable options:"
+if [ "$NFS_XTRA_SHARES" == 0 ] && [ "$XTRA_SHARES" == 0 ]; then
+  msg "Please select which additional folders are to be included as NFS shares."
+  menu() {
+    echo "Available options:"
     for i in ${!options[@]}; do 
         printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${options[i]}"
     done
     if [[ "$msg" ]]; then echo "$msg"; fi
-}
-options=( $(cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//') )
-prompt="Check an option (again to uncheck, ENTER when done): "
-while menu && read -rp "$prompt" num && [[ "$num" ]]; do
+  }
+  options=( $(cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//') )
+  prompt="Check an option (again to uncheck, ENTER when done): "
+  while menu && read -rp "$prompt" num && [[ "$num" ]]; do
     [[ "$num" != *[![:digit:]]* ]] &&
     (( num > 0 && num <= ${#options[@]} )) ||
     { msg="Invalid option: $num"; continue; }
     ((num--)); msg="${options[num]} was ${choices[num]:+un}checked"
     [[ "${choices[num]}" ]] && choices[num]="" || choices[num]="+"
-done
+  done
+  echo
+  printf "You selected"; msg=" nothing"
+  for i in ${!options[@]}; do 
+    [[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; } && echo $({ printf " %s" "${options[i]}"; msg=""; }) | sed 's/\"//g' >> included_nfs_xtra_folders
+  done
+else
+  touch included_nfs_xtra_folders
 fi
-printf "You selected"; msg=" nothing"
-for i in ${!options[@]}; do 
-	[[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; } && echo $({ printf " %s" "${options[i]}"; msg=""; }) | sed 's/\"//g' >> nfs_xtra_choices
-done
-echo "$msg"
+
 
 # Create Input lists to create NFS Exports
-grep -v -Ff nfs_xtra_choices proxmox_setup_sharedfolderlist-xtra > rejected_folders-default_dir # rejected NFS choice folders
-grep -Ff nfs_xtra_choices proxmox_setup_sharedfolderlist | sed '/medialab/!d' >> rejected_folders-default_dir # rejected NFS choice folders including any new custom medialab folders
-
-grep -Ff nfs_xtra_choices proxmox_setup_sharedfolderlist | sed '/medialab/!d' > included_folders-media_dir # included new custom medialab NFS choice folders
+grep -v -Ff included_nfs_xtra_folders proxmox_setup_sharedfolderlist-xtra > excluded_nfs_xtra_folders # all rejected NFS additional folders
+grep -Ff included_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '/medialab/!d' > included_nfs_folders-media_dir # included additional medialab NFS folders
 
 # Create Default NFS exports
-grep -vxFf rejected_folders-all proxmox_setup_sharedfolderlist | sed '/backup/d;/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/music/d;/photo/d;/video/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
+grep -vxFf excluded_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '/backup/d;/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/music/d;/photo/d;/video/d' | sed '/medialab/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
@@ -426,7 +436,7 @@ while read dir; do
   fi
 done < proxmox_setup_sharedfolderlist-nfs_default_dir # file listing of folders to create
 # Create Media NFS exports
-cat proxmox_setup_sharedfolderlist | grep -i 'music\|photo\|\video' | sed '$r included_folders-media_dir' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_media_dir 
+cat proxmox_setup_sharedfolderlist | grep -i 'music\|photo\|\video' | sed '$r included_nfs_folders-media_dir' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_media_dir 
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
@@ -456,7 +466,7 @@ fi
 
 
 #### Install and Configure Webmin ####
-section "Installing and configuring Webmin."
+section "File Server - Installing and configuring Webmin."
 
 
 # Install Webmin Prerequisites
