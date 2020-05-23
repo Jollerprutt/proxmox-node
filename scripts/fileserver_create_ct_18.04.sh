@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#set -Ee pipefail
+set -Eeuo pipefail
 shopt -s expand_aliases
 alias die='EXIT=$? LINE=$LINENO error_exit'
 trap die ERR
@@ -156,7 +156,7 @@ echo
 
 
 # Set Fileserver CT CT_HOSTNAME
-read -p "Enter CT Hostname: " -e -i cyclone-03 CT_HOSTNAME
+read -p "Enter CT Hostname: " -e -i cyclone-01 CT_HOSTNAME
 CT_HOSTNAME=${CT_HOSTNAME,,}
 info "CT hostname is set: ${YELLOW}$CT_HOSTNAME${NC}."
 echo
