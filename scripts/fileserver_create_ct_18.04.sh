@@ -110,8 +110,9 @@ wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/
 
 # Command to run script
 # bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)"
-wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh | bash
-bash <(curl -Ls https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)
+wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh | bash
+
+#wget -q https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh -O /tmp/fileserver_create_ct_18.04.sh
 
 
 # Introduction
