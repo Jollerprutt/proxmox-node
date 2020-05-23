@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Ee pipefail
+#set -Ee pipefail
 shopt -s expand_aliases
 alias die='EXIT=$? LINE=$LINENO error_exit'
 trap die ERR
