@@ -9,6 +9,11 @@ function msg() {
   local TEXT="$1"
   echo -e "$TEXT"
 }
+function warn() {
+  local REASON="\e[97m$1\e[39m"
+  local FLAG="\e[93m[WARNING]\e[39m"
+  msg "$FLAG $REASON"
+}
 function section() {
   local REASON="  \e[97m$1\e[37m"
   printf -- '-%.0s' {1..100}; echo ""
@@ -59,6 +64,10 @@ cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
 apt-get install -y samba-common-bin  >/dev/null
 
 
+
+pct exec dpkg-reconfigure tzdata
+
+
 #### Creating File Server Users and Groups ####
 section "File Server CT - Creating Users and Groups."
 
@@ -102,6 +111,7 @@ if [ $? -ne 0 ]; then
   info "Default user created: ${YELLOW}typhoon${NC} of groups medialab, homelab and privatelab"
 fi
 echo
+
 
 
 # Create New users
@@ -154,52 +164,98 @@ if [ $(id -u) -eq 0 ] && [ "$NEW_NAS_USER" = 0 ]; then
   cat ${NEW_USERS} | while read USER PASSWORD GROUP
   do
   pass=$(perl -e 'print crypt($ARGV[0], 'password')' $PASSWORD)
-  egrep “^$USER[0]” /etc/passwd > /dev/null
-  if [ $? -eq 0 ]; then
-    warn “User $USER exists!”
+  if [ $(egrep "^$USER[0]" /etc/passwd > /dev/null; echo $?) = 0 ]; then USER_EXISTS=0; else USER_EXISTS=1; fi
+  if [ -d "${HOME_BASE}${USER}" ]; then USER_DIR_EXISTS=0; else USER_DIR_EXISTS=1; fi
+  if [ $USER_EXISTS = 0 ]; then
+    warn "User $USER exists!"
+    echo
     exit 1
+  elif [ $USER_EXISTS = 1 ] && [ $USER_DIR_EXISTS = 0 ]; then
+    useradd -g ${GROUP} -p ${pass} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
+    sudo mkdir -p /srv/$HOSTNAME/homes/${USER}/.ssh
+    sudo chmod 0700 /srv/$HOSTNAME/homes/${USER}/.ssh
+    sudo touch /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
+    sudo chown -R ${USER}:${GROUP} /srv/$HOSTNAME/homes/${USER}
+    (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
+    info "User $USER has been added to the system. Existing home folder found.\nUsing existing home folder."
+    echo
   else
     useradd -g ${GROUP} -p ${pass} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
     sudo -iu ${USER} xdg-user-dirs-update
+    sudo mkdir -p /srv/$HOSTNAME/homes/${USER}/.ssh
+    sudo chmod 0700 /srv/$HOSTNAME/homes/${USER}/.ssh
+    sudo touch /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
+    sudo chown -R ${USER}:${GROUP} /srv/$HOSTNAME/homes/${USER}
     (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
-    [ $? -eq 0 ] && info “User $USER has been added to the system” || warn “Failed adding user $USER!”
+    [ $USER_EXISTS = 1 ] && info "User $USER has been added to the system." || warn "Failed adding user $USER!"
+    echo
   fi
   done
 fi
 
 
-# Create kodi_rsync user
-box_out '#### PLEASE READ CAREFULLY - KODI_RSYNC USER ####' '' 'Do you want to make a CoreElec Kodi player portable for use in remote' 'locations? Like homes with no internet or LAN network.' '''This is achieved by attaching a USB3 hard disk to your CoreElec hardware and' 'running Linux native RSYNC to synchronise your selected File Server media' 'library to the attached USB3 hard disk.'
-echo
-read -p "Create the user kodi_rsync on your File Server (NAS)[yes/no]?: " -r
+#### Configure SSH Server ####
+section "File Server CT - Setup SSH Server."
+box_out '#### PLEASE READ CAREFULLY - ENABLE SSH SERVER ####' '' 'If you want to use SSH connect (Rsync/SFTP/SCP) to your File Server then' 'your SSH Server must be enabled. You need SSH to perform any' 'of the following tasks:' '' '  --  Secure SSH Connection to the File Server.' '  --  Perform a secure RSync Backup to the File Server.' '  --  Create a portable Kodi media player using our kodi_rsync user scripts.' '' 'We also recommend you change the default SSH port 22 for added security.'
+
+read -p "Enable SSH Server on your File Server (NAS) [yes/no]?: " -r
 if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
-  msg "Creating user kodi_rsync..."
-  KODI_RSYNC=0
-  id -u kodi_rsync >/dev/null
-  if [ $? -ne 0 ]; then
-    useradd -m -d /srv/$HOSTNAME/homes/kodi_rsync -g medialab -s /bin/bash kodi_rsync >/dev/null
-    info "User created: ${YELLOW}kodi_rsync${NC} of group medialab"
-  else
-    info "User ${YELLOW}kodi_rsync${NC} already exists. Skipping this step."
-    KODI_RSYNC=1
-  fi
+  info "SSH Server: ${YELLOW}enabled${NC}"
+  SSH_SERVER=0
+  read -p "Confirm SSH Port number: " -e -i 22 SSH_PORT
+  info "SSH Port is set: ${YELLOW}Port $SSH_PORT${NC}."
+  sudo systemctl stop ssh 2>/dev/null
+  sudo sed -i "s|#Port.*|Port $SSH_PORT|g" /etc/ssh/sshd_config
+  sudo ufw allow ssh 2>/dev/null
+  sudo systemctl restart ssh 2>/dev/null
+  systemctl is-active sshd >/dev/null 2>&1 && info "OpenBSD Secure Shell server: ${GREEN}active (running).${NC}" || info "OpenBSD Secure Shell server: ${RED}inactive (dead).${NC}"
+  echo
 else
-  KODI_RSYNC=1
-  info "Skipping this step."
+  sudo systemctl stop ssh 2>/dev/null
+  sudo systemctl disable ssh 2>/dev/null
+  info "SSH Server: ${YELLOW}disabled${NC}"
+  SSH_SERVER=1
+  systemctl is-active sshd >/dev/null 2>&1 && info "OpenBSD Secure Shell server: ${GREEN}active (running).${NC}" || info "OpenBSD Secure Shell server: ${RED}inactive (dead).${NC}"
   echo
 fi
-if [ $KODI_RSYNC == 0 ]; then
+
+# Create kodi_rsync user
+if [ $SSH_SERVER = 0 ]; then
+  box_out '#### PLEASE READ CAREFULLY - KODI_RSYNC USER ####' '' 'Do you want to make a CoreElec Kodi player portable for use in remote' 'locations? Like homes with no internet or LAN network.' '''This is achieved by attaching a USB3 hard disk to your CoreElec hardware and' 'running Linux native RSYNC to synchronise your selected File Server media' 'library to the attached USB3 hard disk.'
+  echo
+  read -p "Create the user kodi_rsync on your File Server (NAS) [yes/no]?: " -r
+  if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
+    msg "Creating user kodi_rsync..."
+    KODI_RSYNC=0
+    id -u kodi_rsync >/dev/null
+    if [ $? -ne 0 ]; then
+      useradd -m -d /srv/$HOSTNAME/homes/kodi_rsync -g medialab -s /bin/bash kodi_rsync >/dev/null
+      info "User created: ${YELLOW}kodi_rsync${NC} of group medialab"
+    else
+      info "User ${YELLOW}kodi_rsync${NC} already exists. Skipping this step."
+      KODI_RSYNC=1
+    fi
+  else
+    KODI_RSYNC=1
+    info "Skipping this step."
+    echo
+  fi
+fi
+if [ $KODI_RSYNC == 0 ] && [ $SSH_SERVER = 0 ]; then
   msg "Editing SSH server configuration file..."
+  sudo systemctl stop ssh 2>/dev/null
   sudo sed -i 's|#PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
   sudo sed -i 's|#AuthorizedKeysFile.*|AuthorizedKeysFile     .ssh/authorized_keys|g' /etc/ssh/sshd_config
   msg "Creating authorised keys folders for user kodi_rsync..."
   mkdir /srv/$HOSTNAME/homes/kodi_rsync/.ssh
-  chmod 700 /srv/$HOSTNAME/homes/kodi_rsync/.ssh
+  chmod 0700 /srv/$HOSTNAME/homes/kodi_rsync/.ssh
   touch /srv/$HOSTNAME/homes/kodi_rsync/.ssh/authorized_keys
-  chmod 600 /srv/$HOSTNAME/homes/kodi_rsync/.ssh/authorized_keys
-  chmod 700 /srv/$HOSTNAME/homes/kodi_rsync
+  chmod 0600 /srv/$HOSTNAME/homes/kodi_rsync/.ssh/authorized_keys
+  chmod 0700 /srv/$HOSTNAME/homes/kodi_rsync
   msg "Restarting SSH service..."
-  sudo systemctl restart ssh.service
+  sudo systemctl restart ssh.service 2>/dev/null
+  systemctl is-active sshd >/dev/null 2>&1 && info "OpenBSD Secure Shell server status: ${GREEN}active (running).${NC}" || info "OpenBSD Secure Shell server status: ${RED}inactive (dead).${NC} Your intervention is required."
+  info "Please note your kodi_rsync SSH server port is set to: ${YELLOW}Port $SSH_PORT${NC}."
   echo
 fi
 
@@ -291,7 +347,7 @@ apt-get install -y samba >/dev/null
 
 # Configure Samba Basics
 msg "Configuring Samba..."
-service smbd stop
+service smbd stop 2>/dev/null
 cat << EOF > /etc/samba/smb.conf
 [global]
 	workgroup = WORKGROUP
@@ -325,9 +381,12 @@ cat << EOF > /etc/samba/smb.conf
 [public]
 	comment = public anonymous access
 	path = /srv/$HOSTNAME/public
+  writable = yes
 	browsable =yes
 	public = yes
 	read only = no
+  create mode = 0777
+  directory mode = 0777
 	force user = nobody
 	guest ok = yes
 EOF
@@ -357,7 +416,8 @@ while read dir; do
 	echo
   fi
 done < proxmox_setup_sharedfolderlist-samba_dir # file listing of folders to create
-service smbd start # Restart Samba
+service smbd start 2>/dev/null # Restart Samba
+systemctl is-active smbd >/dev/null 2>&1 && info "Samba server status: ${GREEN}active (running).${NC}" || info "Samba server status: ${RED}inactive (dead).${NC} Your intervention is required."
 
 
 #### Install and Configure NFS ####
@@ -455,12 +515,12 @@ done < proxmox_setup_sharedfolderlist-nfs_media_dir # file listing of folders to
 
 # NFS Server Restart
 msg "Restarting NFS Server..."
-service nfs-kernel-server restart
+service nfs-kernel-server restart 2>/dev/null
 if [ "$(systemctl is-active --quiet nfs-kernel-server; echo $?) -eq 0" ]; then
-	info "NFS is active (running)."
+	info "NFS Server status: ${GREEN}active (running).${NC}"
 	echo
 elif [ "$(systemctl is-active --quiet nfs-kernel-server; echo $?) -eq 3" ]; then
-	warn "NFS is inactive (dead). Your intervention is required."
+	info "NFS Server status: ${RED}inactive (dead).${NC}. Your intervention is required."
 	echo
 fi
 
@@ -481,9 +541,9 @@ apt-get update >/dev/null
 msg "Installing Webmin..."
 apt-get install -y webmin >/dev/null
 if [ "$(systemctl is-active --quiet webmin; echo $?) -eq 0" ]; then
-	info "Webmin is active (running)..."
+	info "Webmin Server status: ${GREEN}active (running).${NC}"
 	echo
 elif [ "$(systemctl is-active --quiet webmin; echo $?) -eq 3" ]; then
-	warn "Webmin is inactive (dead). Your intervention is required..."
+	info "Webmin Server status: ${RED}inactive (dead).${NC}. Your intervention is required."
 	echo
 fi
