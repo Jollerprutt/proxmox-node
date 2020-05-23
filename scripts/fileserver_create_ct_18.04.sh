@@ -99,8 +99,8 @@ pushd $TEMP_DIR >/dev/null
 
 # Download external scripts
 wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/proxmox_setup_sharedfolderlist
-cp /mnt/pve/cyclone-01-public/fileserver_setup.sh fileserver_setup.sh
-chmod +x fileserver_setup.sh
+wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_setup_ct_18.04.sh
+#chmod +x fileserver_setup_ct_18.04.sh
 
 #########################################################################################
 # This script is for creating your Proxmox Fileserver (cyclone-01) Container		      	#
@@ -109,10 +109,7 @@ chmod +x fileserver_setup.sh
 #########################################################################################
 
 # Command to run script
-# for host in /sys/class/scsi_host/*; do echo "- - -" | sudo tee $host/scan; ls /dev/sd* ; done # Rescan SATA for disks
-# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/typhoon-0X-1x_nic-1x_disk-setup-01.sh)"
-# pvesm add nfs cyclone-01-public --path /mnt/pve/cyclone-01-public --server 192.168.1.10 --export /volume1/public --content images --options vers=4.1
-# bash -c /mnt/pve/cyclone-01-public/fileserver_create_container.sh
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)"
 
 
 # Introduction
@@ -122,26 +119,6 @@ box_out '#### PLEASE READ CAREFULLY ####' '' 'This script will create a Proxmox 
 echo
 sleep 1
 
-# # Select storage location
-# STORAGE_LIST=( $(pvesm status -content rootdir | awk 'NR>1 {print $1}') )
-# if [ ${#STORAGE_LIST[@]} -eq 0 ]; then
-  # warn "'Container' needs to be selected for at least one storage location."
-  # die "Unable to detect valid storage location."
-# elif [ ${#STORAGE_LIST[@]} -eq 1 ]; then
-  # STORAGE=${STORAGE_LIST[0]}
-# else
-  # msg "\n\nMore than one storage locations detected.\n"
-  # PS3=$'\n'"Which container storage location would you like to use (Recommend typhoon-share) ? "
-  # select s in "${STORAGE_LIST[@]}"; do
-    # if [[ " ${STORAGE_LIST[@]} " =~ " ${s} " ]]; then
-      # STORAGE=$s
-      # break
-    # fi
-    # echo -en "\e[1A\e[K\e[1A"
-  # done
-# fi
-# info "Using '$STORAGE' for storage location."
-# echo
 
 # Select storage location
 STORAGE_LIST=( $(pvesm status -content rootdir | awk 'NR>1 {print $1}') )
@@ -1136,19 +1113,12 @@ else
 fi
 
 
-# Add LXC mount points
-#lxc.mount.entry: /tank/data srv/data none bind,create=dir,optional 0 0
-msg "Creating LXC mount points..." 
-pct set $CTID -mp0 /$POOL/$CT_HOSTNAME,mp=/srv/$CT_HOSTNAME >/dev/null
-info "LXC $CTID mount point created: /srv/$CT_HOSTNAME"
-echo
-
-
 # Edit Default Proxmox ZFS Share points
 echo
 box_out '#### PLEASE READ CAREFULLY - SHARED FOLDERS ####' '' 'Shared folders are the basic directories where you can store files and folders on your File Server.' 'Below is a list of shared folders that are created automatically in this build:' '' '  --  /srv/CT_HOSTNAME/"audio"' '  --  /srv/CT_HOSTNAME/"backup"' '  --  /srv/CT_HOSTNAME/"books"' '  --  /srv/CT_HOSTNAME/"cloudstorage"' '  --  /srv/CT_HOSTNAME/"docker"' '  --  /srv/CT_HOSTNAME/"downloads"' '  --  /srv/CT_HOSTNAME/"git"' '  --  /srv/CT_HOSTNAME/"homes"' '  --  /srv/CT_HOSTNAME/"music"' '  --  /srv/CT_HOSTNAME/"openvpn"' '  --  /srv/CT_HOSTNAME/"photo"' '  --  /srv/CT_HOSTNAME/"proxmox"' '  --  /srv/CT_HOSTNAME/"public"' '  --  /srv/CT_HOSTNAME/"sshkey"' '  --  /srv/CT_HOSTNAME/"video"' '' 'You can create additional shared folders in the coming steps.'
 echo
 echo
+touch proxmox_setup_sharedfolderlist-xtra
 while true; do
   read -p "Do you want to create additional shared folders on your File Server (NAS) [yes/no]? " -r
   if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
@@ -1173,7 +1143,7 @@ while true; do
     XTRA_SHARE03="Privatelab / Admin User - User has access to all NAS shared folder data." >/dev/null
     PS3="Select your new shared folders group permission rights (entering numeric) : "
     echo
-    select xtra_type in "$XTRA_SHARE01" "$XTRA_SHARE02" "$XTRA_SHARE02"
+    select xtra_type in "$XTRA_SHARE01" "$XTRA_SHARE02" "$XTRA_SHARE03"
     do
     echo
     info "You have selected: $xtra_type ..."
@@ -1191,7 +1161,7 @@ while true; do
     echo "$xtra_sharename $XTRA_USERGRP" >> proxmox_setup_sharedfolderlist-xtra
   else
   	XTRA_SHARES=1 >/dev/null
-    info "Skipping creating additional shared folders (default shared folders only)."
+    info "Skipping creating anymore additional shared folders."
     break
   fi
 done
@@ -1258,6 +1228,13 @@ fi
 #### Configuring Filer Server Container ####
 section "Configuring your File Server $CT_HOSTNAME."
 
+# Add LXC mount points
+#lxc.mount.entry: /tank/data srv/data none bind,create=dir,optional 0 0
+msg "Creating LXC mount points..." 
+pct set $CTID -mp0 /$POOL/$CT_HOSTNAME,mp=/srv/$CT_HOSTNAME >/dev/null
+info "LXC $CTID mount point created: /srv/$CT_HOSTNAME"
+echo
+
 # Start container
 msg "Starting container..."
 pct start $CTID
@@ -1286,19 +1263,17 @@ pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 
 # Setup container for Fileserver Apps
 msg "Starting fileserver installation script..."
-pct push $CTID fileserver_setup.sh /fileserver_setup.sh -perms 755
-pct exec $CTID -- bash -c "/fileserver_setup.sh"
+export XTRA_SHARES
+if [ -s proxmox_setup_sharedfolderlist-xtra ]; then
+  pct push $CTID proxmox_setup_sharedfolderlist-xtra /tmp/proxmox_setup_sharedfolderlist-xtra
+fi
+pct push $CTID fileserver_setup_ct_18.04.sh fileserver_setup_ct_18.04.sh -perms 755
+pct exec $CTID -- bash -c "/fileserver_setup_ct_18.04.sh"
 
 
 # # Get network details and show completion message
 IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2}')
-msg "
-
-Webmin install complete. You can now login to Webmin
-as root with your root password, or as any user who can use sudo
-to run commands as root.
-
-      https://${IP}:10000/
-      https://${CT_HOSTNAME}:10000/
-
-"
+clear
+echo
+echo
+msg "Success. File Server installation script tasks have finished.\n\nTo manage your File Server use Webmin. You can login to Webmin as root with\nyour root password, or as any user who can use sudo to run commands as root.\n\n  --  ${WHITE}https://${IP}:10000/${NC}\n  --  ${WHITE}https://${CT_HOSTNAME}:10000/${NC}\n"
