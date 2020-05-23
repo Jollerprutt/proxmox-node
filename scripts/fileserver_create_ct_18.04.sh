@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
+set -Ee pipefail
 shopt -s expand_aliases
 alias die='EXIT=$? LINE=$LINENO error_exit'
 trap die ERR
@@ -342,7 +342,7 @@ if [ $(fdisk -l $(fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System'| awk '{ 
         for i in ${!options[@]}; do 
             printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${options[i]}"
         done
-     #   if [[ "$msg" ]]; then echo "$msg"; fi
+        if [[ "$msg" ]]; then echo "$msg"; fi
       }
       mapfile -t options < zfs_rootcachezil_disklist_var02
       prompt="Check an option to select ARC or L2ARC cache
