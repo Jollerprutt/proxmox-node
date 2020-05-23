@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 
-
+set -Eeuo pipefail
+shopt -s expand_aliases
+alias die='EXIT=$? LINE=$LINENO error_exit'
+trap die ERR
+trap cleanup EXIT
+function error_exit() {
+  trap - ERR
+  local DEFAULT='Unknown failure occured.'
+  local REASON="\e[97m${1:-$DEFAULT}\e[39m"
+  local FLAG="\e[91m[ERROR] \e[93m$EXIT@$LINE"
+  msg "$FLAG $REASON"
+  [ ! -z ${CTID-} ] && cleanup_failed
+  exit $EXIT
+}
 function warn() {
   local REASON="\e[97m$1\e[39m"
   local FLAG="\e[93m[WARNING]\e[39m"
@@ -97,6 +110,8 @@ wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/
 
 # Command to run script
 # bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)"
+wget -O - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh | bash
+bash <(curl -Ls https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)
 
 
 # Introduction
