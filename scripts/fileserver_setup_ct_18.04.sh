@@ -61,6 +61,10 @@ wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/
 if [ -s /tmp/proxmox_setup_sharedfolderlist-xtra ]; then
   cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
 fi
+cp /tmp/fileserver_setup_ct_variables.sh . 2>/dev/null
+
+# Import Variables
+. ./fileserver_setup_ct_variables.sh
 
 
 # Download and Install Prerequisites
@@ -431,7 +435,7 @@ sudo apt-get install -y nfs-kernel-server >/dev/null
 # Edit Exports
 msg "Modifying $HOSTNAME /etc/exports file..."
 echo
-if [ "$XTRA_SHARES" == 0 ]; then
+if [ "$XTRA_SHARES" = 0 ]; then
 	echo
 	box_out '#### PLEASE READ CAREFULLY - ADDITIONAL NFS SHARED FOLDERS ####' '' 'In a previous step you created additional shared folders.' '' 'You can now choose which additional folders are to be included as NFS shares.'
 	echo
@@ -446,7 +450,7 @@ if [ "$XTRA_SHARES" == 0 ]; then
 	echo
 fi
 
-if [ "$NFS_XTRA_SHARES" == 0 ] && [ "$XTRA_SHARES" == 0 ]; then
+if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
   set +u
   msg "Please select which additional folders are to be included as NFS shares."
   menu() {
