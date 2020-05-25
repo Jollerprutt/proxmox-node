@@ -58,14 +58,13 @@ pushd $TEMP_DIR >/dev/null
 wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/proxmox_setup_sharedfolderlist
 
 # Move tmp files to TEMP
-cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
+if [ -s /tmp/proxmox_setup_sharedfolderlist-xtra ]; then
+  cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
+fi
 
-# Download and Instal Prerequisites
+
+# Download and Install Prerequisites
 apt-get install -y samba-common-bin  >/dev/null
-
-
-
-pct exec dpkg-reconfigure tzdata
 
 
 #### Creating File Server Users and Groups ####
@@ -267,7 +266,7 @@ section "File Server - Setting Folder Permissions."
 # Set Medialab Folder Permissions
 msg "Setting medialab folder share permissions..."
 echo
-cat proxmox_setup_sharedfolderlist | awk '$2 ~ "medialab" { print $1 }' > proxmox_setup_sharedfolderlist-medialab
+cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "medialab" { print $1 }' > proxmox_setup_sharedfolderlist-medialab
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
@@ -285,7 +284,7 @@ done < proxmox_setup_sharedfolderlist-medialab # file listing of medialab folder
 # Set Homelab Folder Permissions
 msg "Setting homelab folder share permissions..."
 echo
-cat proxmox_setup_sharedfolderlist | awk '$2 ~ "homelab" { print $1 }' > proxmox_setup_sharedfolderlist-homelab
+cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "homelab" { print $1 }' > proxmox_setup_sharedfolderlist-homelab
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
@@ -303,7 +302,7 @@ done < proxmox_setup_sharedfolderlist-homelab # file listing of homelab folders 
 # Set Privatelab Folder Permissions
 msg "Setting privatelab folder share permissions..."
 echo
-cat proxmox_setup_sharedfolderlist | awk '$2 ~ "privatelab" { print $1 }' > proxmox_setup_sharedfolderlist-privatelab
+cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "privatelab" { print $1 }' > proxmox_setup_sharedfolderlist-privatelab
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
@@ -321,7 +320,7 @@ done < proxmox_setup_sharedfolderlist-privatelab # file listing of privatelab fo
 # Set Public Folder Permissions
 msg "Setting public folder share permissions..."
 echo
-cat proxmox_setup_sharedfolderlist | awk '$2 ~ "public" { print $1 }' > proxmox_setup_sharedfolderlist-public
+cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "public" { print $1 }' > proxmox_setup_sharedfolderlist-public
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir="$schemaExtractDir/$dir"
@@ -426,8 +425,8 @@ section "File Server - Installing and configuring NFS Server."
 
 # Install nfs
 msg "Installing NFS Server..."
-apt-get update >/dev/null
-apt-get install -y nfs-kernel-server >/dev/null
+sudo apt-get update >/dev/null
+sudo apt-get install -y nfs-kernel-server >/dev/null
 
 # Edit Exports
 msg "Modifying $HOSTNAME /etc/exports file..."
@@ -448,6 +447,7 @@ if [ "$XTRA_SHARES" == 0 ]; then
 fi
 
 if [ "$NFS_XTRA_SHARES" == 0 ] && [ "$XTRA_SHARES" == 0 ]; then
+  set +u
   msg "Please select which additional folders are to be included as NFS shares."
   menu() {
     echo "Available options:"
@@ -470,6 +470,7 @@ if [ "$NFS_XTRA_SHARES" == 0 ] && [ "$XTRA_SHARES" == 0 ]; then
   for i in ${!options[@]}; do 
     [[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; } && echo $({ printf " %s" "${options[i]}"; msg=""; }) | sed 's/\"//g' >> included_nfs_xtra_folders
   done
+  set -u
 else
   touch included_nfs_xtra_folders
 fi
@@ -547,3 +548,4 @@ elif [ "$(systemctl is-active --quiet webmin; echo $?) -eq 3" ]; then
 	info "Webmin Server status: ${RED}inactive (dead).${NC}. Your intervention is required."
 	echo
 fi
+sleep 5
