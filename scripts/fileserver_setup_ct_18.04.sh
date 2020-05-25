@@ -397,7 +397,7 @@ EOF
 # Create your Default and Custom Samba Shares 
 msg "Creating default and custom Samba folder shares..."
 echo
-cat proxmox_setup_sharedfolderlist | awk '{ print $1 }' | sed '/homes/d;/public/d' > proxmox_setup_sharedfolderlist-samba_dir
+cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '{ print $1 }' | sed '/homes/d;/public/d' > proxmox_setup_sharedfolderlist-samba_dir
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
@@ -421,6 +421,7 @@ while read dir; do
 done < proxmox_setup_sharedfolderlist-samba_dir # file listing of folders to create
 service smbd start 2>/dev/null # Restart Samba
 systemctl is-active smbd >/dev/null 2>&1 && info "Samba server status: ${GREEN}active (running).${NC}" || info "Samba server status: ${RED}inactive (dead).${NC} Your intervention is required."
+echo
 
 
 #### Install and Configure NFS ####
