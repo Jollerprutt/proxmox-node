@@ -448,6 +448,8 @@ if [ "$XTRA_SHARES" = 0 ]; then
     echo
   fi
 	echo
+else
+  NFS_XTRA_SHARES=1 >/dev/null
 fi
 
 if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
