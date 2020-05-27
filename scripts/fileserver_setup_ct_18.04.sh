@@ -67,12 +67,6 @@ cp /tmp/fileserver_setup_ct_variables.sh . 2>/dev/null
 . ./fileserver_setup_ct_variables.sh
 
 
-# Edit Proxmox host file
-# hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
-# cat << EOF > /etc/hosts
-# $hostsfile
-# EOF
-
 
 # Download and Install Prerequisites
 apt-get install -y samba-common-bin  >/dev/null
@@ -486,6 +480,7 @@ if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
   for i in ${!options[@]}; do 
     [[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; } && echo $({ printf " %s" "${options[i]}"; msg=""; }) | sed 's/\"//g' >> included_nfs_xtra_folders
   done
+  echo
   set -u
 else
   touch included_nfs_xtra_folders
