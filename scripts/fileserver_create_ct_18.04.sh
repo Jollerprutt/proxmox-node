@@ -159,7 +159,7 @@ echo
 
 
 # Set Fileserver CT CT_HOSTNAME
-read -p "Enter CT Hostname: " -e -i cyclone-04 CT_HOSTNAME
+read -p "Enter CT Hostname: " -e -i cyclone-01 CT_HOSTNAME
 CT_HOSTNAME=${CT_HOSTNAME,,}
 info "CT hostname is set: ${YELLOW}$CT_HOSTNAME${NC}."
 echo
