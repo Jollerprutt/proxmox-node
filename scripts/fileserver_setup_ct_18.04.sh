@@ -476,7 +476,7 @@ if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
     [[ "${choices[num]}" ]] && choices[num]="" || choices[num]="+"
   done
   echo
-  printf "You selected"; msg=" nothing"
+  printf "You selected:\n"; msg=" nothing"
   for i in ${!options[@]}; do 
     [[ "${choices[i]}" ]] && { printf " %s" "${options[i]}"; msg=""; } && echo $({ printf " %s" "${options[i]}"; msg=""; }) | sed 's/\"//g' >> included_nfs_xtra_folders
   done
@@ -485,6 +485,7 @@ if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
 else
   touch included_nfs_xtra_folders
 fi
+echo
 
 
 # Create Input lists to create NFS Exports
