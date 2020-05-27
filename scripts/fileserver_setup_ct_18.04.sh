@@ -67,6 +67,13 @@ cp /tmp/fileserver_setup_ct_variables.sh . 2>/dev/null
 . ./fileserver_setup_ct_variables.sh
 
 
+# Edit Proxmox host file
+# hostsfile=$(wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/hosts -q -O -)
+# cat << EOF > /etc/hosts
+# $hostsfile
+# EOF
+
+
 # Download and Install Prerequisites
 apt-get install -y samba-common-bin  >/dev/null
 
@@ -463,7 +470,9 @@ if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
     done
     if [[ "$msg" ]]; then echo "$msg"; fi
   }
-  options=( $(cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//') )
+  # options=( $(cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1,$2 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//') )
+  cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1,$2 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//' > proxmox_setup_sharedfolderlist-xtra_options
+  mapfile -t options < proxmox_setup_sharedfolderlist-xtra_options
   prompt="Check an option (again to uncheck, ENTER when done): "
   while menu && read -rp "$prompt" num && [[ "$num" ]]; do
     [[ "$num" != *[![:digit:]]* ]] &&
@@ -485,15 +494,17 @@ fi
 
 # Create Input lists to create NFS Exports
 grep -v -Ff included_nfs_xtra_folders proxmox_setup_sharedfolderlist-xtra > excluded_nfs_xtra_folders # all rejected NFS additional folders
-grep -Ff included_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '/medialab/!d' > included_nfs_folders-media_dir # included additional medialab NFS folders
+cat included_nfs_xtra_folders | sed '/medialab/!d' > included_nfs_folders-media_dir # included additional medialab NFS folders
+cat included_nfs_xtra_folders | sed '/medialab/d' > included_nfs_folders-default_dir # included additional default NFS folders
+
 
 # Create Default NFS exports
-grep -vxFf excluded_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '/backup/d;/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/music/d;/photo/d;/video/d' | sed '/medialab/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
+grep -vxFf excluded_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '$r included_nfs_folders-default_dir' | sed '/backup/d;/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/music/d;/photo/d;/video/d' | sed '/medialab/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
-	eval "cat <<-EOF >> exports
+	eval "cat <<-EOF >> /etc/exports
 
 	# $dir export
 	/srv/$HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100)
@@ -509,7 +520,7 @@ schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
-	eval "cat <<-EOF >> exports
+	eval "cat <<-EOF >> /etc/exports
 
 	# $dir export
 	/srv/$HOSTNAME/$dir 192.168.1.101(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.102(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.103(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.1.104(rw,async,no_wdelay,no_root_squash,insecure_locks,sec=sys,anonuid=1025,anongid=100) 192.168.50.0/24(rw,async,no_wdelay,crossmnt,insecure,all_squash,insecure_locks,sec=sys,anonuid=1024,anongid=100)
@@ -529,6 +540,35 @@ if [ "$(systemctl is-active --quiet nfs-kernel-server; echo $?) -eq 0" ]; then
 	echo
 elif [ "$(systemctl is-active --quiet nfs-kernel-server; echo $?) -eq 3" ]; then
 	info "NFS Server status: ${RED}inactive (dead).${NC}. Your intervention is required."
+	echo
+fi
+
+
+#### Install and Configure Fail2Ban ####
+section "File Server - Installing and configuring Fail2Ban."
+
+# Install Fail2Ban 
+msg "Installing Fail2Ban..."
+sudo apt-get install -y fail2ban >/dev/null
+
+# Configuring Fail2Ban
+msg "Configuring Fail2Ban..."
+sudo systemctl start fail2ban 2>/dev/null
+sudo systemctl enable fail2ban 2>/dev/null
+cat << EOF > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = $SSH_PORT
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+EOF
+sudo systemctl restart fail2ban 2>/dev/null
+if [ "$(systemctl is-active --quiet fail2ban; echo $?) -eq 0" ]; then
+	info "Fail2Ban status: ${GREEN}active (running).${NC}"
+	echo
+elif [ "$(systemctl is-active --quiet fail2ban; echo $?) -eq 3" ]; then
+	info "Fail2Ban status: ${RED}inactive (dead).${NC}. Your intervention is required."
 	echo
 fi
 
