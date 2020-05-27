@@ -81,6 +81,7 @@ function box_out() {
   set -u
 }
 
+
 # Colour
 RED=$'\033[0;31m'
 YELLOW=$'\033[1;33m'
@@ -110,9 +111,8 @@ wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/
 
 # Command to run script
 # bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)"
-wget https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh | bash
 
-#wget -q https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh -O /tmp/fileserver_create_ct_18.04.sh
+
 
 
 # Introduction
@@ -159,7 +159,7 @@ echo
 
 
 # Set Fileserver CT CT_HOSTNAME
-read -p "Enter CT Hostname: " -e -i cyclone-01 CT_HOSTNAME
+read -p "Enter CT Hostname: " -e -i cyclone-04 CT_HOSTNAME
 CT_HOSTNAME=${CT_HOSTNAME,,}
 info "CT hostname is set: ${YELLOW}$CT_HOSTNAME${NC}."
 echo
@@ -185,7 +185,6 @@ Try again..."
 echo
 fi
 done
-echo
 
 # Set container VLAN CT_TAG
 read -p "Is your network VLAN aware [yes/no]?: " -r
@@ -202,8 +201,6 @@ else
   CT_TAG=1
   info "The CT VLAN is set: ${YELLOW}disabled${NC}."
 fi
-
-
 echo
 
 # Set container Gateway IPv4 Address
@@ -220,12 +217,11 @@ if [ $CTID_IP -lt 100 ]; then
 elif [ $CTID_IP -gt 100 ]; then
   CTID_TEMP=$CTID_IP
 fi
-msg "Attempt to set and match your File Server CT ID with the host section
+msg "Attempting to set and match your File Server CT ID with the host section
 value of your CT IP address: $(echo "$CT_IP" | sed  's/\/.*//g' | awk -F "." '{print $1, $2, $3, "\033[1;33m"$4"\033[0m"}' | sed 's/ /./g').
 Attempting to set "${CT_HOSTNAME^}" CT ID as: ${YELLOW}$CTID_TEMP${NC}.
 If CT ID ${YELLOW}$CTID_TEMP${NC} is unavailable a indexed or random CT ID will be assigned."
 sleep 2
-echo
 if [ $CTID_IP -lt 100 ] && [ "$(cat pct_list | grep -w $(( $CTID_IP + 100 )) > /dev/null; echo $?)" != 0 ]; then
   CTID=$(( $CTID_IP + 100 ))
   info "The CT ID is set: ${YELLOW}$CTID${NC}."
@@ -311,7 +307,12 @@ echo
 # Confirm Boot Disks
 msg "Confirming Proxmox PVE, OS and Boot hard disk ID..."
 # boot disks
-fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System|Solaris /usr & Apple ZFS'| awk '{ print $1 }' | sort > boot_disklist_var01
+fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System' | awk '{ print $1 }' | sort > boot_disklist_var01
+cat boot_disklist_var01 | sed 's/[0-9]*//g' | awk '!seen[$0]++' > boot_disklist_tmp01
+for f in $(cat boot_disklist_tmp01 | sed 's|/dev/||')
+  do read dev
+    echo "$(fdisk -l /dev/"$f" | grep -E 'Solaris /usr & Apple ZFS' | awk '{print $1}')" >> boot_disklist_var01
+done < boot_disklist_tmp01
 # Create raw whole device /dev/sd?
 if grep -Fq "$(cat boot_disklist_var01 | sed 's/[0-9]*//g' | awk '!seen[$0]++')" boot_disklist_var01; then
   cat boot_disklist_var01 | sed 's/[0-9]*//g' | awk '!seen[$0]++' >> boot_disklist_var01
@@ -328,6 +329,7 @@ echo
 
 # Confirm Root File System Partitioned Cache & Log Disks
 if [ $(fdisk -l $(fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System'| awk '{ print $1 }' | sort | sed 's/[0-9]*//g' | awk '!seen[$0]++') | grep -Ev 'BIOS boot|EFI System|Solaris /usr & Apple ZFS' | grep -E 'Linux filesystem' | awk '{ print $1 }' | wc -l)  -ge 2 ]; then
+  set +Eeuo pipefail
   msg "Confirming Proxmox Root File System partitions for\nZFS ARC or L2ARC Cache & ZIL (logs) on $HOSTNAME ..."
   echo
   read -p "Have you ${WHITE}already partitioned${NC} $HOSTNAME root filesystem disk(s) for ARC or L2ARC Cache and ZIL [yes/no]?: " -r
@@ -342,14 +344,13 @@ if [ $(fdisk -l $(fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System'| awk '{ 
       msg "There are two different SSD caches that a ZFS pool can make use of:\n  1.  ZFS Intent Log, or ZIL, to buffer WRITE operations.\n  2.  ARC and L2ARC cache which are meant for READ operations.\nIn the next steps you will asked to select ZIL and ARC or L2ARC Cache disks.\nRemember ARC or L2ARC disks will be larger (default 64GiB) than ZIL disks (default 8GiB).\n\nSelect the disk, or two matching disks if you are configured for raid, to be used for: ${YELLOW}ARC or L2ARC Cache${NC} (excluding ZIL disks)."
       menu() {
         echo "Available options:"
-        for i in ${!options[@]}; do 
+        for i in "${!options[@]}"; do 
             printf "%3d%s) %s\n" $((i+1)) "${choices[i]:- }" "${options[i]}"
         done
         if [[ "$msg" ]]; then echo "$msg"; fi
       }
       mapfile -t options < zfs_rootcachezil_disklist_var02
-      prompt="Check an option to select ARC or L2ARC cache
-      disk partitions (again to uncheck, ENTER when done): "
+      prompt="Check an option to select ARC or L2ARC cache\ndisk partitions (again to uncheck, ENTER when done): "
       while menu && read -rp "$prompt" num && [[ "$num" ]]; do
         [[ "$num" != *[![:digit:]]* ]] &&
         (( num > 0 && num <= ${#options[@]} )) ||
@@ -362,6 +363,7 @@ if [ $(fdisk -l $(fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System'| awk '{ 
       for i in ${!options[@]}; do
         [[ "${choices[i]}" ]] && { printf "${YELLOW}Disk ID:${NC}  %s\n" "${options[i]}"; msg=""; } && echo $({ printf "%s" "${options[i]}"; msg=""; }) >> zpool_rootcache_disklist
       done
+      unset -f i
       echo
       awk -F " "  'NR==FNR {a[$1];next}!($1 in a) {print $0}' zpool_rootcache_disklist zfs_rootcachezil_disklist_var02 | awk '!seen[$0]++' | sort > zfs_rootzil_disklist_var01
       msg "Now select the disk, or two matching disks if you are configured for raid, to be used for: ${YELLOW}ZIL Cache${NC}."
@@ -404,6 +406,7 @@ if [ $(fdisk -l $(fdisk -l 2>/dev/null | grep -E 'BIOS boot|EFI System'| awk '{ 
     if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
       info "Success. Moving on."
       ZFS_ROOTCACHE_READY=0
+      echo
       break
     else
       echo
@@ -429,6 +432,7 @@ else
   do read dev
     echo "$dev" "$(ls -l /dev/disk/by-id/ata* | grep -w "$f" | awk '{ print $9 }' | sed 's|/dev/disk/by-id/||')" "$(fdisk -l /dev/"$f" | grep -w "Disk /dev/"$f"" | awk '{print $3, $4}' | sed 's|,||')" "$(if [ $(cat /sys/block/"$(echo $f | sed 's/[0-9]*//g')"/queue/rotational) == 0 ];then echo "ssd"; else echo "harddisk";fi)" >> zpool_rootcacheall_disklist
   done < zpool_rootcacheall_disklist_var01
+set -Eeuo pipefail
 fi
 
 
@@ -448,15 +452,17 @@ for f in $(cat zfs_disklist_var02 | awk '{ print $1 }' | sed 's|/dev/||')
 done < zfs_disklist_var02
 # remove any partition disks
 if [ $(cat zfs_disklist_var03 | awk '{ print $1 }' | grep -c 'sd[a-z][0-9]') -gt 0 ]; then
-  msg "The selected disks contain existing partitions. The disk partitions are:\n\n$(cat zfs_disklist_var03 | grep -v 'sd[a-z][0-9]')\n${RED}$(cat zfs_disklist_var03 | grep 'sd[a-z][0-9]')${NC}\n\nYou can choose to either:\n  1.  (Recommended) Zap, Erase, Clean and Wipe ZFS pool disks of all partitions.\n      (Note: This results in 100% destruction of all data on the disk.)\n  2.  Select which disk partition to use."
+  msg "The following disks contain existing partitions (partitions in red):\n$(cat zfs_disklist_var03 | grep -v 'sd[a-z][0-9]')\n${RED}$(cat zfs_disklist_var03 | grep 'sd[a-z][0-9]')${NC}\n\nYou can choose to either:\n  1.  (Recommended) Zap, Erase, Clean and Wipe ZFS pool disks of all partitions.\n      (Note: This results in 100% destruction of all data on the disk.)\n  2.  Select which disk partition to use."
   echo
   read -p "Proceed to Zap, Erase, Clean and Wipe disks [yes/no]?: " -r
   if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
-    cat zfs_disklist_var03 | grep -v 'sd[a-z][0-9]' > zfs_disklist
+    cat zfs_disklist_var03 | grep -v 'sd[a-z][0-9]' 2>/dev/null > zfs_disklist
     info "Good choice. Using whole disk in your zpool $POOL File Server."
+    echo
   else
-    cat zfs_disklist_var03 > zfs_disklist
+    cat zfs_disklist_var03 2>/dev/null > zfs_disklist
     info "You have chosen to use disk partitions in your zpool $POOL File Server."
+    echo
   fi
 fi
 
@@ -468,7 +474,7 @@ if [ $(zpool list $POOL > /dev/null 2>&1; echo $?) == 0 ] && [ $(cat zfs_disklis
   ZPOOL_TANK=0
 elif [ $(zpool list $POOL > /dev/null 2>&1; echo $?) != 0 ] && [ $(cat zfs_disklist | wc -l) -ge 1 ]; then
   info "ZFS pool $POOL does NOT exist on host: ${YELLOW}$HOSTNAME${NC}.
-Identified $(cat zfs_disklist | awk '$5~"harddisk"' | wc -l)x rotational hard drives and $(cat zfs_disklist | awk '$5~"ssd"' | wc -l)x SSD drives
+We identified $(cat zfs_disklist | awk '$5~"harddisk"' | wc -l)x rotational hard drives and $(cat zfs_disklist | awk '$5~"ssd"' | wc -l)x SSD drives
 suitable for creating ZFS pool: ${YELLOW}$POOL${NC}.
 If you choose to create ZFS pool $POOL these $(cat zfs_disklist | wc -l)x drives will
 be ${WHITE}erased, formatted and all existing data on the drives lost forever${NC}."
@@ -1267,6 +1273,9 @@ pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 # Setup container for Fileserver Apps
 msg "Starting fileserver installation script..."
 export XTRA_SHARES
+echo "#!/usr/bin/env bash" > fileserver_setup_ct_variables.sh
+echo "XTRA_SHARES=$XTRA_SHARES" >> fileserver_setup_ct_variables.sh
+pct push $CTID fileserver_setup_ct_variables.sh /tmp/fileserver_setup_ct_variables.sh
 if [ -s proxmox_setup_sharedfolderlist-xtra ]; then
   pct push $CTID proxmox_setup_sharedfolderlist-xtra /tmp/proxmox_setup_sharedfolderlist-xtra
 fi
@@ -1279,4 +1288,4 @@ IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2
 clear
 echo
 echo
-msg "Success. File Server installation script tasks have finished.\n\nTo manage your File Server use Webmin. You can login to Webmin as root with\nyour root password, or as any user who can use sudo to run commands as root.\n\n  --  ${WHITE}https://${IP}:10000/${NC}\n  --  ${WHITE}https://${CT_HOSTNAME}:10000/${NC}\n"
+msg "Success. File Server installation has completed.\n\nTo manage your File Server use Webmin. You can login to Webmin as root with\nyour root password, or as any user who can use sudo to run commands as root.\n\n  --  ${WHITE}https://${IP}:10000/${NC}\n  --  ${WHITE}https://${CT_HOSTNAME}:10000/${NC}\n"
