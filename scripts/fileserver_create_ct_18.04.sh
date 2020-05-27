@@ -166,7 +166,7 @@ echo
 
 # Set Fileserver CT IPv4 Address
 while true; do
-read -p "Enter CT IPv4 address: " -e -i 192.168.1.200/24 CT_IP
+read -p "Enter CT IPv4 address: " -e -i 192.168.1.10/24 CT_IP
 if [ $(expr "$CT_IP" : '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\/[0-9][0-9]*$' >/dev/null; echo $?) == 0 ] && [ $(ping -s 1 -c 2 "$(echo "$CT_IP" | sed  's/\/.*//g')" > /dev/null; echo $?) != 0 ]; then
 info "The CT IP address is set: ${YELLOW}$CT_IP${NC}."
 echo
@@ -1169,7 +1169,6 @@ while true; do
     echo "$xtra_sharename $XTRA_USERGRP" >> proxmox_setup_sharedfolderlist
     echo "$xtra_sharename $XTRA_USERGRP" >> proxmox_setup_sharedfolderlist-xtra
   else
-  	XTRA_SHARES=1 >/dev/null
     info "Skipping creating anymore additional shared folders."
     break
   fi
@@ -1272,13 +1271,16 @@ pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 
 # Setup container for Fileserver Apps
 msg "Starting fileserver installation script..."
+if [ -s proxmox_setup_sharedfolderlist-xtra ]; then
+  pct push $CTID proxmox_setup_sharedfolderlist-xtra /tmp/proxmox_setup_sharedfolderlist-xtra
+  XTRA_SHARES=0 >/dev/null
+else
+  XTRA_SHARES=1 >/dev/null
+fi
 export XTRA_SHARES
 echo "#!/usr/bin/env bash" > fileserver_setup_ct_variables.sh
 echo "XTRA_SHARES=$XTRA_SHARES" >> fileserver_setup_ct_variables.sh
 pct push $CTID fileserver_setup_ct_variables.sh /tmp/fileserver_setup_ct_variables.sh
-if [ -s proxmox_setup_sharedfolderlist-xtra ]; then
-  pct push $CTID proxmox_setup_sharedfolderlist-xtra /tmp/proxmox_setup_sharedfolderlist-xtra
-fi
 pct push $CTID fileserver_setup_ct_18.04.sh fileserver_setup_ct_18.04.sh -perms 755
 pct exec $CTID -- bash -c "/fileserver_setup_ct_18.04.sh"
 
