@@ -499,7 +499,7 @@ cat included_nfs_xtra_folders | sed '/medialab/d' > included_nfs_folders-default
 
 
 # Create Default NFS exports
-grep -vxFf excluded_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '$r included_nfs_folders-default_dir' | sed '/backup/d;/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/music/d;/photo/d;/video/d' | sed '/medialab/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
+grep -vxFf excluded_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '$r included_nfs_folders-default_dir' | sed '/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/audio/d;/books/d;/music/d;/photo/d;/video/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
@@ -515,7 +515,7 @@ while read dir; do
   fi
 done < proxmox_setup_sharedfolderlist-nfs_default_dir # file listing of folders to create
 # Create Media NFS exports
-cat proxmox_setup_sharedfolderlist | grep -i 'music\|photo\|\video' | sed '$r included_nfs_folders-media_dir' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_media_dir 
+cat proxmox_setup_sharedfolderlist | grep -i 'audio\|books\|music\|photo\|\video' | sed '$r included_nfs_folders-media_dir' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_media_dir 
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
