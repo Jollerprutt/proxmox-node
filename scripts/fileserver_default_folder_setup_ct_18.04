@@ -1,7 +1,10 @@
+# Video Folders
 /srv/$HOSTNAME/video/documentary medialab
 /srv/$HOSTNAME/video/homevideo medialab
 /srv/$HOSTNAME/video/movies medialab
 /srv/$HOSTNAME/video/musicvideo medialab
 /srv/$HOSTNAME/video/tv medialab
 /srv/$HOSTNAME/video/transcode medialab
+
+# Audio Book Folders
 /srv/$HOSTNAME/audio/audiobooks medialab
