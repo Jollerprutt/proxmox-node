@@ -1,2 +1,7 @@
-/srv/$HOSTNAME/video/{documentary,homevideo,movies,musicvideo,tv,transcode} medialab
+/srv/$HOSTNAME/video/documentary medialab
+/srv/$HOSTNAME/video/homevideo medialab
+/srv/$HOSTNAME/video/movies medialab
+/srv/$HOSTNAME/video/musicvideo medialab
+/srv/$HOSTNAME/video/tv medialab
+/srv/$HOSTNAME/video/transcode medialab
 /srv/$HOSTNAME/audio/audiobooks medialab
