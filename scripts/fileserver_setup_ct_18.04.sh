@@ -60,6 +60,8 @@ wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/
 # Move tmp files to TEMP
 if [ -s /tmp/proxmox_setup_sharedfolderlist-xtra ]; then
   cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
+else
+  touch proxmox_setup_sharedfolderlist-xtra
 fi
 cp /tmp/fileserver_setup_ct_variables.sh . 2>/dev/null
 
