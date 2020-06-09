@@ -284,11 +284,11 @@ msg "Creating LXC container..."
 if [ $CT_TAG -gt 1 ]; then
   pct create $CTID $TEMPLATE_STRING --arch $ARCH --cores 1 --hostname $CT_HOSTNAME --cpulimit 1 --memory $CT_RAM --features nesting=1,mount=nfs4 \
     --net0 name=eth0,bridge=vmbr0,tag=$CT_TAG,firewall=1,gw=$CT_GW,ip=$CT_IP,type=veth \
-    --ostype $OSTYPE --rootfs $STORAGE:$CT_DISK_SIZE --swap 256 --unprivileged 0 --onboot 1 --startup order=1 --password $CT_PWD >/dev/null
+    --ostype $OSTYPE --rootfs $STORAGE:$CT_DISK_SIZE,acl=1 --swap 256 --unprivileged 0 --onboot 1 --startup order=1 --password $CT_PWD >/dev/null
 elif [ $CT_TAG == 1 ]; then
   pct create $CTID $TEMPLATE_STRING --arch $ARCH --cores 1 --hostname $CT_HOSTNAME --cpulimit 1 --memory $CT_RAM --features nesting=1,mount=nfs4 \
     --net0 name=eth0,bridge=vmbr0,firewall=1,gw=$CT_GW,ip=$CT_IP,type=veth \
-    --ostype $OSTYPE --rootfs $STORAGE:$CT_DISK_SIZE --swap 256 --unprivileged 0 --onboot 1 --startup order=1 --password $CT_PWD >/dev/null
+    --ostype $OSTYPE --rootfs $STORAGE:$CT_DISK_SIZE,acl=1 --swap 256 --unprivileged 0 --onboot 1 --startup order=1 --password $CT_PWD >/dev/null
 fi
 echo
 
