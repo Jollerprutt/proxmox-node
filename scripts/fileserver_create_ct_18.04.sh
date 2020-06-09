@@ -1239,7 +1239,7 @@ section "Configuring your File Server $CT_HOSTNAME."
 # Add LXC mount points
 #lxc.mount.entry: /tank/data srv/data none bind,create=dir,optional 0 0
 msg "Creating LXC mount points..." 
-pct set $CTID -mp0 /$POOL/$CT_HOSTNAME,mp=/srv/$CT_HOSTNAME >/dev/null
+pct set $CTID -mp0 /$POOL/$CT_HOSTNAME,mp=/srv/$CT_HOSTNAME,acl=1 >/dev/null
 info "LXC $CTID mount point created: /srv/$CT_HOSTNAME"
 echo
 
