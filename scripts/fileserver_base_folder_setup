@@ -1,3 +1,4 @@
+# This file is for base folders ONLY. If you want to add sub folders (i.e /srv/$HOSTNAME/video/tv) then edit fileserver_base_subfolder_setup
 audio medialab 0755
 backup privatelab 0755
 books medialab 0755
