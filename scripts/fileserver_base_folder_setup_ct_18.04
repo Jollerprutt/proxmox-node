@@ -1,0 +1,15 @@
+audio medialab 0755
+backup privatelab 0755
+books medialab 0755
+cloudstorage privatelab 0770
+docker medialab 0755
+downloads medialab 0755
+git privatelab 0770
+homes root 0755
+music medialab 0755
+openvpn privatelab 0770
+photo medialab 0755
+proxmox medialab 0755
+public root 1777
+sshkey privatelab 0770
+video medialab 0755
