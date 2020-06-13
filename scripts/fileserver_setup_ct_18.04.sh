@@ -54,24 +54,34 @@ NC=$'\033[0m'
 TEMP_DIR=$(mktemp -d)
 pushd $TEMP_DIR >/dev/null
 
+# Command to run script
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)"
+
 # Download external scripts
-wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/proxmox_setup_sharedfolderlist
+wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_add_jailuser_ct_18.04.sh
+wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_base_folder_setup
+wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_base_subfolder_setup
 
 # Move tmp files to TEMP
-if [ -s /tmp/proxmox_setup_sharedfolderlist-xtra ]; then
-  cp /tmp/proxmox_setup_sharedfolderlist-xtra . 2>/dev/null
+if [ -f /tmp/fileserver_setup_ct_variables.sh ]; then
+  cp /tmp/fileserver_setup_ct_variables.sh . 2>/dev/null
+  # Import Variables
+  . ./fileserver_setup_ct_variables.sh
 else
-  touch proxmox_setup_sharedfolderlist-xtra
+  # Set ZFS pool name
+  msg "Setting the ZFS Pool name..."
+  read -p "Enter the ZFS pool name (i.e default is tank): " -e -i tank POOL
+  POOL=${POOL,,}
+  info "ZFS pool name is set: ${YELLOW}$POOL${NC}."
+  echo
 fi
-cp /tmp/fileserver_setup_ct_variables.sh . 2>/dev/null
 
-# Import Variables
-. ./fileserver_setup_ct_variables.sh
 
 
 
 # Download and Install Prerequisites
-apt-get install -y samba-common-bin  >/dev/null
+apt-get install -y samba-common-bin >/dev/null
+apt-get install -y acl >/dev/null
 
 
 #### Creating File Server Users and Groups ####
@@ -118,6 +128,105 @@ if [ $? -ne 0 ]; then
 fi
 echo
 
+
+#### Setting Folder Permissions ####
+section "File Server - Creating and Setting Folder Permissions."
+
+
+# Create Default Proxmox ZFS Share points
+echo
+box_out '#### PLEASE READ CAREFULLY - SHARED FOLDERS ####' '' 'Shared folders are the basic directories where you can store files and folders on your File Server.' 'Below is a list of shared folders that are created automatically in this build:' '' '  --  /srv/CT_HOSTNAME/"audio"' '  --  /srv/CT_HOSTNAME/"backup"' '  --  /srv/CT_HOSTNAME/"books"' '  --  /srv/CT_HOSTNAME/"cloudstorage"' '  --  /srv/CT_HOSTNAME/"docker"' '  --  /srv/CT_HOSTNAME/"downloads"' '  --  /srv/CT_HOSTNAME/"git"' '  --  /srv/CT_HOSTNAME/"homes"' '  --  /srv/CT_HOSTNAME/"music"' '  --  /srv/CT_HOSTNAME/"openvpn"' '  --  /srv/CT_HOSTNAME/"photo"' '  --  /srv/CT_HOSTNAME/"proxmox"' '  --  /srv/CT_HOSTNAME/"public"' '  --  /srv/CT_HOSTNAME/"sshkey"' '  --  /srv/CT_HOSTNAME/"video"' '' 'You can create additional shared folders in the coming steps.'
+echo
+echo
+touch fileserver_base_folder_setup-xtra
+while true; do
+  read -p "Do you want to create additional shared folders on your File Server (NAS) [yes/no]? " -r
+  if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
+    while true; do
+      echo
+      read -p "Enter a new shared folder name : " xtra_sharename
+      read -p "Confirm new shared folder name (type again): " xtra_sharename2
+      xtra_sharename=${xtra_sharename,,}
+      xtra_sharename=${xtra_sharename2,,}
+      echo
+      if [ "$xtra_sharename" = "$xtra_sharename2" ];then
+        info "Shared folder name is set: ${YELLOW}$xtra_sharename${NC}."
+        XTRA_SHARES=0 >/dev/null
+        break
+      elif [ "$xtra_sharename" != "$xtra_sharename2" ]; then
+        warn "Your inputs do NOT match. Try again..."
+      fi
+    done
+    msg "Select your new shared folders group permission rights."
+    XTRA_SHARE01="Medialab - Photos, TV, movies, music and general media content." >/dev/null
+    XTRA_SHARE02="Homelab / Standard User - Personal Home Folder & Public Folder only." >/dev/null
+    XTRA_SHARE03="Privatelab / Admin User - User has access to all NAS shared folder data." >/dev/null
+    PS3="Select your new shared folders group permission rights (entering numeric) : "
+    echo
+    select xtra_type in "$XTRA_SHARE01" "$XTRA_SHARE02" "$XTRA_SHARE03"
+    do
+    echo
+    info "You have selected: $xtra_type ..."
+    echo
+    break
+    done
+    if [ "$xtra_type" = "$XTRA_SHARE01" ]; then
+      XTRA_USERGRP="medialab"
+    elif [ "$xtra_type" = "$XTRA_SHARE02" ]; then
+      XTRA_USERGRP="homelab"
+    elif [ "$xtra_type" = "$XTRA_SHARE03" ]; then
+      XTRA_USERGRP="privatelab"
+    fi
+    echo "$xtra_sharename $XTRA_USERGRP" >> fileserver_base_folder_setup
+    echo "$xtra_sharename $XTRA_USERGRP" >> fileserver_base_folder_setup-xtra
+  else
+    info "Skipping creating anymore additional shared folders."
+    break
+  fi
+done
+echo
+
+
+# Create Proxmox ZFS Share points
+msg "Creating File Server base /$POOL/$HOSTNAME folder shares..."
+echo
+cat fileserver_base_folder_setup | sed '/^#/d' | sed '/^$/d' >/dev/null > fileserver_base_folder_setup_input
+dir_schema="/$POOL/$HOSTNAME/"
+while read -r dir group permission; do
+  if [ -d "$dir_schema${dir}" ]; then
+    info "$dir_schema${dir} exists, setting ${group} group permissions for this folder."
+    sudo chgrp -R "${group}" "$dir_schema${dir}" >/dev/null
+    sudo chmod -R "${permission}" "$dir_schema${dir}" >/dev/null
+    echo
+  else
+    info "New base folder created: ${WHITE}"$dir_schema${dir}"${NC}"
+    sudo mkdir -p "$dir_schema${dir}" >/dev/null
+    sudo chgrp -R "${group}" "$dir_schema${dir}" >/dev/null
+    sudo chmod -R "${permission}" "$dir_schema${dir}" >/dev/null
+    echo
+  fi
+done < fileserver_base_folder_setup_input
+
+
+# Create Default SubFolders
+if [ -f fileserver_base_subfolder_setup ]; then
+  msg "Creating File Server subfolder shares..."
+  echo -e "$(eval "echo -e \"`<fileserver_base_subfolder_setup`\"")" | sed '/^#/d' | sed '/^$/d' >/dev/null > fileserver_base_subfolder_setup_input
+  while read -r dir group permission; do
+    if [ -d "${dir}" ]; then
+      info "${dir} exists, setting ${group} group permissions for this folder."
+      sudo chgrp -R "${group}" "${dir}" >/dev/null
+      sudo chmod -R "${permission}" "${dir}" >/dev/null
+      echo
+    else
+      info "New subfolder created:\n  ${WHITE}"${dir}"${NC}"
+      sudo mkdir -p "${dir}" >/dev/null
+      sudo chgrp -R "${group}" "${dir}" >/dev/null
+      sudo chmod -R "${permission}" "${dir}" >/dev/null
+      echo
+    fi
+  done < fileserver_base_subfolder_setup_input
+fi
 
 
 # Create New users
@@ -182,6 +291,8 @@ if [ $(id -u) -eq 0 ] && [ "$NEW_NAS_USER" = 0 ]; then
     sudo chmod 0700 /srv/$HOSTNAME/homes/${USER}/.ssh
     sudo touch /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
     sudo chown -R ${USER}:${GROUP} /srv/$HOSTNAME/homes/${USER}
+    sudo ssh-keygen -q -t rsa -b 4096 -f /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa -N ""
+    cat /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa.pub >> /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
     (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
     info "User $USER has been added to the system. Existing home folder found.\nUsing existing home folder."
     echo
@@ -192,6 +303,8 @@ if [ $(id -u) -eq 0 ] && [ "$NEW_NAS_USER" = 0 ]; then
     sudo chmod 0700 /srv/$HOSTNAME/homes/${USER}/.ssh
     sudo touch /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
     sudo chown -R ${USER}:${GROUP} /srv/$HOSTNAME/homes/${USER}
+    sudo ssh-keygen -q -t rsa -b 4096 -f /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa -N ""
+    cat /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa.pub >> /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
     (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
     [ $USER_EXISTS = 1 ] && info "User $USER has been added to the system." || warn "Failed adding user $USER!"
     echo
@@ -266,82 +379,6 @@ if [ $KODI_RSYNC == 0 ] && [ $SSH_SERVER = 0 ]; then
 fi
 
 
-#### Setting Folder Permissions ####
-section "File Server - Setting Folder Permissions."
-
-
-# Set Medialab Folder Permissions
-msg "Setting medialab folder share permissions..."
-echo
-cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "medialab" { print $1 }' > proxmox_setup_sharedfolderlist-medialab
-schemaExtractDir="/srv/$HOSTNAME"
-while read dir; do
-  dir="$schemaExtractDir/$dir"
-  if [ -d "$dir" ]; then
-    info "$dir exists, setting medialab group permissions for this folder."
-	chgrp -R medialab "${dir}"
-	chmod g+rwx -R "${dir}"
-	echo
-  else
-    warn "$dir does not exist: skipping ..."
-	echo
-  fi
-done < proxmox_setup_sharedfolderlist-medialab # file listing of medialab folders to modify
-
-# Set Homelab Folder Permissions
-msg "Setting homelab folder share permissions..."
-echo
-cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "homelab" { print $1 }' > proxmox_setup_sharedfolderlist-homelab
-schemaExtractDir="/srv/$HOSTNAME"
-while read dir; do
-  dir="$schemaExtractDir/$dir"
-  if [ -d "$dir" ]; then
-    info "$dir exists, setting homelab group permissions for this folder."
-	chgrp -R homelab "${dir}"
-	chmod g+rwx -R "${dir}"
-	echo
-  else
-    warn "$dir does not exist: skipping ..."
-	echo
-  fi
-done < proxmox_setup_sharedfolderlist-homelab # file listing of homelab folders to modify
-
-# Set Privatelab Folder Permissions
-msg "Setting privatelab folder share permissions..."
-echo
-cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "privatelab" { print $1 }' > proxmox_setup_sharedfolderlist-privatelab
-schemaExtractDir="/srv/$HOSTNAME"
-while read dir; do
-  dir="$schemaExtractDir/$dir"
-  if [ -d "$dir" ]; then
-    info "$dir exists, setting privatelab group permissions for this folder."
-	chgrp -R privatelab "${dir}"
-	chmod g+rwx -R "${dir}"
-	echo
-  else
-    warn "$dir does not exist: skipping ..."
-	echo
-  fi
-done < proxmox_setup_sharedfolderlist-privatelab # file listing of privatelab folders to modify
-
-# Set Public Folder Permissions
-msg "Setting public folder share permissions..."
-echo
-cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '$2 ~ "public" { print $1 }' > proxmox_setup_sharedfolderlist-public
-schemaExtractDir="/srv/$HOSTNAME"
-while read dir; do
-  dir="$schemaExtractDir/$dir"
-  if [ -d "$dir" ]; then
-    info "$dir exists, setting public group permissions for this folder."
-	chmod -R a+rwx "${dir}"
-	echo
-  else
-    warn "$dir does not exist: skipping ..."
-	echo
-  fi
-done < proxmox_setup_sharedfolderlist-public # file listing of privatelab folders to modify
-
-
 #### Install and Configure Samba ####
 section "File Server - Installing and configuring Samba."
 
@@ -375,6 +412,10 @@ cat << EOF > /etc/samba/smb.conf
 	pam password change = yes
 	map to guest = bad user
 	usershare allow guests = yes
+  inherit permissions = yes
+  inherit acls = yes
+  vfs objects = acl_xattr
+  follow symlinks = yes
 
 [homes]
 	comment = home directories
@@ -382,6 +423,7 @@ cat << EOF > /etc/samba/smb.conf
 	read only = no
 	create mask = 0775
 	directory mask = 0775
+  hide dot files = yes
 	valid users = %S
 
 [public]
@@ -395,17 +437,18 @@ cat << EOF > /etc/samba/smb.conf
   directory mode = 0777
 	force user = nobody
 	guest ok = yes
+  hide dot files = yes
 EOF
 
 # Create your Default and Custom Samba Shares 
 msg "Creating default and custom Samba folder shares..."
 echo
-cat proxmox_setup_sharedfolderlist proxmox_setup_sharedfolderlist-xtra | awk '!seen[$0]++' | awk '{ print $1 }' | sed '/homes/d;/public/d' > proxmox_setup_sharedfolderlist-samba_dir
+cat fileserver_base_folder_setup fileserver_base_folder_setup-xtra | awk '!seen[$0]++' | awk '{ print $1 }' | sed '/homes/d;/public/d' > fileserver_base_folder_setup-samba_dir
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
-    dirgrp=$(cat proxmox_setup_sharedfolderlist | grep -i $dir | awk '{ print $2}') || true >/dev/null
+    dirgrp=$(cat fileserver_base_folder_setup | grep -i $dir | awk '{ print $2}') || true >/dev/null
 	eval "cat <<-EOF >> /etc/samba/smb.conf
 
 	[$dir]
@@ -421,7 +464,7 @@ while read dir; do
 	info "${dir01} does not exist: skipping."
 	echo
   fi
-done < proxmox_setup_sharedfolderlist-samba_dir # file listing of folders to create
+done < fileserver_base_folder_setup-samba_dir # file listing of folders to create
 service smbd start 2>/dev/null # Restart Samba
 systemctl is-active smbd >/dev/null 2>&1 && info "Samba server status: ${GREEN}active (running).${NC}" || info "Samba server status: ${RED}inactive (dead).${NC} Your intervention is required."
 echo
@@ -466,9 +509,8 @@ if [ "$NFS_XTRA_SHARES" = 0 ] && [ "$XTRA_SHARES" = 0 ]; then
     done
     if [[ "$msg" ]]; then echo "$msg"; fi
   }
-  # options=( $(cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1,$2 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//') )
-  cat proxmox_setup_sharedfolderlist-xtra | awk '{ print $1,$2 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//' > proxmox_setup_sharedfolderlist-xtra_options
-  mapfile -t options < proxmox_setup_sharedfolderlist-xtra_options
+  cat fileserver_base_folder_setup-xtra | awk '{ print $1,$2 }' | sed -e 's/^/"/g' -e 's/$/"/g' | tr '\n' ' ' | sed -e 's/^\|$//g' | sed 's/\s*$//' > fileserver_base_folder_setup-xtra_options
+  mapfile -t options < fileserver_base_folder_setup-xtra_options
   prompt="Check an option (again to uncheck, ENTER when done): "
   while menu && read -rp "$prompt" num && [[ "$num" ]]; do
     [[ "$num" != *[![:digit:]]* ]] &&
@@ -491,13 +533,13 @@ echo
 
 
 # Create Input lists to create NFS Exports
-grep -v -Ff included_nfs_xtra_folders proxmox_setup_sharedfolderlist-xtra > excluded_nfs_xtra_folders # all rejected NFS additional folders
+grep -v -Ff included_nfs_xtra_folders fileserver_base_folder_setup-xtra > excluded_nfs_xtra_folders # all rejected NFS additional folders
 cat included_nfs_xtra_folders | sed '/medialab/!d' > included_nfs_folders-media_dir # included additional medialab NFS folders
 cat included_nfs_xtra_folders | sed '/medialab/d' > included_nfs_folders-default_dir # included additional default NFS folders
 
 
 # Create Default NFS exports
-grep -vxFf excluded_nfs_xtra_folders proxmox_setup_sharedfolderlist | sed '$r included_nfs_folders-default_dir' | sed '/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/audio/d;/books/d;/music/d;/photo/d;/video/d' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_default_dir
+grep -vxFf excluded_nfs_xtra_folders fileserver_base_folder_setup | sed '$r included_nfs_folders-default_dir' | sed '/git/d;/homes/d;/openvpn/d;/sshkey/d' | sed '/audio/d;/books/d;/music/d;/photo/d;/video/d' | awk '{ print $1 }' > fileserver_base_folder_setup-nfs_default_dir
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
@@ -511,9 +553,9 @@ while read dir; do
 	info "${dir01} does not exist: skipping..."
 	echo
   fi
-done < proxmox_setup_sharedfolderlist-nfs_default_dir # file listing of folders to create
+done < fileserver_base_folder_setup-nfs_default_dir # file listing of folders to create
 # Create Media NFS exports
-cat proxmox_setup_sharedfolderlist | grep -i 'audio\|books\|music\|photo\|\video' | sed '$r included_nfs_folders-media_dir' | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-nfs_media_dir 
+cat fileserver_base_folder_setup | grep -i 'audio\|books\|music\|photo\|\video' | sed '$r included_nfs_folders-media_dir' | awk '{ print $1 }' > fileserver_base_folder_setup-nfs_media_dir 
 schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
@@ -527,7 +569,7 @@ while read dir; do
 	info "${dir01} does not exist: skipping..."
 	echo
   fi
-done < proxmox_setup_sharedfolderlist-nfs_media_dir # file listing of folders to create
+done < fileserver_base_folder_setup-nfs_media_dir # file listing of folders to create
 
 
 # NFS Server Restart
@@ -568,6 +610,41 @@ if [ "$(systemctl is-active --quiet fail2ban; echo $?) -eq 0" ]; then
 elif [ "$(systemctl is-active --quiet fail2ban; echo $?) -eq 3" ]; then
 	info "Fail2Ban status: ${RED}inactive (dead).${NC}. Your intervention is required."
 	echo
+fi
+
+#### Install and Configure ProFTP ####
+section "File Server - Installing and configuring ProFTP Server."
+
+
+# Install ProFTP Prerequisites
+msg "Installing ProFTP prerequisites..."
+sudo apt-get update
+sudo apt-get install proftpd
+sudo systemctl restart proftpd 2>/dev/null
+if [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 0" ]; then
+	info "Proftpd status: ${GREEN}active (running).${NC}"
+	echo
+elif [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 3" ]; then
+	info "Proftpd status: ${RED}inactive (dead).${NC}. Your intervention is required."
+	echo
+fi
+
+
+#### Create Restricted and Jailed User Accounts ####
+section "File Server - Create Restricted and Jailed User Accounts"
+
+echo
+box_out '#### PLEASE READ CAREFULLY - RESTRICTED & JAILED USER ACCOUNTS ####' '' 'In this step you have the option to automatically chroot jail selected' 'user accounts ssh login and ftp access based on a new user group (chrootjail).' 'This technique can be quite useful if you want a particular user group' 'to be provided with a limited system environment, limited folder access and' 'at the same time keep them separate from your main system and personal data.' '' 'The chroot technique will automatically jail selected users belonging' 'to the "chrootjail" user group upon ssh or ftp login.' '' 'An example of a jailed user is a person who has remote access to your' 'File Server but is restricted to your video library (TV, movies, documentary),' 'public folders and their home folder for cloud storage only.' 'Remote access to your File Server is restricted to sftp, ssh and rsync' 'using private SSH RSA encrypted keys.' 'Default "chrootjail" group permissions are:' '' '  --  GROUP NAME     -- USER NAME' '  --  "chrootjail"    -- /srv/"hostname"/homes/jails/chroot/"username_injail"' '' '  --  PERMISSIONS    -- FOLDER' '  --  -rwx------     -- /srv/"hostname"/homes/jails/chroot/"username_injail"' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/video/movies' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/video/tv' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/video/documentary' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/public' '' 'A jail users Home folder is suffixed as follows: "username_injail".' 'Login passwords are NOT used - only SSH RSA encrypted keys.'
+echo
+read -p "Create jailed user accounts on your File Server (NAS) [y/n]? " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+	NEW_JAIL_USER=0 >/dev/null
+  chmod +x fileserver_add_jailuser_ct_18.04.sh
+  ./fileserver_add_jailuser_ct_18.04.sh
+else
+	NEW_JAIL_USER=1 >/dev/null
+	info "You have chosen to skip this step."
 fi
 
 
