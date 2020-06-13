@@ -111,18 +111,21 @@ echo
 
 # Create Base Users
 msg "Creating CT default users..."
-id -u media >/dev/null
-if [ $? -ne 0 ]; then
+sudo mkdir -p /srv/$HOSTNAME/homes >/dev/null
+sudo chgrp -R root /srv/$HOSTNAME/homes >/dev/null
+sudo chmod -R 0755 /srv/$HOSTNAME/homes >/dev/null
+id -u media &>/dev/null
+if [ $? = 1 ]; then
 	useradd -m -d /srv/$HOSTNAME/homes/media -u 1605 -g medialab -s /bin/bash media >/dev/null
   info "Default user created: ${YELLOW}media${NC} of group medialab"
 fi
-id -u storm >/dev/null
-if [ $? -ne 0 ]; then
+id -u storm &>/dev/null
+if [ $? = 1 ]; then
 	useradd -m -d /srv/$HOSTNAME/homes/storm -u 1606 -g homelab -G medialab -s /bin/bash storm >/dev/null
   info "Default user created: ${YELLOW}storm${NC} of groups medialab, homelab"
 fi
-id -u typhoon >/dev/null
-if [ $? -ne 0 ]; then
+id -u typhoon &>/dev/null
+if [ $? = 1 ]; then
 	useradd -m -d /srv/$HOSTNAME/homes/typhoon -u 1607 -g privatelab -G medialab,homelab -s /bin/bash typhoon >/dev/null
   info "Default user created: ${YELLOW}typhoon${NC} of groups medialab, homelab and privatelab"
 fi
@@ -192,7 +195,7 @@ echo
 msg "Creating File Server base /$POOL/$HOSTNAME folder shares..."
 echo
 cat fileserver_base_folder_setup | sed '/^#/d' | sed '/^$/d' >/dev/null > fileserver_base_folder_setup_input
-dir_schema="/$POOL/$HOSTNAME/"
+dir_schema="/srv/$HOSTNAME/"
 while read -r dir group permission; do
   if [ -d "$dir_schema${dir}" ]; then
     info "$dir_schema${dir} exists, setting ${group} group permissions for this folder."
@@ -348,8 +351,8 @@ if [ $SSH_SERVER = 0 ]; then
   if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
     msg "Creating user kodi_rsync..."
     KODI_RSYNC=0
-    id -u kodi_rsync 2>/dev/null
-    if [ $? -ne 0 ]; then
+    id -u kodi_rsync &>/dev/null
+    if [ $? = 1 ]; then
       useradd -m -d /srv/$HOSTNAME/homes/kodi_rsync -g medialab -s /bin/bash kodi_rsync >/dev/null
       info "User created: ${YELLOW}kodi_rsync${NC} of group medialab"
     else
@@ -621,7 +624,7 @@ section "File Server - Installing and configuring ProFTP Server."
 # Install ProFTP Prerequisites
 msg "Installing ProFTP prerequisites..."
 sudo apt-get update
-sudo apt-get install proftpd
+sudo apt-get install -y proftpd 2>/dev/null
 sudo systemctl restart proftpd 2>/dev/null
 if [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 0" ]; then
 	info "Proftpd status: ${GREEN}active (running).${NC}"
