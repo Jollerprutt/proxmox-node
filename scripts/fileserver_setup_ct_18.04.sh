@@ -181,6 +181,7 @@ while true; do
     echo "$xtra_sharename $XTRA_USERGRP" >> fileserver_base_folder_setup-xtra
   else
     info "Skipping creating anymore additional shared folders."
+    XTRA_SHARES=1 >/dev/null
     break
   fi
 done
@@ -211,6 +212,7 @@ done < fileserver_base_folder_setup_input
 # Create Default SubFolders
 if [ -f fileserver_base_subfolder_setup ]; then
   msg "Creating File Server subfolder shares..."
+  echo
   echo -e "$(eval "echo -e \"`<fileserver_base_subfolder_setup`\"")" | sed '/^#/d' | sed '/^$/d' >/dev/null > fileserver_base_subfolder_setup_input
   while read -r dir group permission; do
     if [ -d "${dir}" ]; then
@@ -346,7 +348,7 @@ if [ $SSH_SERVER = 0 ]; then
   if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
     msg "Creating user kodi_rsync..."
     KODI_RSYNC=0
-    id -u kodi_rsync >/dev/null
+    id -u kodi_rsync 2>/dev/null
     if [ $? -ne 0 ]; then
       useradd -m -d /srv/$HOSTNAME/homes/kodi_rsync -g medialab -s /bin/bash kodi_rsync >/dev/null
       info "User created: ${YELLOW}kodi_rsync${NC} of group medialab"
