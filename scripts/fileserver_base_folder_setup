@@ -1,16 +1,17 @@
 # This file is for base folders ONLY. If you want to add sub folders (i.e /srv/$HOSTNAME/video/tv) then edit fileserver_base_subfolder_setup
-audio medialab 0755
-backup privatelab 0755
-books medialab 0755
-cloudstorage privatelab 0770
-docker medialab 0755
-downloads medialab 0755
-git privatelab 0770
-homes root 0755
-music medialab 0755
-openvpn privatelab 0770
-photo medialab 0755
-proxmox medialab 0755
+# FOLDERNAME GROUP PERMISSIONS ACL
+audio root 0755 medialab:rwx homelab:rwx privatelab:rwx
+backup root 0755 medialab:rwx homelab:rwx privatelab:rwx
+books root 0755 medialab:rwx homelab:rwx privatelab:rwx
+cloudstorage root 0755 homelab:rwx privatelab:rwx
+docker root 0755 medialab:rwx homelab:rwx privatelab:rwx
+downloads root 0755 medialab:rwx homelab:rwx privatelab:rwx
+git root 0755 privatelab:rwx
+homes root 0750 medialab:rwx homelab:rwx privatelab:rwx
+music root 0755 medialab:rwx homelab:rwx privatelab:rwx
+openvpn root 0750 privatelab:rwx
+photo root 0755 medialab:rwx homelab:rwx privatelab:rwx
+proxmox root 0755 privatelab:rwx
 public root 1777
-sshkey privatelab 0770
-video medialab 0755
+sshkey root 0750
+video root 0755
