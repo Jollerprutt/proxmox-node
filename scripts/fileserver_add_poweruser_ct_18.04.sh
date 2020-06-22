@@ -57,7 +57,6 @@ NC=$'\033[0m'
 if [ -z $NEW_POWER_USER ]; then
   section "File Server - Create New Power User Accounts"
 
-  # Create New users
   echo
   box_out '#### PLEASE READ CAREFULLY - CREATING POWER USER ACCOUNTS ####' '' 'Power Users are trusted persons with privileged access to data and application' 'resources hosted on your File Server. Power Users are NOT standard users!' 'Standard users are added at a later stage.' '' 'Each new Power Users security permissions are controlled by linux groups.' 'Group security permission levels are as follows:' '' '  --  GROUP NAME    -- PERMISSIONS' '  --  "medialab"    -- Everything to do with media (i.e movies, TV and music)' '  --  "homelab"     -- Everything to do with a smart home including "medialab"' '  --  "privatelab"  -- Private storage including "medialab" & "homelab" rights' '' 'A Personal Home Folder will be created for each new user. The folder name is' 'the users name. You can access Personal Home Folders and other shares' 'via CIFS/Samba and NFS.' '' 'Remember your File Server is also pre-configured with user names' 'specifically tasked for running hosted applications (i.e Proxmox LXC,CT,VM).' 'These application users names are as follows:' '' '  --  GROUP NAME    -- USER NAME' '  --  "medialab"    -- /srv/CT_HOSTNAME/homes/"media"' '  --  "homelab"     -- /srv/CT_HOSTNAME/homes/"storm"' '  --  "privatelab"  -- /srv/CT_HOSTNAME/homes/"typhoon"'
   echo
