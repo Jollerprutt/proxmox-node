@@ -1,12 +1,12 @@
 # Insert your base sub folders here!
 
 # Video Folders
-/srv/$HOSTNAME/video/documentary medialab 0755
-/srv/$HOSTNAME/video/homevideo medialab 0755
-/srv/$HOSTNAME/video/movies medialab 0755
-/srv/$HOSTNAME/video/musicvideo medialab 0755
-/srv/$HOSTNAME/video/tv medialab 0755
-/srv/$HOSTNAME/video/transcode medialab 0755
+/srv/$HOSTNAME/video/documentary medialab 0750
+/srv/$HOSTNAME/video/homevideo medialab 0750
+/srv/$HOSTNAME/video/movies medialab 0750
+/srv/$HOSTNAME/video/musicvideo medialab 0750
+/srv/$HOSTNAME/video/tv medialab 0750
+/srv/$HOSTNAME/video/transcode medialab 0750
 
 # Audio Book Folders
-/srv/$HOSTNAME/audio/audiobooks medialab 0755
+/srv/$HOSTNAME/audio/audiobooks medialab 0750
