@@ -52,6 +52,9 @@ NC=$'\033[0m'
 
 # Download external scripts
 
+# Command to run script
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_add_poweruser_ct_18.04.sh)"
+
 
 #### Create New Power User Accounts ####
 if [ -z $NEW_POWER_USER ]; then
@@ -145,3 +148,4 @@ if [ $(id -u) -eq 0 ] && [ "$NEW_POWER_USER" = 0 ]; then
   fi
   done
 fi
+
