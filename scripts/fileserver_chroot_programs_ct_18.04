@@ -9,3 +9,4 @@
 /bin/mv
 /bin/touch
 /bin/date
+/usr/bin/rsync
