@@ -146,7 +146,7 @@ echo
 msg "Creating basic chroot jail environment..."
 CHROOT=/srv/$HOSTNAME/homes/chrootjail
 mkdir -p $CHROOT
-mkdir -p $CHROOT/{homes,dev,bin,lib,lib/x86_64-linux-gnu,lib64,etc,lib/terminfo/x,}
+mkdir -p $CHROOT/{homes,dev,bin,lib,lib/x86_64-linux-gnu,lib64,etc,lib/terminfo/x,usr,usr/bin}
 mknod -m 666 $CHROOT/dev/null c 1 3
 mknod -m 666 $CHROOT/dev/tty c 5 0
 mknod -m 666 $CHROOT/dev/zero c 1 5
@@ -156,9 +156,6 @@ sudo chmod 0750 $CHROOT
 cat << EOF > $CHROOT/etc/debian_chroot
 chroot
 EOF
-echo
-
-
 # Copy command libraries
 msg "Copying command libraries for chroot jail..."
 cp -f /lib/x86_64-linux-gnu/{libtinfo.so.5,libdl.so.2,libc.so.6} $CHROOT/lib/ >/dev/null
@@ -182,13 +179,13 @@ fi
 if [ -d  /lib/terminfo/x ]; then
    cp -r /lib/terminfo/x/* $CHROOT/lib/terminfo/x/
 fi
-info "All the required command libraries for chroot jail have been copied."
+info "Chroot jail created. Command libraries for chroot jail have been copied."
 echo
 
 
 
 #### Setting Folder Permissions ####
-section "File Server - Creating and Setting Folder Permissions."
+section "File Server CT - Creating and Setting Folder Permissions."
 
 
 # Create Default Proxmox ZFS Share points
@@ -198,8 +195,8 @@ echo
 echo
 touch fileserver_base_folder_setup-xtra
 while true; do
-  read -p "Do you want to create additional shared folders on your File Server (NAS) [yes/no]? " -r
-  if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
+  read -p "Do you want to create additional shared folders on your File Server (NAS) [y/n]?: " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
     while true; do
       echo
       read -p "Enter a new shared folder name : " xtra_sharename
@@ -256,7 +253,7 @@ cat fileserver_base_folder_setup | sed '/^#/d' | sed '/^$/d' >/dev/null > filese
 dir_schema="/srv/$HOSTNAME/"
 while read -r dir group permission acl_01 acl_02 acl_03 acl_04 acl_05; do
   if [ -d "$dir_schema${dir}" ]; then
-    info "$dir_schema${dir} exists, setting ${group} group permissions for this folder."
+    info "Pre-existing folder:  ${RED}"$dir_schema${dir}"${NC}\n  Setting ${group} group permissions for existing folder."
     sudo chgrp -R "${group}" "$dir_schema${dir}" >/dev/null
     sudo chmod -R "${permission}" "$dir_schema${dir}" >/dev/null
     if [ ! -z ${acl_01} ]; then
@@ -276,7 +273,7 @@ while read -r dir group permission acl_01 acl_02 acl_03 acl_04 acl_05; do
     fi
     echo
   else
-    info "New base folder created: ${WHITE}"$dir_schema${dir}"${NC}"
+    info "New base folder created:\n  ${WHITE}"$dir_schema${dir}"${NC}"
     sudo mkdir -p "$dir_schema${dir}" >/dev/null
     sudo chgrp -R "${group}" "$dir_schema${dir}" >/dev/null
     sudo chmod -R "${permission}" "$dir_schema${dir}" >/dev/null
@@ -356,7 +353,7 @@ fi
 #### Configure SSH Server ####
 section "File Server CT - Setup SSH Server."
 
-box_out '#### PLEASE READ CAREFULLY - ENABLE SSH SERVER ####' '' 'If you want to use SSH connect (Rsync/SFTP/SCP) to your File Server then' 'your SSH Server must be enabled. You need SSH to perform any' 'of the following tasks:' '' '  --  Secure SSH Connection to the File Server.' '  --  Perform a secure RSync Backup to the File Server.' '  --  Create a portable Kodi media player using our kodi_rsync user scripts.' '' 'We also recommend you change the default SSH port 22 for added security.'
+box_out '#### PLEASE READ CAREFULLY - ENABLE SSH SERVER ####' '' 'If you want to use SSH (Rsync/SFTP) to connect to your File Server then' 'your SSH Server must be enabled. You need SSH to perform any' 'of the following tasks:' '' '  --  Secure SSH Connection to the File Server.' '  --  Perform a secure RSync Backup to the File Server.' '  --  Create a portable Kodi media player using our "kodi_rsync" user scripts.' '' 'We also recommend you change the default SSH port 22 for added security.' '' 'For added security we only enable the following ssh services for "kodi_rsync"' 'and chroot jail users:' '' '  --  allowsftp: User is allowed to use SFTP protocol and transfers.' '  --  allowrsync: User is allowed to use rsync transfers.'
 
 # Configure sshd for chroot jail
 msg "Configuring sshd for chrootjail..."
@@ -379,9 +376,8 @@ if [ $SSHD_STATUS = 0 ]; then
 fi
 echo
 
-read -p "Enable SSH Server on your File Server (NAS) [yes/no]?: " -r
-if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
-  info "SSH Server: ${YELLOW}enabled${NC}"
+read -p "Enable SSH Server on your File Server (NAS) [y/n]?: " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]; then
   SSHD_STATUS=0
   read -p "Confirm SSH Port number: " -e -i 22 SSH_PORT
   info "SSH Port is set: ${YELLOW}Port $SSH_PORT${NC}."
@@ -389,20 +385,21 @@ if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Ye
   sudo sed -i "s|#Port.*|Port $SSH_PORT|g" /etc/ssh/sshd_config
   sudo ufw allow ssh 2>/dev/null
   sudo systemctl restart ssh 2>/dev/null
+  msg "Enabling SSHD server..."
   systemctl is-active sshd >/dev/null 2>&1 && info "OpenBSD Secure Shell server: ${GREEN}active (running).${NC}" || info "OpenBSD Secure Shell server: ${RED}inactive (dead).${NC}"
   echo
 else
   sudo systemctl stop ssh 2>/dev/null
   sudo systemctl disable ssh 2>/dev/null
-  info "SSH Server: ${YELLOW}disabled${NC}"
   SSHD_STATUS=1
+  msg "Disabling SSHD server..."
   systemctl is-active sshd >/dev/null 2>&1 && info "OpenBSD Secure Shell server: ${GREEN}active (running).${NC}" || info "OpenBSD Secure Shell server: ${RED}inactive (dead).${NC}"
   echo
 fi
 
 
 #### Install and Configure Samba ####
-section "File Server - Installing and configuring Samba."
+section "File Server CT - Installing and configuring Samba."
 
 # Install Samba
 msg "Installing Samba..."
@@ -492,7 +489,7 @@ echo
 
 
 #### Install and Configure NFS ####
-section "File Server - Installing and configuring NFS Server."
+section "File Server CT - Installing and configuring NFS Server."
 
 
 # Install nfs
@@ -606,7 +603,7 @@ fi
 
 
 #### Install and Configure Fail2Ban ####
-section "File Server - Installing and configuring Fail2Ban."
+section "File Server CT - Installing and configuring Fail2Ban."
 
 # Install Fail2Ban 
 msg "Installing Fail2Ban..."
@@ -634,7 +631,7 @@ elif [ "$(systemctl is-active --quiet fail2ban; echo $?) -eq 3" ]; then
 fi
 
 #### Install and Configure ProFTP ####
-section "File Server - Installing and configuring ProFTP Server."
+section "File Server CT - Installing and configuring ProFTP Server."
 
 
 # Install ProFTP Prerequisites
@@ -652,13 +649,13 @@ fi
 
 
 #### Create New Power User Accounts ####
-section "File Server - Create New Power User Accounts"
+section "File Server CT - Create New Power User Accounts"
 
 echo
 box_out '#### PLEASE READ CAREFULLY - CREATING POWER USER ACCOUNTS ####' '' 'Power Users are trusted persons with privileged access to data and application' 'resources hosted on your File Server. Power Users are NOT standard users!' 'Standard users are added at a later stage.' '' 'Each new Power Users security permissions are controlled by linux groups.' 'Group security permission levels are as follows:' '' '  --  GROUP NAME    -- PERMISSIONS' '  --  "medialab"    -- Everything to do with media (i.e movies, TV and music)' '  --  "homelab"     -- Everything to do with a smart home including "medialab"' '  --  "privatelab"  -- Private storage including "medialab" & "homelab" rights' '' 'A Personal Home Folder will be created for each new user. The folder name is' 'the users name. You can access Personal Home Folders and other shares' 'via CIFS/Samba and NFS.' '' 'Remember your File Server is also pre-configured with user names' 'specifically tasked for running hosted applications (i.e Proxmox LXC,CT,VM).' 'These application users names are as follows:' '' '  --  GROUP NAME    -- USER NAME' '  --  "medialab"    -- /srv/CT_HOSTNAME/homes/"media"' '  --  "homelab"     -- /srv/CT_HOSTNAME/homes/"storm"' '  --  "privatelab"  -- /srv/CT_HOSTNAME/homes/"typhoon"'
 
 echo
-read -p "Create new power user accounts on your File Server (NAS) [y/n]? " -n 1 -r
+read -p "Create new power user accounts on your File Server (NAS) [y/n]?: " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
 	NEW_POWER_USER=0 >/dev/null
@@ -672,7 +669,7 @@ echo
 
 
 #### Create Restricted and Jailed User Accounts ####
-section "File Server - Create Restricted and Jailed User Accounts"
+section "File Server CT - Create Restricted and Jailed User Accounts"
 
 echo
 box_out '#### PLEASE READ CAREFULLY - RESTRICTED & JAILED USER ACCOUNTS ####' '' 'In this step you have the option to automatically chroot jail selected' 'user accounts ssh login and ftp access based on a new user group (chrootjail).' 'This technique can be quite useful if you want a particular user group' 'to be provided with a limited system environment, limited folder access and' 'at the same time keep them separate from your main system and personal data.' '' 'The chroot technique will automatically jail selected users belonging' 'to the "chrootjail" user group upon ssh or ftp login.' '' 'An example of a jailed user is a person who has remote access to your' 'File Server but is restricted to your video library (TV, movies, documentary),' 'public folders and their home folder for cloud storage only.' 'Remote access to your File Server is restricted to sftp, ssh and rsync' 'using private SSH RSA encrypted keys.' 'Default "chrootjail" group permissions are:' '' '  --  GROUP NAME     -- USER NAME' '  --  "chrootjail"    -- /srv/"hostname"/homes/jails/chroot/"username_injail"' '' '  --  PERMISSIONS    -- FOLDER' '  --  -rwx------     -- /srv/"hostname"/homes/jails/chroot/"username_injail"' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/video/movies' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/video/tv' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/video/documentary' '  --  -rwxr-----     -- /srv/CT_HOSTNAME/public' '' 'A jail users Home folder is suffixed as follows: "username_injail".' 'Login passwords are NOT used - only SSH RSA encrypted keys.'
@@ -681,6 +678,7 @@ read -p "Create jailed user accounts on your File Server (NAS) [y/n]? " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
 	NEW_JAIL_USER=0 >/dev/null
+  PARENT_EXEC_NEW_JAIL_USER=0
   chmod +x fileserver_add_jailuser_ct_18.04.sh
   ./fileserver_add_jailuser_ct_18.04.sh
 else
@@ -690,15 +688,16 @@ fi
 
 
 #### Create & Setup kodi_rsync user #####
-section "File Server - Create kodi_rsync user."
+section "File Server CT - Create kodi_rsync user."
 
 echo
 box_out '#### PLEASE READ CAREFULLY - KODI_RSYNC USER ####' '' 'This is a optional step to allow remote SSH Rsync to your File Server for' 'the purpose of creating a remote or portable mirror of your media library.' 'Its ideal for travellers or persons going away to a remote location' 'or a place which has poor or no internet access.' '' 'Our rsync script will securely connect to your File Server and;' '' '  --  rsync mirror your selected media library to your kodi player USB disk.' '  --  copy your latest media only to your kodi player USB disk.' '  --  remove the oldest media to fit newer media.' '  --  fill your USB disk to a limit set by you.' '' 'This is ideally suited for holiday homes, yachts or people on the move.' '' 'The first step involves creating a new user called "kodi_rsync" on your File Server' 'which has limited and restricted permissions granting rsync read access only' 'to your media libraries.' 'The second step, performed at a later stage, is setting up a CoreElec or' 'LibreElec player hardware with a USB hard disk and installing our' 'rsync scripts along with your File Server user "kodi_rsync" private ssh rsa key.'
 echo
-read -p "Create the user kodi_rsync on your File Server (NAS) [yes/no]?: " -r
-if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
+read -p "Create the user kodi_rsync on your File Server (NAS) [yes/no]?: " -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]; then
   msg "Creating user kodi_rsync..."
   NEW_KODI_RSYNC_USER=0 >/dev/null
+  PARENT_EXEC_NEW_KODI_RSYNC_USER=0
   chmod +x fileserver_add_rsyncuser_ct_18.04.sh
   ./fileserver_add_rsyncuser_ct_18.04.sh
 else
@@ -710,7 +709,7 @@ echo
 
 
 #### Install and Configure Webmin ####
-section "File Server - Installing and configuring Webmin."
+section "File Server CT - Installing and configuring Webmin."
 
 
 # Install Webmin Prerequisites
