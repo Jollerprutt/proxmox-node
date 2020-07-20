@@ -123,25 +123,42 @@ if [ $(id -u) -eq 0 ] && [ "$NEW_POWER_USER" = 0 ]; then
     echo
     exit 1
   elif [ $USER_EXISTS = 1 ] && [ $USER_DIR_EXISTS = 0 ]; then
+    msg "Creating new user ${USER}..."
     useradd -g ${GROUP} -p ${pass} ${USERMOD} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
+    msg "Creating SSH folder and authorised keys file for user ${USER}..."
     sudo mkdir -p /srv/$HOSTNAME/homes/${USER}/.ssh
-    sudo chmod 0700 /srv/$HOSTNAME/homes/${USER}/.ssh
     sudo touch /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
+    sudo mkdir -p /srv/$HOSTNAME/homes/${USER}/.sftp
+    sudo touch /srv/$HOSTNAME/homes/${USER}/.sftp/authorized_keys
+    sudo chmod -R 0700 /srv/$HOSTNAME/homes/${USER}
     sudo chown -R ${USER}:${GROUP} /srv/$HOSTNAME/homes/${USER}
     sudo ssh-keygen -q -t rsa -b 4096 -f /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa -N ""
     cat /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa.pub >> /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
+    # Create sftp public keygen
+    msg "Adding your new ${USER} SSH keys to SSH sftp authorized_keys file..."
+    ssh-keygen -e -f /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa.pub > /srv/$HOSTNAME/homes/${USER}/.sftp/authorized_keys
+    msg "Creating ${USER} smb account..."
     (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
     info "User $USER has been added to the system. Existing home folder found.\nUsing existing home folder."
     echo
   else
+    msg "Creating new user ${USER}..."
     useradd -g ${GROUP} -p ${pass} ${USERMOD} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
+    msg "Creating default home folders (xdg-user-dirs-update)..."
     sudo -iu ${USER} xdg-user-dirs-update
+    msg "Creating SSH folder and authorised keys file for user ${USER}..."
     sudo mkdir -p /srv/$HOSTNAME/homes/${USER}/.ssh
-    sudo chmod 0700 /srv/$HOSTNAME/homes/${USER}/.ssh
     sudo touch /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
+    sudo mkdir -p /srv/$HOSTNAME/homes/${USER}/.sftp
+    sudo touch /srv/$HOSTNAME/homes/${USER}/.sftp/authorized_keys
+    sudo chmod -R 0700 /srv/$HOSTNAME/homes/${USER}
     sudo chown -R ${USER}:${GROUP} /srv/$HOSTNAME/homes/${USER}
     sudo ssh-keygen -q -t rsa -b 4096 -f /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa -N ""
     cat /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa.pub >> /srv/$HOSTNAME/homes/${USER}/.ssh/authorized_keys
+    # Create sftp public keygen
+    msg "Adding your new ${USER} SSH keys to SSH sftp authorized_keys file..."
+    ssh-keygen -e -f /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_rsa.pub > /srv/$HOSTNAME/homes/${USER}/.sftp/authorized_keys
+    msg "Creating ${USER} smb account..."
     (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
     [ $USER_EXISTS = 1 ] && info "User $USER has been added to the system." || warn "Failed adding user $USER!"
     echo
