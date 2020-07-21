@@ -363,6 +363,7 @@ if [ "$(systemctl is-active --quiet sshd; echo $?) -eq 0" ]; then
 else
   SSHD_STATUS=1
 fi
+sudo sed -i 's|Subsystem.*sftp.*|Subsystem       sftp    internal-sftp|g' /etc/ssh/sshd_config # Sets sftp to use proFTP #Subsystem sftp /usr/libexec/openssh/sftp-server
 cat <<EOF >> /etc/ssh/sshd_config
 
 # Settings for chrootjail
@@ -370,6 +371,7 @@ Match group chrootjail
         ChrootDirectory $CHROOT
         AllowTCPForwarding no
         X11Forwarding no
+        ForceCommand internal-sftp
 EOF
 if [ $SSHD_STATUS = 0 ]; then
   sudo systemctl restart ssh 2>/dev/null
@@ -638,13 +640,57 @@ section "File Server CT - Installing and configuring ProFTP Server."
 msg "Installing ProFTP prerequisites..."
 sudo apt-get update
 sudo apt-get install -y proftpd 2>/dev/null
-sudo systemctl restart proftpd 2>/dev/null
-if [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 0" ]; then
-	info "Proftpd status: ${GREEN}active (running).${NC}"
-	echo
-elif [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 3" ]; then
-	info "Proftpd status: ${RED}inactive (dead).${NC}. Your intervention is required."
-	echo
+sudo systemctl stop proftpd 2>/dev/null
+
+msg "Modifying sftp configuration..."
+cat << EOF > /etc/proftpd/conf.d/sftp.conf
+<IfModule mod_sftp.c>
+
+  SFTPEngine on
+  Port 990
+  SFTPLog /var/log/proftpd/sftp.log
+
+  # Configure both the RSA and DSA host keys, using the same host key
+  # files that OpenSSH uses.
+  SFTPHostKey /etc/ssh/ssh_host_rsa_key
+  SFTPHostKey /etc/ssh/ssh_host_dsa_key
+
+  SFTPAuthMethods publickey
+
+  # SFTPAuthorizedUserKeys file:/etc/proftpd/authorized_keys/%u
+  SFTPAuthorizedUserKeys file:~/.sftp/authorized_keys
+
+  # Enable compression
+  SFTPCompression delayed
+  
+  SFTPOptions IgnoreSFTPUploadPerms
+
+  <Limit LOGIN>
+      AllowGroup chrootjail
+      AllowGroup privatelab
+      DenyAll
+  </Limit>
+</IfModule>
+EOF
+
+msg "Editing ProFTP defaults..."
+sudo sed -i 's|# DefaultRoot			~|DefaultRoot			~|g' /etc/proftpd/proftpd.conf
+sudo sed -i 's|ServerName.*|ServerName                      "Cyclone"|g' /etc/proftpd/proftpd.conf
+
+
+msg "Checking ProFTP status..."
+if [ $SSHD_STATUS = 0 ]; then
+  sudo systemctl restart proftpd 2>/dev/null
+  if [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 0" ]; then
+    info "Proftpd status: ${GREEN}active (running).${NC}"
+    echo
+  elif [ "$(systemctl is-active --quiet proftpd; echo $?) -eq 3" ]; then
+    info "Proftpd status: ${RED}inactive (dead).${NC}. Your intervention is required."
+    echo
+  fi
+elif [ $SSHD_STATUS = 1 ]; then
+  info "You have chosen to disable SSH on ${HOSTNAME}.\nProFTP requires SSH to be enable. Your intervention is required."
+  echo
 fi
 
 
