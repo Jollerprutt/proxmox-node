@@ -196,6 +196,7 @@ echo
 touch fileserver_base_folder_setup-xtra
 while true; do
   read -p "Do you want to create additional shared folders on your File Server (NAS) [y/n]?: " -n 1 -r
+  echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     while true; do
       echo
@@ -379,6 +380,7 @@ fi
 echo
 
 read -p "Enable SSH Server on your File Server (NAS) [y/n]?: " -n 1 -r
+echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   SSHD_STATUS=0
   read -p "Confirm SSH Port number: " -e -i 22 SSH_PORT
@@ -507,6 +509,7 @@ if [ "$XTRA_SHARES" = 0 ]; then
 	box_out '#### PLEASE READ CAREFULLY - ADDITIONAL NFS SHARED FOLDERS ####' '' 'In a previous step you created additional shared folders.' '' 'You can now choose which additional folders are to be included as NFS shares.'
 	echo
 	read -p "Do you want to create NFS shares for your additional shared folders [y/n]? " -n 1 -r
+  echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     NFS_XTRA_SHARES=0 >/dev/null
   else
@@ -689,7 +692,7 @@ if [ $SSHD_STATUS = 0 ]; then
     echo
   fi
 elif [ $SSHD_STATUS = 1 ]; then
-  info "You have chosen to disable SSH on ${HOSTNAME}.\nProFTP requires SSH to be enable. Your intervention is required."
+  info "SSH status is disabled on ${HOSTNAME}.\nProFTP requires SSH to be enable. Your intervention is required."
   echo
 fi
 
@@ -739,11 +742,12 @@ section "File Server CT - Create kodi_rsync user."
 echo
 box_out '#### PLEASE READ CAREFULLY - KODI_RSYNC USER ####' '' 'This is a optional step to allow remote SSH Rsync to your File Server for' 'the purpose of creating a remote or portable mirror of your media library.' 'Its ideal for travellers or persons going away to a remote location' 'or a place which has poor or no internet access.' '' 'Our rsync script will securely connect to your File Server and;' '' '  --  rsync mirror your selected media library to your kodi player USB disk.' '  --  copy your latest media only to your kodi player USB disk.' '  --  remove the oldest media to fit newer media.' '  --  fill your USB disk to a limit set by you.' '' 'This is ideally suited for holiday homes, yachts or people on the move.' '' 'The first step involves creating a new user called "kodi_rsync" on your File Server' 'which has limited and restricted permissions granting rsync read access only' 'to your media libraries.' 'The second step, performed at a later stage, is setting up a CoreElec or' 'LibreElec player hardware with a USB hard disk and installing our' 'rsync scripts along with your File Server user "kodi_rsync" private ssh rsa key.'
 echo
-read -p "Create the user kodi_rsync on your File Server (NAS) [yes/no]?: " -n 1 -r
+read -p "Create the user kodi_rsync on your File Server (NAS) [y/n]?: " -n 1 -r
+echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   msg "Creating user kodi_rsync..."
   NEW_KODI_RSYNC_USER=0 >/dev/null
-  PARENT_EXEC_NEW_KODI_RSYNC_USER=0
+  PARENT_EXEC_NEW_KODI_RSYNC_USER=0 >/dev/null
   chmod +x fileserver_add_rsyncuser_ct_18.04.sh
   ./fileserver_add_rsyncuser_ct_18.04.sh
 else
