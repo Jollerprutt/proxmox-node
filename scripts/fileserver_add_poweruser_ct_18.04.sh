@@ -57,7 +57,7 @@ NC=$'\033[0m'
 
 
 #### Create New Power User Accounts ####
-if [ -z ${NEW_POWER_USER+x} ]; then
+if [ -z "${NEW_POWER_USER+x}" ]; then
   section "File Server - Create New Power User Accounts"
 
   echo
@@ -108,7 +108,7 @@ while [[ "$REPLY" != "no" ]] && [ "$NEW_POWER_USER" = 0 ]; do
     warn "Passwords do not match. Please try again."
   done
   echo
-    read -p "Do you want to create another new user account (type yes/no)?"
+    read -p "Do you want to create another new user account [yes/no]?"
 done
 if [ $(id -u) -eq 0 ] && [ "$NEW_POWER_USER" = 0 ]; then
   NEW_USERS=usersfile.txt
