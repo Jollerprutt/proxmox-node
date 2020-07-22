@@ -707,7 +707,8 @@ echo
 read -p "Create new power user accounts on your File Server (NAS) [y/n]?: " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-	NEW_POWER_USER=0 >/dev/null
+	export NEW_POWER_USER=0 >/dev/null
+  export PARENT_EXEC_NEW_POWER_USER=0 >/dev/null
   chmod +x fileserver_add_poweruser_ct_18.04.sh
   ./fileserver_add_poweruser_ct_18.04.sh
 else
@@ -715,6 +716,7 @@ else
 	info "You have chosen to skip this step."
 fi
 echo
+
 
 
 #### Create Restricted and Jailed User Accounts ####
@@ -726,8 +728,8 @@ echo
 read -p "Create jailed user accounts on your File Server (NAS) [y/n]? " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-	NEW_JAIL_USER=0 >/dev/null
-  PARENT_EXEC_NEW_JAIL_USER=0
+	export NEW_JAIL_USER=0 >/dev/null
+  export PARENT_EXEC_NEW_JAIL_USER=0 >/dev/null
   chmod +x fileserver_add_jailuser_ct_18.04.sh
   ./fileserver_add_jailuser_ct_18.04.sh
 else
@@ -746,8 +748,8 @@ read -p "Create the user kodi_rsync on your File Server (NAS) [y/n]?: " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   msg "Creating user kodi_rsync..."
-  NEW_KODI_RSYNC_USER=0 >/dev/null
-  PARENT_EXEC_NEW_KODI_RSYNC_USER=0 >/dev/null
+  export NEW_KODI_RSYNC_USER=0 >/dev/null
+  export PARENT_EXEC_NEW_KODI_RSYNC_USER=0 >/dev/null
   chmod +x fileserver_add_rsyncuser_ct_18.04.sh
   ./fileserver_add_rsyncuser_ct_18.04.sh
 else
