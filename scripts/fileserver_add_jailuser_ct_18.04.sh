@@ -199,7 +199,7 @@ if [ $PRE_CHECK_INSTALL = 0 ]; then
     echo
     read -p "Enable SSH Server on your File Server (NAS) [y/n]? " -n 1 -r
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]]
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
       SSHD_STATUS=0
       read -p "Confirm SSH Port number: " -e -i 22 SSH_PORT
       info "SSH Port is set: ${YELLOW}Port $SSH_PORT${NC}."
