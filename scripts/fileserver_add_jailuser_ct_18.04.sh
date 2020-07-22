@@ -51,7 +51,7 @@ WHITE=$'\033[1;37m'
 NC=$'\033[0m'
 
 # Set Temp Folder
-if [ -z ${TEMP_DIR+x} ]; then
+if [ -z "${TEMP_DIR+x}" ]; then
   TEMP_DIR=$(mktemp -d)
   pushd $TEMP_DIR >/dev/null
 else
@@ -73,7 +73,7 @@ GROUP="chrootjail"
 
 
 #### Creating File Server Jailed Users ####
-if [ -z ${NEW_JAIL_USER+x} ] && [ -z ${PARENT_EXEC_NEW_JAIL_USER+x} ]; then
+if [ -z "${NEW_JAIL_USER+x}" ] && [ -z "${PARENT_EXEC_NEW_JAIL_USER+x}" ]; then
   section "File Server - Create Restricted and Jailed User Accounts"
   echo
 box_out '#### PLEASE READ CAREFULLY - RESTRICTED & JAILED USER ACCOUNTS ####' '' 'Every new user is restricted or jailed within their own home folder. In Linux' 'this is called a chroot jail. But you can select the level of restrictions which' 'are applied to each newly created user. This technique can be quite useful if' 'you want a particular user to be provided with a limited system environment,' 'limited folder access and at the same time keep them separate from your' 'main server system and other personal data.' '' 'The chroot technique will automatically jail selected users belonging' 'to the "chrootjail" user group upon ssh or ftp login.' '' 'An example of a jailed user is a person who has remote access to your' 'File Server but is restricted to your video library (TV, movies, documentary),' 'public folders and their home folder for cloud storage only.' 'Remote access to your File Server is restricted to sftp, ssh and rsync' 'using private SSH RSA encrypted keys.' '' 'Default "chrootjail" group permission options are:' '' 
@@ -197,8 +197,9 @@ if [ $PRE_CHECK_INSTALL = 0 ]; then
   if [ $SSHD_STATUS = 1 ] && [ $PRE_CHECK_01 = 1 ]; then
     box_out '#### PLEASE READ CAREFULLY - ENABLE SSH SERVER ####' '' 'If you want to use SSH (Rsync/SFTP) to connect to your File Server then' 'your SSH Server must be enabled. You need SSH to perform any' 'of the following tasks:' '' '  --  Secure SSH Connection to the File Server.' '  --  Perform a secure RSync Backup to the File Server.' '' 'We also recommend you change the default SSH port 22 for added security.' '' 'For added security we restrict all SSH, RSYNC and SFTP access for all' 'chrootjail users to their given home folder only.'
     echo
-    read -p "Enable SSH Server on your File Server (NAS) [yes/no]?: " -r
-    if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
+    read -p "Enable SSH Server on your File Server (NAS) [y/n]? " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
       SSHD_STATUS=0
       read -p "Confirm SSH Port number: " -e -i 22 SSH_PORT
       info "SSH Port is set: ${YELLOW}Port $SSH_PORT${NC}."
