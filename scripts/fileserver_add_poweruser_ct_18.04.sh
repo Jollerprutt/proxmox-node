@@ -57,7 +57,7 @@ NC=$'\033[0m'
 
 
 #### Create New Power User Accounts ####
-if [ -z "${NEW_POWER_USER+x}" ]; then
+if [ -z "${NEW_POWER_USER+x}" ] && [ -z "${PARENT_EXEC_NEW_POWER_USER+x}" ]; then
   section "File Server - Create New Power User Accounts"
 
   echo
