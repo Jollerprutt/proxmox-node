@@ -420,7 +420,7 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
       fi
       echo "/srv/$HOSTNAME/video ${HOME_BASE}${USER}/share/video none bind,rw,xattr,acl 0 0" >> /etc/fstab
       mount ${HOME_BASE}${USER}/share/video
-      "Bind mount status: ${YELLOW}Success.${NC}"
+      info "Bind mount status: ${YELLOW}Success.${NC}"
     elif [ -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/share/video /proc/mounts > /dev/null; echo $?) = 0 ]; then
       msg "Creating /srv/$HOSTNAME/video bind mount..."
       if [ -d /srv/$HOSTNAME/video/pron ]; then
@@ -444,7 +444,7 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
       msg "Creating /srv/$HOSTNAME/audio bind mount..."
       echo "/srv/$HOSTNAME/audio ${HOME_BASE}${USER}/share/audio none bind,ro,xattr,acl 0 0" >> /etc/fstab
       mount ${HOME_BASE}${USER}/share/audio
-      "Bind mount status: ${YELLOW}Success.${NC}"
+      info "Bind mount status: ${YELLOW}Success.${NC}"
     elif [ -d /srv/$HOSTNAME/audio ] && [ $(grep -qs ${HOME_BASE}${USER}/share/audio /proc/mounts > /dev/null; echo $?) = 0 ]; then
       msg "Creating /srv/$HOSTNAME/audio bind mount..."
       info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
@@ -457,7 +457,7 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
       msg "Creating /srv/$HOSTNAME/books bind mount..."
       echo "/srv/$HOSTNAME/books ${HOME_BASE}${USER}/share/books none bind,ro,xattr,acl 0 0" >> /etc/fstab
       mount ${HOME_BASE}${USER}/share/books
-      "Bind mount status: ${YELLOW}Success.${NC}"
+      info "Bind mount status: ${YELLOW}Success.${NC}"
     elif [ -d /srv/$HOSTNAME/books ] && [ $(grep -qs ${HOME_BASE}${USER}/share/books /proc/mounts > /dev/null; echo $?) = 0 ]; then
       msg "Creating /srv/$HOSTNAME/books bind mount..."
       info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
@@ -487,7 +487,7 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
       msg "Creating /srv/$HOSTNAME/music bind mount..."
       echo "/srv/$HOSTNAME/music ${HOME_BASE}${USER}/share/music none bind,ro,xattr,acl 0 0" >> /etc/fstab
       mount ${HOME_BASE}${USER}/share/music
-      "Bind mount status: ${YELLOW}Success.${NC}"
+      info "Bind mount status: ${YELLOW}Success.${NC}"
     elif [ -d /srv/$HOSTNAME/music ] && [ $(grep -qs ${HOME_BASE}${USER}/share/music /proc/mounts > /dev/null; echo $?) = 0 ]; then
       msg "Creating /srv/$HOSTNAME/music bind mount..."
       info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
@@ -534,7 +534,7 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
       setfacl -Rm g:${GROUP}:rx,g:medialab:rx,g:privatelab:rwx,d:u:${USER}:rwx /srv/$HOSTNAME/video/homevideo/$(echo ${USER} | awk -F '_' '{print $1}')_homevideo
       echo "/srv/$HOSTNAME/video ${HOME_BASE}${USER}/share/video none bind,rw,xattr,acl 0 0" >> /etc/fstab
       mount ${HOME_BASE}${USER}/share/video
-      "Bind mount status: ${YELLOW}Success.${NC}"
+      info "Bind mount status: ${YELLOW}Success.${NC}"
     elif [ -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/share/video /proc/mounts > /dev/null; echo $?) = 0 ]; then
       msg "Creating /srv/$HOSTNAME/video bind mount..."
       info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
