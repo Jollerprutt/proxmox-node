@@ -99,7 +99,6 @@ pushd $TEMP_DIR >/dev/null
 
 
 # Download external scripts
-wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/proxmox_setup_sharedfolderlist
 wget -qL https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_setup_ct_18.04.sh
 #chmod +x fileserver_setup_ct_18.04.sh
 
@@ -1106,92 +1105,24 @@ fi
 
 
 #### Creating the Storage Pool ####
-section "Creating $CT_HOSTNAME storage pool and default folder share points."
+section "Creating $CT_HOSTNAME storage pool."
 
 
 # Create Proxmox ZFS Storage pool
 msg "Creating ZFS $CT_HOSTNAME storage pool..." 
 if [ -d "/$POOL/$CT_HOSTNAME" ]; then
 	info "ZFS pool /$POOL/$CT_HOSTNAME exists, not creating this ZFS storage pool..."
-  echo
 else
 	zfs create -o compression=on $POOL/$CT_HOSTNAME >/dev/null
   info "ZFS pool created: /$POOL/$CT_HOSTNAME"
   info "ZFS compression set on: /$POOL/$CT_HOSTNAME"
-  echo
 fi
-
-
-# Edit Default Proxmox ZFS Share points
+if [ -d "/$POOL/$CT_HOSTNAME" ]; then
+  zfs set acltype=posixacl aclinherit=passthrough xattr=sa $POOL/$CT_HOSTNAME >/dev/null
+  zfs set xattr=sa $POOL >/dev/null
+  info "Posix ACL set on: /$POOL/$CT_HOSTNAME"
+fi
 echo
-box_out '#### PLEASE READ CAREFULLY - SHARED FOLDERS ####' '' 'Shared folders are the basic directories where you can store files and folders on your File Server.' 'Below is a list of shared folders that are created automatically in this build:' '' '  --  /srv/CT_HOSTNAME/"audio"' '  --  /srv/CT_HOSTNAME/"backup"' '  --  /srv/CT_HOSTNAME/"books"' '  --  /srv/CT_HOSTNAME/"cloudstorage"' '  --  /srv/CT_HOSTNAME/"docker"' '  --  /srv/CT_HOSTNAME/"downloads"' '  --  /srv/CT_HOSTNAME/"git"' '  --  /srv/CT_HOSTNAME/"homes"' '  --  /srv/CT_HOSTNAME/"music"' '  --  /srv/CT_HOSTNAME/"openvpn"' '  --  /srv/CT_HOSTNAME/"photo"' '  --  /srv/CT_HOSTNAME/"proxmox"' '  --  /srv/CT_HOSTNAME/"public"' '  --  /srv/CT_HOSTNAME/"sshkey"' '  --  /srv/CT_HOSTNAME/"video"' '' 'You can create additional shared folders in the coming steps.'
-echo
-echo
-touch proxmox_setup_sharedfolderlist-xtra
-while true; do
-  read -p "Do you want to create additional shared folders on your File Server (NAS) [yes/no]? " -r
-  if [[ "$REPLY" == "y" || "$REPLY" == "Y" || "$REPLY" == "yes" || "$REPLY" == "Yes" ]]; then
-    while true; do
-      echo
-      read -p "Enter a new shared folder name : " xtra_sharename
-      read -p "Confirm new shared folder name (type again): " xtra_sharename2
-      xtra_sharename=${xtra_sharename,,}
-      xtra_sharename=${xtra_sharename2,,}
-      echo
-      if [ "$xtra_sharename" = "$xtra_sharename2" ];then
-        info "Shared folder name is set: ${YELLOW}$xtra_sharename${NC}."
-        XTRA_SHARES=0 >/dev/null
-        break
-      elif [ "$xtra_sharename" != "$xtra_sharename2" ]; then
-        warn "Your inputs do NOT match. Try again..."
-      fi
-    done
-    msg "Select your new shared folders group permission rights."
-    XTRA_SHARE01="Medialab - Photos, TV, movies, music and general media content." >/dev/null
-    XTRA_SHARE02="Homelab / Standard User - Personal Home Folder & Public Folder only." >/dev/null
-    XTRA_SHARE03="Privatelab / Admin User - User has access to all NAS shared folder data." >/dev/null
-    PS3="Select your new shared folders group permission rights (entering numeric) : "
-    echo
-    select xtra_type in "$XTRA_SHARE01" "$XTRA_SHARE02" "$XTRA_SHARE03"
-    do
-    echo
-    info "You have selected: $xtra_type ..."
-    echo
-    break
-    done
-    if [ "$xtra_type" = "$XTRA_SHARE01" ]; then
-      XTRA_USERGRP="medialab"
-    elif [ "$xtra_type" = "$XTRA_SHARE02" ]; then
-      XTRA_USERGRP="homelab"
-    elif [ "$xtra_type" = "$XTRA_SHARE03" ]; then
-      XTRA_USERGRP="privatelab"
-    fi
-    echo "$xtra_sharename $XTRA_USERGRP" >> proxmox_setup_sharedfolderlist
-    echo "$xtra_sharename $XTRA_USERGRP" >> proxmox_setup_sharedfolderlist-xtra
-  else
-    info "Skipping creating anymore additional shared folders."
-    break
-  fi
-done
-echo
-
-
-# Create Proxmox ZFS Share points
-msg "Creating ZFS storage pool /$POOL/$CT_HOSTNAME folder shares..."
-echo
-cat proxmox_setup_sharedfolderlist | awk '{ print $1 }' > proxmox_setup_sharedfolderlist-all
-schemaExtractDir="/$POOL/$CT_HOSTNAME"
-while read dir; do
-  dir="$schemaExtractDir/$dir"
-  if [ -d "$dir" ]; then
-    info "$dir exists, not creating this folder."
-	echo
-  else
-    info "$dir does not exist: creating one for you..."
-    zfs create "${dir/\//}"
-	echo
-  fi
-done < proxmox_setup_sharedfolderlist-all # file listing of folders to create
 
 
 #### USB Pass Through ####
@@ -1259,27 +1190,21 @@ pct exec $CTID -- sudo debconf-get-selections | grep libssl1.0.0:amd64 >/dev/nul
 pct exec $CTID -- bash -c "echo '* libraries/restart-without-asking boolean true' | sudo debconf-set-selections"
 
 # Set container timezone to match host
-msg "Set container time to match host..."
+msg "Setting container time to match host..."
 MOUNT=$(pct mount $CTID | cut -d"'" -f 2)
 ln -fs $(readlink /etc/localtime) ${MOUNT}/etc/localtime
 pct unmount $CTID && unset MOUNT
 
 # Update container OS
-msg "Updating container OS..."
+msg "Updating container OS (be patient, might take a while)..."
 pct exec $CTID -- apt-get update >/dev/null
 pct exec $CTID -- apt-get -qqy upgrade >/dev/null
 
 # Setup container for Fileserver Apps
 msg "Starting fileserver installation script..."
-if [ -s proxmox_setup_sharedfolderlist-xtra ]; then
-  pct push $CTID proxmox_setup_sharedfolderlist-xtra /tmp/proxmox_setup_sharedfolderlist-xtra
-  XTRA_SHARES=0 >/dev/null
-else
-  XTRA_SHARES=1 >/dev/null
-fi
-export XTRA_SHARES
 echo "#!/usr/bin/env bash" > fileserver_setup_ct_variables.sh
-echo "XTRA_SHARES=$XTRA_SHARES" >> fileserver_setup_ct_variables.sh
+echo "POOL=$POOL" >> fileserver_setup_ct_variables.sh
+echo "CT_HOSTNAME=$CT_HOSTNAME" >> fileserver_setup_ct_variables.sh
 pct push $CTID fileserver_setup_ct_variables.sh /tmp/fileserver_setup_ct_variables.sh
 pct push $CTID fileserver_setup_ct_18.04.sh fileserver_setup_ct_18.04.sh -perms 755
 pct exec $CTID -- bash -c "/fileserver_setup_ct_18.04.sh"
