@@ -1212,7 +1212,6 @@ pct exec $CTID -- bash -c "/fileserver_setup_ct_18.04.sh"
 
 # # Get network details and show completion message
 IP=$(pct exec $CTID ip a s dev eth0 | sed -n '/inet / s/\// /p' | awk '{print $2}')
-clear
 echo
 echo
 msg "Success. File Server installation has completed.\n\nTo manage your File Server use Webmin. You can login to Webmin as root with\nyour root password, or as any user who can use sudo to run commands as root.\n\n  --  ${WHITE}https://${IP}:10000/${NC}\n  --  ${WHITE}https://${CT_HOSTNAME}:10000/${NC}\n"
