@@ -152,7 +152,8 @@ mknod -m 666 $CHROOT/dev/tty c 5 0
 mknod -m 666 $CHROOT/dev/zero c 1 5
 mknod -m 666 $CHROOT/dev/random c 1 8
 sudo chown root:root $CHROOT
-sudo chmod 0750 $CHROOT
+sudo chmod 0711 $CHROOT
+sudo chmod 0711 $CHROOT/homes
 cat << EOF > $CHROOT/etc/debian_chroot
 chroot
 EOF
@@ -379,7 +380,7 @@ if [ $SSHD_STATUS = 0 ]; then
 fi
 echo
 
-read -p "Enable SSH Server on your File Server (NAS) [y/n]?: " -n 1 -r
+read -p "Enable SSH Server on your File Server (Recommended) [y/n]?: " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   SSHD_STATUS=0
