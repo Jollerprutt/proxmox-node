@@ -286,6 +286,8 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
   sudo mkdir -p ${HOME_BASE}${USER}/.sftp
   sudo touch ${HOME_BASE}${USER}/.sftp/authorized_keys 
   sudo chmod -R 0700 ${HOME_BASE}${USER}
+  msg "Creating ${USER} smb account..."
+  (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
   info "User created: ${YELLOW}${USER}${NC} of group ${GROUP}"
   echo
   if [ -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_rsa.pub ] && [ -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_rsa ];then
@@ -551,7 +553,6 @@ echo
 #### Finish ####
 section "File Server CT - Completion Status."
 
-clear
 echo
 msg "${WHITE}Success.${NC}"
 sleep 3
