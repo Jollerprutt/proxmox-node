@@ -305,7 +305,7 @@ fi
 section "File Server CT - Access Permissions."
 
 if [ $NEW_KODI_RSYNC_USER = 0 ] && [ $SSHD_STATUS = 0 ]; then
-  ls /srv/$HOSTNAME | grep -i '^[a-z]*$' | sed '/homes/d;/photo/d;/video/d;/music/d' | sed 's/^/\/srv\/$HOSTNAME\//' > kodi_rsync_acl_blocklist_input >/dev/null
+  ls /srv/$HOSTNAME | grep -i '^[a-z]*$' | sed '/homes/d;/photo/d;/video/d;/music/d' | sed 's/^/\/srv\/'$HOSTNAME'\//' > kodi_rsync_acl_blocklist_input
   msg " Setting ACL restrictions for ${USER} to block..."
   while read -r dir; do
     setfacl -m u:kodi_rsync:000 "${dir}" >/dev/null
@@ -315,7 +315,7 @@ if [ $NEW_KODI_RSYNC_USER = 0 ] && [ $SSHD_STATUS = 0 ]; then
 fi
 
 if [ $NEW_KODI_RSYNC_USER = 0 ] && [ $SSHD_STATUS = 0 ]; then
-  cat fileserver_base_folder_setup | sed '/^#/d' | sed '/^$/d' | cut -d' ' -f1,4- | sed -n '/chrootjail:rwx/p' | sed 's/^/\/srv\/$HOSTNAME\//' | cut -d' ' -f1 >/dev/null > kodi_rsync_acl_rx_restriction_input
+  cat fileserver_base_folder_setup | sed '/^#/d' | sed '/^$/d' | cut -d' ' -f1,4- | sed -n '/chrootjail:rwx/p' | sed 's/^/\/srv\/'$HOSTNAME'\//' | cut -d' ' -f1 >/dev/null > kodi_rsync_acl_rx_restriction_input
   cat fileserver_base_subfolder_setup | sed '/^#/d' | sed '/^$/d' | cut -d' ' -f1,4- | sed -n '/chrootjail:rwx/p' | cut -d' ' -f1 >/dev/null >> kodi_rsync_acl_rx_restriction_input
   msg " Setting ACL permissions for ${USER} to rx..."
   while read -r dir; do
