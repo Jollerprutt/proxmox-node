@@ -206,7 +206,6 @@ echo
 
 
 #### Modify existing kodi_rsync user #####
-msg "Checking for user kodi_rsync..."
 if [ $(egrep "^${USER}" /etc/passwd > /dev/null; echo $?) -eq 0 ]; then
   section "File Server CT - Modify existing kodi_rsync user."
   msg "Checking for existing kodi_rsync..."
@@ -277,7 +276,6 @@ if [ $(id -u) -eq 0 ] && [ $NEW_KODI_RSYNC_USER = 0 ] && [ $SSHD_STATUS = 0 ]; t
       sudo chmod 0750 /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
       sudo cp ${HOME_BASE}${USER}/.ssh/id_rsa* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
       sudo chown -R ${USER}:${GROUP} ${HOME_BASE}${USER}
-      sudo chown -R ${USER}:${GROUP} ${HOME_BASE}${USER}/.*
       rm -R /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old 2>/dev/null
       info "User ${USER} SSH keys have been added to the system.\nA backup of your ${USER} SSH keys is stored in your sshkey folder." || warn "Failed adding user ${USER} SSH keys!"
     else
@@ -294,7 +292,6 @@ if [ $(id -u) -eq 0 ] && [ $NEW_KODI_RSYNC_USER = 0 ] && [ $SSHD_STATUS = 0 ]; t
     sudo chmod 0750 /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
     sudo cp ${HOME_BASE}${USER}/.ssh/id_rsa* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
     sudo chown -R ${USER}:${GROUP} ${HOME_BASE}${USER}
-    sudo chown -R ${USER}:${GROUP} ${HOME_BASE}${USER}/.*
     info "User ${USER} SSH keys have been added to the system.\nA backup of your ${USER} SSH keys is stored in your sshkey folder." || warn "Failed adding user ${USER} SSH keys!"
     echo
   fi
@@ -346,7 +343,7 @@ else
 fi
 echo
 
-box_out '#### PLEASE READ CAREFULLY - PRON MEDIA ####' '' '"kodi_rsync" can read and rsync your pron media library if you want.' '' '  --  /srv/"hostname"/video/"pron"' '' 'But if you DO NOT want "kodi_rsync" to read and rsync your pron media' 'type "n" in' 'the next step to block "kodi_rsync" access.'
+box_out '#### PLEASE READ CAREFULLY - PRON MEDIA ####' '' '"kodi_rsync" can read and rsync your pron media library if you want.' '' '  --  /srv/"hostname"/video/"pron"' '' 'But if you DO NOT want "kodi_rsync" to read and rsync your pron media' 'type "n" in the next step to block "kodi_rsync" access.'
 echo
 read -p "Grant kodi_rsync access to pron media [y/n]? " -n 1 -r
 echo
@@ -379,12 +376,15 @@ if [ -d /srv/$HOSTNAME/music ] && [ $(grep -qs ${HOME_BASE}${USER}/music /proc/m
   echo "/srv/$HOSTNAME/music ${HOME_BASE}${USER}/music none bind,ro,xattr,acl 0 0" >> /etc/fstab
   mount ${HOME_BASE}${USER}/music
   info "Bind mount status: ${YELLOW}Success.${NC}"
+  echo
 elif [ -d /srv/$HOSTNAME/music ] && [ $(grep -qs ${HOME_BASE}${USER}/music /proc/mounts > /dev/null; echo $?) = 0 ]; then
   msg "Creating /srv/$HOSTNAME/music bind mount..."
   info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
+  echo
 elif [ ! -d /srv/$HOSTNAME/music ] && [ $(grep -qs ${HOME_BASE}${USER}/music /proc/mounts > /dev/null; echo $?) = 1 ]; then
   msg "Creating /srv/$HOSTNAME/music bind mount..."
   warn "Bind mount status: ${RED}Failed.${NC}\n Mount point /srv/$HOSTNAME/music does not exist.\nSkipping this mount point."
+  echo
 fi
 
 # Create shared photo bind mount
@@ -393,12 +393,15 @@ if [ -d /srv/$HOSTNAME/photo ] && [ $PRIVATE_LIBRARY = 0 ] && [ $(grep -qs ${HOM
   echo "/srv/$HOSTNAME/photo ${HOME_BASE}${USER}/photo none bind,rw,xattr,acl 0 0" >> /etc/fstab
   mount ${HOME_BASE}${USER}/photo
   info "Bind mount status: ${YELLOW}Success.${NC}"
+  echo
 elif [ -d /srv/$HOSTNAME/photo ] && [ $PRIVATE_LIBRARY = 0 ] && [ $(grep -qs ${HOME_BASE}${USER}/photo /proc/mounts > /dev/null; echo $?) = 0 ]; then
   msg "Creating /srv/$HOSTNAME/photo bind mount..."
   info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
+  echo
 elif [ ! -d /srv/$HOSTNAME/photo ] && [ $PRIVATE_LIBRARY = 0 ] && [ $(grep -qs ${HOME_BASE}${USER}/photo /proc/mounts > /dev/null; echo $?) = 1 ]; then
   msg "Creating /srv/$HOSTNAME/photo bind mount..."
   warn "Bind mount status: ${RED}Failed.${NC}\n Mount point /srv/$HOSTNAME/photo does not exist.\nSkipping this mount point."
+  echo
 fi
  
 # Create shared video bind mount
@@ -407,12 +410,15 @@ if [ -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/video /proc/m
   echo "/srv/$HOSTNAME/video ${HOME_BASE}${USER}/video none bind,rw,xattr,acl 0 0" >> /etc/fstab
   mount ${HOME_BASE}${USER}/video
   info "Bind mount status: ${YELLOW}Success.${NC}"
+  echo
 elif [ -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/video /proc/mounts > /dev/null; echo $?) = 0 ]; then
   msg "Creating /srv/$HOSTNAME/video bind mount..."
   info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
+  echo
 elif [ ! -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/video /proc/mounts > /dev/null; echo $?) = 1 ]; then
   msg "Creating /srv/$HOSTNAME/video bind mount..."
   warn "Bind mount status: ${RED}Failed.${NC}\nMount point /srv/$HOSTNAME/video does not exist.\nSkipping this mount point."
+  echo
 fi
 echo
    
