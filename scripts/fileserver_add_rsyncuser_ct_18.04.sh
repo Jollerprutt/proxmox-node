@@ -346,8 +346,7 @@ else
 fi
 echo
 
-box_out '#### PLEASE READ CAREFULLY - PRON MEDIA ####' '' 
-'"kodi_rsync" can read and rsync your pron media library if you want.' '' '  --  /srv/"hostname"/video/"pron"' '' 'But if you DO NOT want "kodi_rsync" to read and rsync your pron media' 'type "n" in' 'the next step to block "kodi_rsync" access.'
+box_out '#### PLEASE READ CAREFULLY - PRON MEDIA ####' '' '"kodi_rsync" can read and rsync your pron media library if you want.' '' '  --  /srv/"hostname"/video/"pron"' '' 'But if you DO NOT want "kodi_rsync" to read and rsync your pron media' 'type "n" in' 'the next step to block "kodi_rsync" access.'
 echo
 read -p "Grant kodi_rsync access to pron media [y/n]? " -n 1 -r
 echo
@@ -370,14 +369,14 @@ if [ $PRIVATE_LIBRARY = 0 ]; then
   sudo mkdir -p ${HOME_BASE}${USER}/photo
 fi
 sudo chown -R ${USER}:${GROUP} ${HOME_BASE}${USER}
-sudo chmod -R 0750 ${HOME_BASE}${USER}
+sudo chmod -R 0700 ${HOME_BASE}${USER}
 info "${USER} default home folders: ${YELLOW}Success.${NC}"
 echo
 
 # Create shared music bind mount
 if [ -d /srv/$HOSTNAME/music ] && [ $(grep -qs ${HOME_BASE}${USER}/music /proc/mounts > /dev/null; echo $?) = 1 ]; then
   msg "Creating /srv/$HOSTNAME/music bind mount..."
-  echo "/srv/$HOSTNAME/music ${HOME_BASE}${USER}/share/music none bind,ro,xattr,acl 0 0" >> /etc/fstab
+  echo "/srv/$HOSTNAME/music ${HOME_BASE}${USER}/music none bind,ro,xattr,acl 0 0" >> /etc/fstab
   mount ${HOME_BASE}${USER}/music
   info "Bind mount status: ${YELLOW}Success.${NC}"
 elif [ -d /srv/$HOSTNAME/music ] && [ $(grep -qs ${HOME_BASE}${USER}/music /proc/mounts > /dev/null; echo $?) = 0 ]; then
@@ -413,7 +412,7 @@ elif [ -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/video /proc
   info "Bind mount status: ${YELLOW}Success. Previous mount exists.${NC}\nUsing existing mount."
 elif [ ! -d /srv/$HOSTNAME/video ] && [ $(grep -qs ${HOME_BASE}${USER}/video /proc/mounts > /dev/null; echo $?) = 1 ]; then
   msg "Creating /srv/$HOSTNAME/video bind mount..."
-  warn "Bind mount status: ${RED}Failed.${NC}\n Mount point /srv/$HOSTNAME/video does not exist.\nSkipping this mount point."
+  warn "Bind mount status: ${RED}Failed.${NC}\nMount point /srv/$HOSTNAME/video does not exist.\nSkipping this mount point."
 fi
 echo
    
@@ -421,7 +420,6 @@ echo
 #### Finish ####
 section "File Server CT - Completion Status."
 
-clear
 echo
 msg "${WHITE}Success.${NC}"
 sleep 3
