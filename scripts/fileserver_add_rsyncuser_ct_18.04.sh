@@ -257,6 +257,11 @@ section "File Server CT - Create a new kodi_rsync user."
 if [ $(id -u) -eq 0 ] && [ $NEW_KODI_RSYNC_USER = 0 ] && [ $SSHD_STATUS = 0 ]; then
   msg "Creating new user ${USER}..."
   useradd -g ${GROUP} -m -d ${HOME_BASE}${USER} -s /bin/bash ${USER}
+  msg "Fixing ${USER} home folder location to ${GROUP} setup..."
+  awk -v user="${USER}" -v path="/homes/${USER}" 'BEGIN{FS=OFS=":"}$1==user{$6=path}1' /etc/passwd > temp_file
+  mv temp_file /etc/passwd
+  msg "Copy ${USER} password to chrooted /etc/passwd..."
+  cat /etc/passwd | grep ${USER} >> $CHROOT/etc/passwd
   msg "Creating authorised keys folders and settings for user ${USER}..."
   sudo mkdir -p ${HOME_BASE}${USER}/.ssh
   sudo touch ${HOME_BASE}${USER}/.ssh/authorized_keys
@@ -334,12 +339,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   PRIVATE_LIBRARY=0
   setfacl -x u:${USER} /srv/$HOSTNAME/photo
   setfacl -x u:${USER} /srv/$HOSTNAME/video/homevideo
-  info "Private media library rsync status: ${YELLOW}Accepted.${NC}."
+  info "Private media library rsync status: ${YELLOW}Access Granted.${NC}."
 else
   PRIVATE_LIBRARY=1
   setfacl -Rm u:${USER}:000 /srv/$HOSTNAME/photo
   setfacl -Rm u:${USER}:000 /srv/$HOSTNAME/video/homevideo
-  info "Private media library rsync status: ${YELLOW}Denied.${NC}."
+  info "Private media library rsync status: ${YELLOW}Access Denied.${NC}."
 fi
 echo
 
@@ -350,11 +355,11 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   PRON_LIBRARY=0
   setfacl -x u:${USER} /srv/$HOSTNAME/video/pron
-  info "Pron media library rsync status: ${YELLOW}Accepted.${NC}."
+  info "Pron media library rsync status: ${YELLOW}Access Granted.${NC}."
 else
   PRON_LIBRARY=1
   setfacl -Rm u:${USER}:000 /srv/$HOSTNAME/video/pron
-  info "Pron media library rsync status: ${YELLOW}Denied.${NC}."
+  info "Pron media library rsync status: ${YELLOW}Access Denied.${NC}."
 fi
 echo
 
