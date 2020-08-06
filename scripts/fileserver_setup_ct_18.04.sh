@@ -357,20 +357,30 @@ section "File Server CT - Setup SSH Server."
 
 box_out '#### PLEASE READ CAREFULLY - ENABLE SSH SERVER ####' '' 'If you want to use SSH (Rsync/SFTP) to connect to your File Server then' 'your SSH Server must be enabled. You need SSH to perform any' 'of the following tasks:' '' '  --  Secure SSH Connection to the File Server.' '  --  Perform a secure RSync Backup to the File Server.' '  --  Create a portable Kodi media player using our "kodi_rsync" user scripts.' '' 'We also recommend you change the default SSH port 22 for added security.' '' 'For added security we only enable the following ssh services for "kodi_rsync"' 'and chroot jail users:' '' '  --  allowsftp: User is allowed to use SFTP protocol and transfers.' '  --  allowrsync: User is allowed to use rsync transfers.'
 
-# Configure sshd for chroot jail
-msg "Configuring sshd for chrootjail..."
+
 if [ "$(systemctl is-active --quiet sshd; echo $?) -eq 0" ]; then
   sudo systemctl stop ssh 2>/dev/null
   SSHD_STATUS=0
 else
   SSHD_STATUS=1
 fi
+
+# Configure ssh settings
+msg "Configuring sshd default settings..."
+sudo sed -i 's|#PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
+sudo sed -i 's|#AuthorizedKeysFile.*|AuthorizedKeysFile     ~/.ssh/authorized_keys|g' /etc/ssh/sshd_config
+
+# Configure sshd for chroot jail
+msg "Configuring sshd settings for chrootjail..."
 sudo sed -i 's|Subsystem.*sftp.*|Subsystem       sftp    internal-sftp|g' /etc/ssh/sshd_config # Sets sftp to use proFTP #Subsystem sftp /usr/libexec/openssh/sftp-server
 cat <<EOF >> /etc/ssh/sshd_config
 
 # Settings for chrootjail
 Match group chrootjail
+        AuthorizedKeysFile $CHROOT/homes/%u/.ssh/authorized_keys
         ChrootDirectory $CHROOT
+        PubkeyAuthentication yes
+        PasswordAuthentication no
         AllowTCPForwarding no
         X11Forwarding no
         ForceCommand internal-sftp
@@ -642,7 +652,7 @@ section "File Server CT - Installing and configuring ProFTP Server."
 
 # Install ProFTP Prerequisites
 msg "Installing ProFTP prerequisites..."
-sudo apt-get update
+sudo apt-get -y update >/dev/null 2>&1
 sudo apt-get install -y proftpd 2>/dev/null
 sudo systemctl stop proftpd 2>/dev/null
 
@@ -658,6 +668,8 @@ cat << EOF > /etc/proftpd/conf.d/sftp.conf
   # files that OpenSSH uses.
   SFTPHostKey /etc/ssh/ssh_host_rsa_key
   SFTPHostKey /etc/ssh/ssh_host_dsa_key
+  
+  # MaxLoginAttempts 20
 
   SFTPAuthMethods publickey
 
