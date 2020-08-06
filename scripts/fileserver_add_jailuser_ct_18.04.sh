@@ -76,7 +76,7 @@ GROUP="chrootjail"
 if [ -z "${NEW_JAIL_USER+x}" ] && [ -z "${PARENT_EXEC_NEW_JAIL_USER+x}" ]; then
   section "File Server - Create Restricted and Jailed User Accounts"
   echo
-box_out '#### PLEASE READ CAREFULLY - RESTRICTED & JAILED USER ACCOUNTS ####' '' 'Every new user is restricted or jailed within their own home folder. In Linux' 'this is called a chroot jail. But you can select the level of restrictions which' 'are applied to each newly created user. This technique can be quite useful if' 'you want a particular user to be provided with a limited system environment,' 'limited folder access and at the same time keep them separate from your' 'main server system and other personal data.' '' 'The chroot technique will automatically jail selected users belonging' 'to the "chrootjail" user group upon ssh or ftp login.' '' 'An example of a jailed user is a person who has remote access to your' 'File Server but is restricted to your video library (TV, movies, documentary),' 'public folders and their home folder for cloud storage only.' 'Remote access to your File Server is restricted to sftp, ssh and rsync' 'using private SSH RSA encrypted keys.' '' 'Default "chrootjail" group permission options are:' '' '  --  GROUP NAME     -- USER NAME' '      "chrootjail"   -- /srv/hostname/homes/chrootjail/"username_injail"' '' 'Selectable jail folder permission levels for each new user:' '' '  --  LEVEL 1        -- FOLDER' '      -rwx------     -- /srv/hostname/homes/chrootjail/"username_injail"' '                     -- Bind Mounts - mounted at ~/public folder' '      -rwxrwxrw-     -- /srv/hostname/homes/chrootjail/"username_injail"/public' '' '  --  LEVEL 2        -- FOLDER' '      -rwx------     -- /srv/hostname/homes/chrootjail/"username_injail"' '                     -- Bind Mounts - mounted at ~/share folder' '      -rwxrwxrw-     -- /srv/hostname/downloads/user/"username_downloads"' '      -rwxrwxrw-     -- /srv/hostname/photo/"username_photo"' '      -rwxrwxrw-     -- /srv/hostname/public' '      -rwxrwxrw-     -- /srv/hostname/video/homevideo/"username_homevideo"' '      -rwxr-----     -- /srv/hostname/video/movies' '      -rwxr-----     -- /srv/hostname/video/tv' '      -rwxr-----     -- /srv/hostname/video/documentary' '' '  --  LEVEL 3        -- FOLDER' '      -rwx------     -- /srv/"hostname"/homes/chrootjail/"username_injail"' '                     -- Bind Mounts - mounted at ~/share folder' '      -rwxr-----     -- /srv/hostname/audio' '      -rwxr-----     -- /srv/hostname/books' '      -rwxrwxrw-     -- /srv/hostname/downloads/user/"username_downloads"' '      -rwxr-----     -- /srv/hostname/music' '      -rwxrwxrw-     -- /srv/hostname/photo/"username_photo"' '      -rwxrwxrw-     -- /srv/hostname/public' '      -rwxrwxrw-     -- /srv/hostname/video/homevideo/"username_homevideo"' '      -rwxr-----     -- /srv/hostname/video (All)' '' 'All Home folders are automatically suffixed: "username_injail".'
+box_out '#### PLEASE READ CAREFULLY - RESTRICTED & JAILED USER ACCOUNTS ####' '' 'Every new user is restricted or jailed within their own home folder. In Linux' 'this is called a chroot jail. But you can select the level of restrictions which' 'are applied to each newly created user. This technique can be quite useful if' 'you want a particular user to be provided with a limited system environment,' 'limited folder access and at the same time keep them separate from your' 'main server system and other personal data.' '' 'The chroot technique will automatically jail selected users belonging' 'to the "chrootjail" user group upon ssh or sftp login.' '' 'An example of a jailed user is a person who has remote access to your' 'File Server but is restricted to your video library (TV, movies, documentary),' 'public folders and their home folder for cloud storage only.' 'Remote access to your File Server is restricted to sftp, ssh and rsync' 'using private SSH ed25519 encrypted keys.' '' 'Default "chrootjail" group permission options are:' '' '  --  GROUP NAME     -- USER NAME' '      "chrootjail"   -- /srv/hostname/homes/chrootjail/"username_injail"' '' 'Selectable jail folder permission levels for each new user:' '' '  --  LEVEL 1        -- FOLDER' '      -rwx------     -- /srv/hostname/homes/chrootjail/"username_injail"' '                     -- Bind Mounts - mounted at ~/public folder' '      -rwxrwxrw-     -- /srv/hostname/homes/chrootjail/"username_injail"/public' '' '  --  LEVEL 2        -- FOLDER' '      -rwx------     -- /srv/hostname/homes/chrootjail/"username_injail"' '                     -- Bind Mounts - mounted at ~/share folder' '      -rwxrwxrw-     -- /srv/hostname/downloads/user/"username_downloads"' '      -rwxrwxrw-     -- /srv/hostname/photo/"username_photo"' '      -rwxrwxrw-     -- /srv/hostname/public' '      -rwxrwxrw-     -- /srv/hostname/video/homevideo/"username_homevideo"' '      -rwxr-----     -- /srv/hostname/video/movies' '      -rwxr-----     -- /srv/hostname/video/tv' '      -rwxr-----     -- /srv/hostname/video/documentary' '' '  --  LEVEL 3        -- FOLDER' '      -rwx------     -- /srv/"hostname"/homes/chrootjail/"username_injail"' '                     -- Bind Mounts - mounted at ~/share folder' '      -rwxr-----     -- /srv/hostname/audio' '      -rwxr-----     -- /srv/hostname/books' '      -rwxrwxrw-     -- /srv/hostname/downloads/user/"username_downloads"' '      -rwxr-----     -- /srv/hostname/music' '      -rwxrwxrw-     -- /srv/hostname/photo/"username_photo"' '      -rwxrwxrw-     -- /srv/hostname/public' '      -rwxrwxrw-     -- /srv/hostname/video/homevideo/"username_homevideo"' '      -rwxr-----     -- /srv/hostname/video (All)' '' 'All Home folders are automatically suffixed: "username_injail".'
   echo
   read -p "Create restricted jailed user accounts on your File Server (NAS) [y/n]? " -n 1 -r
   echo
@@ -324,8 +324,6 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
   msg "Creating SSH folder and authorised keys file for user ${USER}..."
   sudo mkdir -p ${HOME_BASE}${USER}/.ssh
   sudo touch ${HOME_BASE}${USER}/.ssh/authorized_keys
-  sudo mkdir -p ${HOME_BASE}${USER}/.sftp
-  sudo touch ${HOME_BASE}${USER}/.sftp/authorized_keys 
   sudo chmod -R 0700 ${HOME_BASE}${USER}
   msg "Creating ${USER} smb account..."
   (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
@@ -338,9 +336,11 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
       msg "Adding your old SSH keys to your new ${USER}..."
       cat /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_ed25519.pub >> ${HOME_BASE}${USER}/.ssh/authorized_keys
       cp /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/* ${HOME_BASE}${USER}/.ssh/ 2>/dev/null
-      # Create sftp public keygen
-      msg "Adding your old ${USER} SSH keys to SSH sftp authorized_keys file..."
-      ssh-keygen -e -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_ed25519.pub > ${HOME_BASE}${USER}/.sftp/authorized_keys
+      # Create ppk key for Putty or Filezilla
+      if [ ! -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.ppk ] && [ -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519 ]; then
+        msg "Creating a private PPK key..."
+        sudo puttygen ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519 -o ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.ppk
+      fi
       msg "Backing up ${USER} latest SSH keys..."
       sudo mkdir -p /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
       sudo chown -R root:privatelab /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
@@ -356,9 +356,9 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
     msg "Creating new SSH keys for user ${USER}..." 
     sudo ssh-keygen -o -q -t ed25519 -a 100 -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519 -N ""
     cat ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.pub >> ${HOME_BASE}${USER}/.ssh/authorized_keys
-    # Create sftp public keygen
-    msg "Adding your new ${USER} SSH keys to SSH sftp authorized_keys file..."
-    ssh-keygen -e -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.pub > ${HOME_BASE}${USER}/.sftp/authorized_keys
+    # Create ppk key for Putty or Filezilla
+    msg "Creating a private PPK key..."
+    sudo puttygen ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519 -o ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.ppk
     msg "Backing up ${USER} latest SSH keys..."
     sudo mkdir -p /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
     sudo chown -R root:privatelab /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
