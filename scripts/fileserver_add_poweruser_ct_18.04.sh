@@ -135,6 +135,11 @@ if [ $(id -u) -eq 0 ] && [ "$NEW_POWER_USER" = 0 ]; then
     # Create ppk key for Putty or Filezilla
     msg "Creating a private PPK key..."
     sudo puttygen /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_ed25519 -o /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_ed25519.ppk
+    msg "Backing up ${USER} latest SSH keys..."
+    sudo mkdir -p /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
+    sudo chown -R root:privatelab /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
+    sudo chmod 0750 /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
+    sudo cp /srv/$HOSTNAME/homes/${USER}/.ssh/id_${USER,,}_ed25519* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
     msg "Creating ${USER} smb account..."
     (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
     info "User $USER has been added to the system. Existing home folder found.\nUsing existing home folder."
