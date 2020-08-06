@@ -124,36 +124,77 @@ else
   PRE_CHECK_03=1
 fi
 echo
-# Checking and Editing SSH server
-msg "Checking and editing SSH server configuration file..."
-if [ "$(systemctl is-active --quiet sshd; echo $?) -eq 0" ]; then
-  sudo systemctl stop ssh 2>/dev/null
-  sudo sed -i 's|#PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
-  sudo sed -i 's|#AuthorizedKeysFile.*|AuthorizedKeysFile     .ssh/authorized_keys|g' /etc/ssh/sshd_config
-  sudo systemctl restart ssh.service 2>/dev/null
+# Checking for sshd Chrootjail Match Group
+msg "Checking for sshd chrootjail match group..."
+if [ $(grep -Fxq "Match group chrootjail" /etc/ssh/sshd_config; echo $?) = 0 ]; then
+  info "sshd chrootjail match group status: ${GREEN}active${NC}."
+  PRE_CHECK_04=0
 else
-  sudo sed -i 's|#PubkeyAuthentication yes|PubkeyAuthentication yes|g' /etc/ssh/sshd_config
-  sudo sed -i 's|#AuthorizedKeysFile.*|AuthorizedKeysFile     .ssh/authorized_keys|g' /etc/ssh/sshd_config
+  info "sshd chrootjail match group status: ${RED}inactive - non existant${NC}.\nMatch group chrootjail is missing."
+  PRE_CHECK_04=1
 fi
-info "SSH server options:\n  --  Public Key Authentication: ${GREEN}enabled.${NC}\n  --  Authorised Keys File:  ${GREEN}enabled.${NC}"
 echo
+# Checking for Subsystem sftp setting
+msg "Checking sshd Subsystem sftp setting..."
+if [ $(grep -Fxq "Subsystem       sftp    internal-sftp" /etc/ssh/sshd_config; echo $?) = 0 ]; then
+  info "sshd subsystem sftp status: ${GREEN}active${NC}."
+  PRE_CHECK_05=0
+else
+  info "sshd subsystem sftp status: ${RED}incorrect${NC}.\nCurrent set as /usr/libexec/openssh/sftp-server."
+  PRE_CHECK_05=1
+fi
+echo
+
 
 # Check Results
 msg "Prerequisites check status..."
-if [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 0 ] && [ $PRE_CHECK_03 = 0 ]; then
+if [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 0 ] && [ $PRE_CHECK_03 = 0 ] && [ $PRE_CHECK_04 = 0 ] && [ $PRE_CHECK_05 = 0 ]; then
   PRE_CHECK_INSTALL=1
   info "Prerequisite check status: ${GREEN}GOOD TO GO${NC}."
-elif [ $PRE_CHECK_01 = 1 ] && [ $PRE_CHECK_02 = 0 ] && [ $PRE_CHECK_03 = 0 ]; then
+  
+elif [ $PRE_CHECK_01 = 1 ] && [ $PRE_CHECK_02 = 0 ] && [ $PRE_CHECK_03 = 0 ] && [ $PRE_CHECK_04 = 0 ] && [ $PRE_CHECK_05 = 0 ]; then
   PRE_CHECK_INSTALL=0
   warn "User intervention required.\nYou can enable SSHD in the next steps.\n Proceeding with installation."
-elif [ $PRE_CHECK_01 = 1 ] || [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 1 ] && [ $PRE_CHECK_03 = 0 ] || [ $PRE_CHECK_03 = 1 ]; then
+
+elif [ $PRE_CHECK_01 = 1 ] || [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 1 ] && [ $PRE_CHECK_03 = 0 ] || [ $PRE_CHECK_03 = 1 ] && [ $PRE_CHECK_04 = 0 ] && [ $PRE_CHECK_05 = 0 ]; then
   PRE_CHECK_INSTALL=1
   warn "User intervention required. Missing chrootjail user group.\nExiting installation script in 3 second."
   sleep 3
   exit 0
-elif [ $PRE_CHECK_01 = 1 ] || [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 0 ] || [ $PRE_CHECK_02 = 1 ] && [ $PRE_CHECK_03 = 1 ]; then
+
+elif [ $PRE_CHECK_01 = 1 ] || [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 0 ] || [ $PRE_CHECK_02 = 1 ] && [ $PRE_CHECK_03 = 1 ] && [ $PRE_CHECK_04 = 0 ] && [ $PRE_CHECK_05 = 0 ]; then
   PRE_CHECK_INSTALL=1
-  warn "User intervention required. Missing chroot components:\n  --  chroot rsync components.\nExiting installation script in 3 second."
+  if [ $PRE_CHECK_02 = 1 ]; then
+    warn "User intervention required. Missing chrootjail user group."
+  fi
+  warn "User intervention required. Missing chroot components.\nExiting installation script in 3 second."
+  sleep 3
+  exit 0
+
+elif [ $PRE_CHECK_01 = 1 ] || [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 0 ] || [ $PRE_CHECK_02 = 1 ] && [ $PRE_CHECK_03 = 0 ] || [ $PRE_CHECK_03 = 1 ] && [ $PRE_CHECK_04 = 1 ] && [ $PRE_CHECK_05 = 0 ]; then
+  PRE_CHECK_INSTALL=1
+  if [ $PRE_CHECK_02 = 1 ]; then
+    warn "User intervention required. Missing chrootjail user group."
+  fi
+  if [ $PRE_CHECK_03 = 1 ]; then
+    warn "User intervention required. Missing chroot components."
+  fi
+  warn "User intervention required. Missing sshd chrootjail match group settings.\nExiting installation script in 3 second."
+  sleep 3
+  exit 0
+
+elif [ $PRE_CHECK_01 = 1 ] || [ $PRE_CHECK_01 = 0 ] && [ $PRE_CHECK_02 = 0 ] || [ $PRE_CHECK_02 = 1 ] && [ $PRE_CHECK_03 = 0 ] || [ $PRE_CHECK_03 = 1 ] && [ $PRE_CHECK_04 = 1 ] || [ $PRE_CHECK_04 = 0 ] && [ $PRE_CHECK_05 = 1 ]; then
+  PRE_CHECK_INSTALL=1
+  if [ $PRE_CHECK_02 = 1 ]; then
+    warn "User intervention required. Missing chrootjail user group."
+  fi
+  if [ $PRE_CHECK_03 = 1 ]; then
+    warn "User intervention required. Missing chroot components."
+  fi
+  if [ $PRE_CHECK_04 = 1 ]; then
+    warn "User intervention required. Missing sshd chrootjail match group settings."
+  fi
+  warn "User intervention required. sshd subsystem sftp is incorrect.\nExiting installation script in 3 second."
   sleep 3
   exit 0
 fi
@@ -255,14 +296,14 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
     warn "User $USER exists!"
     echo
     exit 1
-  elif [ $USER_EXISTS = 1 ] && [ $USER_DIR_EXISTS = 0 ] && [ -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa*  ]; then
+  elif [ $USER_EXISTS = 1 ] && [ $USER_DIR_EXISTS = 0 ] && [ -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519*  ]; then
     box_out '#### PLEASE READ CAREFULLY - FOUND OLDER USER SSH KEYS ####' '' 'A old copy of the users SSH keys already exist. Your choices are:' '' '  --  Generate new SSH keys.' '  --  Re-use your old user SSH keys.' '' 'A copy of your old SSH keys is stored in your /srv/"hostname"/sshkey folder'.
     echo
     msg "Backing up your old user ${USER} SSH keys..."
     sudo mkdir -p /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old
     sudo chown -R root:privatelab /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old
     sudo chmod 0750 /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old
-    sudo cp ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/ 2>/dev/null
+    sudo cp ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/ 2>/dev/null
     info "Old ${USER} SSH keys backup complete."
     echo
     msg "Deleting old ${USER} SSH folder..."
@@ -290,21 +331,21 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
   (echo ${PASSWORD}; echo ${PASSWORD} ) | smbpasswd -s -a ${USER}
   info "User created: ${YELLOW}${USER}${NC} of group ${GROUP}"
   echo
-  if [ -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_rsa.pub ] && [ -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_rsa ];then
+  if [ -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_ed25519.pub ] && [ -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_ed25519 ];then
     msg "A old copy of your ${USER} SSH keys exists..."
     read -p "Re-add your old ${USER} SSH keys to your newly created ${USER} (Recommended) [y/n]? " -n 1 -r
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       msg "Adding your old SSH keys to your new ${USER}..."
-      cat /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_rsa.pub >> ${HOME_BASE}${USER}/.ssh/authorized_keys
+      cat /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_ed25519.pub >> ${HOME_BASE}${USER}/.ssh/authorized_keys
       cp /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/* ${HOME_BASE}${USER}/.ssh/ 2>/dev/null
       # Create sftp public keygen
       msg "Adding your old ${USER} SSH keys to SSH sftp authorized_keys file..."
-      ssh-keygen -e -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_rsa.pub > ${HOME_BASE}${USER}/.sftp/authorized_keys
+      ssh-keygen -e -f /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old/id_${USER,,}_ed25519.pub > ${HOME_BASE}${USER}/.sftp/authorized_keys
       msg "Backing up ${USER} latest SSH keys..."
       sudo mkdir -p /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
       sudo chown -R root:privatelab /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
       sudo chmod 0750 /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
-      sudo cp ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
+      sudo cp ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
       sudo rm -R /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)_old 2>/dev/null
       info "User ${USER} SSH keys have been added to the system.\nA backup of ${USER} SSH keys is stored in your servers sshkey folder." || warn "Failed adding user ${USER} SSH keys!"
     else
@@ -313,16 +354,16 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
     fi
   else
     msg "Creating new SSH keys for user ${USER}..." 
-    sudo ssh-keygen -q -t rsa -b 4096 -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa -N ""
-    cat ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa.pub >> ${HOME_BASE}${USER}/.ssh/authorized_keys
+    sudo ssh-keygen -o -q -t ed25519 -a 100 -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519 -N ""
+    cat ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.pub >> ${HOME_BASE}${USER}/.ssh/authorized_keys
     # Create sftp public keygen
     msg "Adding your new ${USER} SSH keys to SSH sftp authorized_keys file..."
-    ssh-keygen -e -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa.pub > ${HOME_BASE}${USER}/.sftp/authorized_keys
+    ssh-keygen -e -f ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.pub > ${HOME_BASE}${USER}/.sftp/authorized_keys
     msg "Backing up ${USER} latest SSH keys..."
     sudo mkdir -p /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
     sudo chown -R root:privatelab /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
     sudo chmod 0750 /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)
-    sudo cp ${HOME_BASE}${USER}/.ssh/id_${USER,,}_rsa* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
+    sudo cp ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519* /srv/$HOSTNAME/sshkey/${USER,,}_$(date +%Y%m%d)/
     sudo chown -R ${USER}:${GROUP} ${HOME_BASE}${USER}
     info "User ${USER} SSH keys have been added to the system.\nA backup of your ${USER} SSH keys is stored in your sshkey folder." || warn "Failed adding user ${USER} SSH keys!"
     echo
