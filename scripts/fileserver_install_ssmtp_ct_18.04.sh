@@ -148,22 +148,22 @@ ip=$SSMTP_ADDRESS
 if ipvalid "$ip"; then
   msg "Validating IPv4 address..."
   if [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) = 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) = 0 ]; then
-  info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
-  echo
-  break
+    info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
+    echo
+    break
   elif [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
-  warn "There are problems with your input:\n1. Your IP address meets the IPv4 standard, BUT\n2. Your IP address $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server IP address, port number and firewall settings.\nTry again..."
-  echo
+    warn "There are problems with your input:\n1. Your IP address meets the IPv4 standard, BUT\n2. Your IP address $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server IP address, port number and firewall settings.\nTry again..."
+    echo
   fi
 else
   msg "Validating url address..."
   if [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) = 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) = 0 ]; then
-  info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
-  echo
-  break
+    info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
+    echo
+    break
   elif [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
-  warn "There are problems with your input:\n1. The URL $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server URL address, port number and firewall settings.\nTry again..."
-  echo
+    warn "There are problems with your input:\n1. The URL $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server URL address, port number and firewall settings.\nTry again..."
+    echo
   fi
 fi
 done
@@ -312,12 +312,15 @@ echo
 read -p "Do you want to send a test email to $SSMTP_EMAIL [y/n]?: " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+  echo
   msg "Sending test email to $SSMTP_EMAIL..."
   echo -e "To: $SSMTP_EMAIL\nFrom: $SSMTP_EMAIL\nSubject: This is a ssmtp test email sent from $HOSTNAME\n\nHello World.\n\nYour ssmtp mail server works.\nCongratulations.\n\n" > test_email.txt
   sudo ssmtp -vvv $SSMTP_EMAIL < test_email.txt
-  msg "Check the administrators mailbox to ensure that it was actually delivered.\nMaybe also check the administrators spam folder and whitelist any\ntest email found there."
+  echo
+  msg "Check the administrators mailbox ( $SSMTP_EMAIL ) to ensure the test email\nwas delivered.\Note, check the administrators spam folder and whitelist any\ntest email found there."
   echo
   read -p "Confirm receipt of the test email message [y/n]?: " -n 1 -r
+  echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     info "Success. Your ssmtp server is configured."
     break
@@ -385,6 +388,9 @@ if [ $(grep -q "smtp_auth=Login" /etc/webmin/mailboxes/config; echo $?) -eq 1 ];
   info "Webmin mail smtp authentication method : ${GREEN}Login${NC}"
   echo
 fi
+
+info "Webmin sending email has been configured.\n  --  The from address for email from webmin is: ${YELLOW}webmin@${HOSTNAME,,}.localdomain${NC}\n  --  SMTP server is: ${YELLOW}$SSMTP_ADDRESS${NC} port 465\n  --  Changes can be made by the system administrator using the\n      webmin configuration frontend."
+echo
 
  
 #### Finish ####
