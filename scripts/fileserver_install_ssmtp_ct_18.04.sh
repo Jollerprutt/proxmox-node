@@ -151,17 +151,17 @@ if ipvalid "$ip"; then
   info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
   echo
   break
-  [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
+  elif [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
   warn "There are problems with your input:\n1. Your IP address meets the IPv4 standard, BUT\n2. Your IP address $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server IP address, port number and firewall settings.\nTry again..."
   echo
   fi
 else
   msg "Validating url address..."
-  [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) = 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) = 0 ]; then
+  if [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) = 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) = 0 ]; then
   info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
   echo
   break
-  [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
+  elif [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
   warn "There are problems with your input:\n1. The URL $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server URL address, port number and firewall settings.\nTry again..."
   echo
   fi
