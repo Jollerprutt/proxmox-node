@@ -147,21 +147,21 @@ read -p "Enter ssmtp server port number: " -e -i 587 SSMTP_PORT
 ip=$SSMTP_ADDRESS
 if ipvalid "$ip"; then
   msg "Validating IPv4 address..."
-  if [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS:$SSMTP_PORT")" > /dev/null; echo $?) = 0 ]; then
+  if [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) = 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) = 0 ]; then
   info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
   echo
   break
-  elif [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS:$SSMTP_PORT")" > /dev/null; echo $?) != 0 ]; then
+  [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
   warn "There are problems with your input:\n1. Your IP address meets the IPv4 standard, BUT\n2. Your IP address $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server IP address, port number and firewall settings.\nTry again..."
   echo
   fi
 else
   msg "Validating url address..."
-  if [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS:$SSMTP_PORT")" > /dev/null; echo $?) = 0 ]; then
+  [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) = 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) = 0 ]; then
   info "The ssmtp address is set: ${YELLOW}$SSMTP_ADDRESS${NC}."
   echo
   break
-  elif [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS:$SSMTP_PORT")" > /dev/null; echo $?) != 0 ]; then
+  [ $(ping -s 1 -c 2 "$(echo "$SSMTP_ADDRESS")" >/dev/null; echo $?) != 0 ] || [ $(nc -z -w 5 $SSMTP_ADDRESS $SSMTP_PORT 2>/dev/null; echo $?) != 0 ]; then
   warn "There are problems with your input:\n1. The URL $(echo "$SSMTP_ADDRESS") is not reachable.\nCheck your ssmtp server URL address, port number and firewall settings.\nTry again..."
   echo
   fi
@@ -341,7 +341,7 @@ echo
 
 
 # Setup Webmin
-section "File Server CT - Configure Webmin mail."
+section "File Server CT - Configure Webmin send mail."
 echo
 # Configuring Webmin mail send mode
 if [ $(grep -q "send_mode=$SSMTP_ADDRESS" /etc/webmin/mailboxes/config; echo $?) -eq 1 ]; then
@@ -354,7 +354,7 @@ fi
 if [ $(grep -q "smtp_ssl=1" /etc/webmin/mailboxes/config; echo $?) -eq 1 ]; then
   msg "Configuring Webmin mail ssl /etc/webmin/mailboxes/config..."
   sudo sed -i 's|smtp_ssl=.*|smtp_ssl=1|g' /etc/webmin/mailboxes/config
-  info "Webmin mail ssl status : ${GREEN}Active${NC}"
+  info "Webmin mail ssl status : ${GREEN}Enabled${NC}"
   echo
 fi
 # Configuring Webmin mail smtp port
