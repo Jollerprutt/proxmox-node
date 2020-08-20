@@ -84,10 +84,6 @@ fi
 
 
 # Setting Variables
-CHROOT="/srv/$HOSTNAME/homes/chrootjail"
-HOME_BASE="$CHROOT/homes/"
-USER="kodi_rsync"
-GROUP="chrootjail"
 
 
 #### Install and Configure SSMTP Email Alerts ####
@@ -389,7 +385,7 @@ if [ $(grep -q "smtp_auth=Login" /etc/webmin/mailboxes/config; echo $?) -eq 1 ];
   echo
 fi
 
-info "Webmin sending email has been configured.\n  --  The from address for email from webmin is: ${YELLOW}webmin@${HOSTNAME,,}.localdomain${NC}\n  --  SMTP server is: ${YELLOW}$SSMTP_ADDRESS${NC} port 465\n  --  Changes can be made by the system administrator using the\n      webmin configuration frontend."
+info "Webmin sending email has been configured.\n  --  The from address for email sent by webmin is:\n      ${YELLOW}webmin@${HOSTNAME,,}.localdomain${NC}\n  --  SMTP server is: ${YELLOW}$SSMTP_ADDRESS${NC} port 465\n  --  Changes can be made by the system administrator using the\n      webmin configuration frontend.\n\n  --  Use the Webmin webgui to enable and configure your System\n      and Server Alerts."
 echo
 
  
