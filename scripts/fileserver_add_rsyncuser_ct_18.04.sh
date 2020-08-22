@@ -487,11 +487,6 @@ if [ dpkg -s ssmtp >/dev/null 2>&1; echo $? ] && [ $(grep -qs "^root:*" /etc/ssm
 fi
 
 
-if [ $(grep -qs "^root:*" /etc/ssmtp/revaliases >/dev/null; echo $?) = 0 ]; then
-  echo hello
-fi
-grep -r "^root:*" /etc/ssmtp/revaliases | grep -v "#" 
-
 #### Finish ####
 section "File Server CT - Completion Status."
 
