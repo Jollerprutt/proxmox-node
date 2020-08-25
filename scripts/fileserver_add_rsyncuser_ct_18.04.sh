@@ -471,20 +471,21 @@ echo
 
 
 #### Email User SSH Keys ####
-if [ dpkg -s ssmtp >/dev/null 2>&1; echo $? ] && [ $(grep -qs "^root:*" /etc/ssmtp/revaliases >/dev/null; echo $?) = 0 ]; then
-  section "File Server CT - Email User SSH Keys"
+if [ $(dpkg -s ssmtp >/dev/null 2>&1; echo $?) = 0 ] && [ $(grep -qs "^root:*" /etc/ssmtp/revaliases >/dev/null; echo $?) = 0 ]; then
+  section "File Server CT - Email User Credentials & SSH keys"
   echo
-  read -p "Email $USER SSH key & credentials to your system’s administrator. [y/n]?: " -n 1 -r
+  read -p "Email new users Credentials & SSH key to your system’s administrator. [y/n]?: " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     msg "Sending $USER SSH key to $(grep -r "root=.*" /etc/ssmtp/ssmtp.conf | grep -v "#" | sed -e 's/root=//g')..."
-    echo -e "Subject: SHH key for $USER.\n\nFor $USER access to File Server $HOSTNAME use the attached private SSH key file named id_ed25519.\nYour login credentials details are:\n    Username: $USER\n    Password: Not Required (ssh key only).\n    SSH Key: id_ed25519\n    Server IP Address: $(hostname -I)" | (cat - && uuencode ${HOME_BASE}${USER}/.ssh/id_ed25519 id_ed25519) | ssmtp root
+    echo -e "Subject: SHH key for $USER.\n\n==========   LOGIN CREDENTIALS FOR USERNAME : ${USER^^}   ==========\n \n \nFor $USER access to File Server $HOSTNAME use the attached private SSH key file named id_ed25519.\nYour login credentials details are:\n    Username: $USER\n    Password: Not Required (ssh key only).\n    SSH Key: id_ed25519\n    Server IP Address: $(hostname -I)" | (cat - && uuencode ${HOME_BASE}${USER}/.ssh/id_ed25519 id_ed25519) | ssmtp root
     info "Email sent."
   else
     info "You have chosen to skip this step. Not sending any email."
     echo
   fi
 fi
+echo
 
 
 #### Finish ####
