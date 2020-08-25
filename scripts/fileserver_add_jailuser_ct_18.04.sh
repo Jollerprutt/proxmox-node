@@ -612,7 +612,7 @@ if [ $(dpkg -s ssmtp >/dev/null 2>&1; echo $?) = 0 ] && [ $(grep -qs "^root:*" /
     echo
   fi
 fi
-
+echo
 
 
 #### Finish ####
