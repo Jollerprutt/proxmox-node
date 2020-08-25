@@ -591,6 +591,30 @@ if [ $(id -u) -eq 0 ] && [ $NEW_JAIL_USER = 0 ]; then
 fi
 echo
 
+
+#### Email User SSH Keys ####
+if [ dpkg -s ssmtp >/dev/null 2>&1; echo $? ] && [ $(grep -qs "^root:*" /etc/ssmtp/revaliases >/dev/null; echo $?) = 0 ]; then
+  section "File Server CT - Email User SSH Keys"
+  echo
+  box_out '#### PLEASE READ CAREFULLY - EMAIL NEW USER CREDENTIALS ####' '' 'You can email each new users login credentials and ssh keys to the' 'system administrator. The system administrator may then forward the email(s)' 'to each new user.' '' 'Each email will include the following information and attachments:' '' '  --  Username' '  --  Password' '  --  User Group' '  --  Folder Permission Level' '  --  Private SSH Key (Standard)' '  --  Private SSH Key (PPK Version)' '  --  File Server IP Address' '  --  SMB Status'
+  echo
+  read -p "Email new users SSH key & credentials to your system’s administrator. [y/n]?: " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    cat ${NEW_USERS} | while read USER PASSWORD GROUP JAIL_TYPE
+    do
+    msg "Sending $USER SSH key to $(grep -r "root=.*" /etc/ssmtp/ssmtp.conf | grep -v "#" | sed -e 's/root=//g')..."
+    echo -e "Subject: Login Credentials for $USER.\n\n==========   LOGIN CREDENTIALS FOR USERNAME : ${USER^^}   ==========\n \n \nThe users private SSH keys are attached. SSH keys should never be accessible to anyone other than the person who will be using them.\n \nThe users ($USER) login credentials details are:\n    Username: $USER\n    Password: $PASSWORD\n    User Group: $GROUP\n    Folder Permission Level: $(if [ ${JAIL_TYPE} = level01 ]; then echo -e $LEVEL01; elif [ ${JAIL_TYPE} = level02 ]; then echo -e $LEVEL02; elif [ ${JAIL_TYPE} = level03 ]; then echo -e $LEVEL03; fi)\n    Private SSH Key (Standard): id_${USER,,}_ed25519\n    Private SSH Key (PPK version): id_${USER,,}_ed25519.ppk\n    File Server IP Address: $(hostname -I)\n    SMB Status: Enabled" | (cat - && uuencode ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519 id_${USER,,}_ed25519) | (cat - && uuencode ${HOME_BASE}${USER}/.ssh/id_${USER,,}_ed25519.ppk id_${USER,,}_ed25519.ppk) | ssmtp root
+    info "Email sent."
+    done
+  else
+    info "You have chosen to skip this step. Not sending any email."
+    echo
+  fi
+fi
+
+
+
 #### Finish ####
 section "File Server CT - Completion Status."
 
