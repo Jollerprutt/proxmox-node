@@ -594,11 +594,11 @@ echo
 
 #### Email User SSH Keys ####
 if [ $(dpkg -s ssmtp >/dev/null 2>&1; echo $?) = 0 ] && [ $(grep -qs "^root:*" /etc/ssmtp/revaliases >/dev/null; echo $?) = 0 ]; then
-  section "File Server CT - Email User SSH Keys"
+  section "File Server CT - Email User Credentials & SSH keys"
   echo
   box_out '#### PLEASE READ CAREFULLY - EMAIL NEW USER CREDENTIALS ####' '' 'You can email each new users login credentials and ssh keys to the' 'system administrator. The system administrator may then forward the email(s)' 'to each new user.' '' 'Each email will include the following information and attachments:' '' '  --  Username' '  --  Password' '  --  User Group' '  --  Folder Permission Level' '  --  Private SSH Key (Standard)' '  --  Private SSH Key (PPK Version)' '  --  File Server IP Address' '  --  SMB Status'
   echo
-  read -p "Email new users SSH key & credentials to your system’s administrator. [y/n]?: " -n 1 -r
+  read -p "Email new users Credentials & SSH key to your system’s administrator. [y/n]?: " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     cat ${NEW_USERS} | while read USER PASSWORD GROUP JAIL_TYPE
