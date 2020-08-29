@@ -80,8 +80,8 @@ Tasks to be performed are:
 		- [Build Type A - 4x LAN 1Gb plus 10Gbe](#build-type-a---4x-lan-1gb-plus-10gbe)
 		- [Build Type A - 4x LAN 1Gb](#build-type-a---4x-lan-1gb)
 		- [Build Type B - 6x LAN 1Gb](#build-type-b---6x-lan-1gb)
-- [6.00 Manual Configuration - Create a File Server](#600-manual-configuration---create-a-file-server)
-	- [6.01 Create a File Server on Build Type A](#601-create-a-file-server-on-build-type-a)
+- [6.00 Setup a File Server (NAS) Solution](#600-setup-a-file-server-nas-solution)
+	- [6.01 Create a Proxmox Ubuntu CT File Server on Build Type A](#601-create-a-proxmox-ubuntu-ct-file-server-on-build-type-a)
 - [7.00 Manual Configuration - Network Storage Access](#700-manual-configuration---network-storage-access)
 	- [7.01 Build Type A - Local Mount points](#701-build-type-a---local-mount-points)
 	- [7.02 Build Type B & C](#702-build-type-b--c)
@@ -743,40 +743,23 @@ Note the bridge port corresponds to a physical interface identified above. The n
 Reboot the Proxmox host to invoke the system changes.
 
 
-## 6.00 Manual Configuration - Create a File Server
-These instructions apply to **Build Type A** only.
-
+## 6.00 Setup a File Server (NAS) Solution
 There are two options for NAS file serving. They are:
 
 1.  **Build Type A** - Proxmox ZFS Raid pool hosted on typhoon-01. Data is served by a Proxmox Ubuntu 18.04 CT (cyclone-01) on typhoon-01 running NFS and Samba network servers; *or,*
-2.  **Existing NAS Hardware** - An existing NAS, Synology, Qnap, FreeNAS etc, is available on the network om IPv4 192.168.1.10. The NAS or File Server must be configured with Samba and NFSv4.1 network servers.
+2.  **Existing NAS Hardware** - An existing NAS, Synology, Qnap, FreeNAS etc, is available on the network on IPv4 192.168.1.10. The NAS or File Server must be configured with Samba and NFSv4.1 network servers.
 
 If you have **Existing NAS Hardware** proceed to step 7.
 
-### 6.01 Create a File Server on Build Type A
-These instructions apply to **Build Type A** only.
+### 6.01 Create a Proxmox Ubuntu CT File Server on Build Type A
+These instructions apply to **Build Type A** only. WE Recommend this NAS solution if you do not have dedicated file server in your network.
 
-To create a ZFS storage pool and a Proxmox CT File Server use our bash script. Simply follow the prompts and the script will perform the following tasks:
-
-*  Create a ZFS raid storage pool
-*  Create a default set of ZFS folder shares
-*  Create a Proxmox Ubuntu 18.04 File Server CT
-*  Setup Users and Groups Medialab, Homelab and Privatelab
-*  Setup NFS4.1 and Samba networking protocols
-*  Setup NFS exports and Samba shares
-*  Create USB passthrough to access USB hardware directly from your File Server CT
-*  Install Webmin for easy File Server management.
-
-To execute the script SSH into `typhoon-01`(ssh root@192.168.1.101) or use the Proxmox web interface CLI shell `typhoon-01` > `>_ Shell` and cut & paste the following into the CLI terminal window and press ENTER:
-```
-bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/fileserver_create_ct_18.04.sh)"
-```
-If successful you will see on your CLI terminal words **"Looking Good. Rebooting in 5 seconds ......"** and your typhoon-01 machine will reboot..
+Detailed instructions and build scripts are available in our Proxmox Ubuntu CT File Server (NAS) repository [HERE](https://github.com/ahuacate/proxmox-ubuntu-fileserver/blob/master/README.md).
 
 ## 7.00 Manual Configuration - Network Storage Access
 If you intend to create a Proxmox cluster then you must have some form of network storage. The easiest solution is to use NFS.
 
-If you have chosen the **Build Type A** route then your File Server is Proxmox host typhoon-01. On this host Proxmox VE VM's and CT's can access your ZFS storage using LXC mountpoints. But VM's and CT's running on other cluster hosts need access to the same ZFS storage data but use NFS mountpoints to cyclone-01 IP address 192.168.1.10.
+If you have chosen the **Build Type A** route then your File Server is hosted Proxmox node typhoon-01. On this host Proxmox VE VM's and CT's can access your ZFS storage using LXC mountpoints. But VM's and CT's running on other cluster hosts need access to the same ZFS storage data but use NFS mountpoints to cyclone-01 IP address 192.168.1.10.
 
 ### 7.01 Build Type A - Local Mount points
 These instructions apply to **Build Type A** only.
