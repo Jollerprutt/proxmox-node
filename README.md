@@ -742,7 +742,6 @@ Note the bridge port corresponds to a physical interface identified above. The n
 
 Reboot the Proxmox host to invoke the system changes.
 
-
 ## 6.00 Setup a File Server (NAS) Solution
 There are two options for NAS file serving. They are:
 
