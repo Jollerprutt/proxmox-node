@@ -751,9 +751,9 @@ There are two options for NAS file serving. They are:
 If you have **Existing NAS Hardware** proceed to step 7.
 
 ### 6.01 Create a Proxmox Ubuntu CT File Server on Build Type A
-These instructions apply to **Build Type A** only. WE Recommend this NAS solution if you do not have dedicated file server in your network.
+These instructions apply to **Build Type A** only. We recommend this NAS solution if you do not have dedicated file server (i.e Synology, Qnap) in your network.
 
-Detailed instructions and build scripts are available in our Proxmox Ubuntu CT File Server (NAS) repository [HERE](https://github.com/ahuacate/proxmox-ubuntu-fileserver/blob/master/README.md).
+Detailed instructions including build scripts are available in our Proxmox Ubuntu CT File Server (NAS) repository [HERE](https://github.com/ahuacate/proxmox-ubuntu-fileserver/blob/master/README.md).
 
 ## 7.00 Manual Configuration - Network Storage Access
 If you intend to create a Proxmox cluster then you must have some form of network storage. The easiest solution is to use NFS.
