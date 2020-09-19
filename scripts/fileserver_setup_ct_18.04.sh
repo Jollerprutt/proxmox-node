@@ -481,7 +481,12 @@ schemaExtractDir="/srv/$HOSTNAME"
 while read dir; do
   dir01="$schemaExtractDir/$dir"
   if [ -d "$dir01" ]; then
-    dirgrp=$(cat fileserver_base_folder_setup | grep -i $dir | awk '{ print $2}') || true >/dev/null
+    dirgrp01=$(cat fileserver_base_folder_setup | sed '/^#/d' | grep -i $dir | awk '{ print $2}' | sed 's/chrootjail.*//') || true >/dev/null
+    dirgrp02=$(cat fileserver_base_folder_setup | sed '/^#/d' | grep -i $dir | awk '{ print $4}' | sed 's/chrootjail.*//' | sed 's/:.*//') || true >/dev/null
+    dirgrp03=$(cat fileserver_base_folder_setup | sed '/^#/d' | grep -i $dir | awk '{ print $5}' | sed 's/chrootjail.*//' | sed 's/:.*//') || true >/dev/null
+    dirgrp04=$(cat fileserver_base_folder_setup | sed '/^#/d' | grep -i $dir | awk '{ print $6}' | sed 's/chrootjail.*//' | sed 's/:.*//') || true >/dev/null
+    dirgrp05=$(cat fileserver_base_folder_setup | sed '/^#/d' | grep -i $dir | awk '{ print $7}' | sed 's/chrootjail.*//' | sed 's/:.*//') || true >/dev/null
+    dirgrp06=$(cat fileserver_base_folder_setup | sed '/^#/d' | grep -i $dir | awk '{ print $8}' | sed 's/chrootjail.*//' | sed 's/:.*//') || true >/dev/null
 	eval "cat <<-EOF >> /etc/samba/smb.conf
 
 	[$dir]
@@ -491,7 +496,7 @@ while read dir; do
 		read only = no
 		create mask = 0775
 		directory mask = 0775
-		valid users = %S,@$dirgrp
+		valid users = %S$([ ! -z "$dirgrp01" ] && echo ",@$dirgrp01")$([ ! -z "$dirgrp02" ] && echo ",@$dirgrp02")$([ ! -z "$dirgrp03" ] && echo ",@$dirgrp03")$([ ! -z "$dirgrp04" ] && echo ",@$dirgrp04")$([ ! -z "$dirgrp05" ] && echo ",@$dirgrp05")$([ ! -z "$dirgrp06" ] && echo ",@$dirgrp06")
 	EOF"
   else
 	info "${dir01} does not exist: skipping."
