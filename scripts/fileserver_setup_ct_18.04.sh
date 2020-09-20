@@ -426,50 +426,53 @@ msg "Configuring Samba..."
 service smbd stop 2>/dev/null
 cat << EOF > /etc/samba/smb.conf
 [global]
-	workgroup = WORKGROUP
-	server string = $HOSTNAME
-	server role = standalone server
-	disable netbios = yes
-	dns proxy = no
-	interfaces = 127.0.0.0/8 eth0
-	bind interfaces only = yes
-	log file = /var/log/samba/log.%m
-	max log size = 1000
-	syslog = 0
-	panic action = /usr/share/samba/panic-action %d
-	passdb backend = tdbsam
-	obey pam restrictions = yes
-	unix password sync = yes
-	passwd program = /usr/bin/passwd %u
-	passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
-	pam password change = yes
-	map to guest = bad user
-	usershare allow guests = yes
+  workgroup = WORKGROUP
+  server string = $HOSTNAME
+  server role = standalone server
+  disable netbios = yes
+  dns proxy = no
+  interfaces = 127.0.0.0/8 eth0
+  bind interfaces only = yes
+  log file = /var/log/samba/log.%m
+  max log size = 1000
+  syslog = 0
+  panic action = /usr/share/samba/panic-action %d
+  passdb backend = tdbsam
+  obey pam restrictions = yes
+  unix password sync = yes
+  passwd program = /usr/bin/passwd %u
+  passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
+  pam password change = yes
+  map to guest = bad user
+  usershare allow guests = yes
   inherit permissions = yes
   inherit acls = yes
   vfs objects = acl_xattr
   follow symlinks = yes
+  ### Host based protection ###
+  hosts allow = 127.0.0.1 192.168.1.0/24 192.168.20.0/24 192.168.30.0/24 192.168.40.0/24 192.168.50.0/24 192.168.60.0/24 192.168.80.0/24
+  hosts deny = 0.0.0.0/0
 
 [homes]
-	comment = home directories
-	browseable = yes
-	read only = no
-	create mask = 0775
-	directory mask = 0775
+  comment = home directories
+  browseable = yes
+  read only = no
+  create mask = 0775
+  directory mask = 0775
   hide dot files = yes
-	valid users = %S
+  valid users = %S
 
 [public]
-	comment = public anonymous access
-	path = /srv/$HOSTNAME/public
+  comment = public anonymous access
+  path = /srv/$HOSTNAME/public
   writable = yes
-	browsable =yes
-	public = yes
-	read only = no
+  browsable =yes
+  public = yes
+  read only = no
   create mode = 0777
   directory mode = 0777
-	force user = nobody
-	guest ok = yes
+  force user = nobody
+  guest ok = yes
   hide dot files = yes
 EOF
 
