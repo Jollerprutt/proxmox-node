@@ -108,7 +108,7 @@ SECTION_HEAD="Proxmox NFS Storage Point Setup"
 
 #########################################################################################
 # This script is for creating your Proxmox Host NFS Storage Points                      #
-#                                                                 						          #
+#                                                                                       #
 # Tested on Proxmox Version : pve-manager/6.1-3/37248ce6 (running kernel: 5.3.10-1-pve) #
 #########################################################################################
 
@@ -194,7 +194,7 @@ section "$SECTION_HEAD - Create PVE Storage Mounts."
 
 # Scanning NFS Server for exports
 msg "Creating a list of NFS Server $NAS_IP exports..."
-pvesm nfsscan $NAS_IP | awk '{print $1}' > pvesm_nfs_export_list_var01
+pvesm nfsscan $NAS_IP | awk '{print $1}' | sort > pvesm_nfs_export_list_var01
 # Removing /backup export
 sed "/.*\/backup/d" pvesm_nfs_export_list_var01 > pvesm_nfs_export_list_var02
 # Modifying /proxmox to /proxmox/backup
@@ -205,7 +205,7 @@ fi
 echo
 
 # Selecting and identifying exports
-msg "You have $(cat pvesm_nfs_export_list_var01 | wc -l)x NFS server mount points available on $NAS_HOSTNAME.\nNext you will be prompted to enter a numerical value (i.e 1-8) to identify\na media type for for each available $NAS_HOSTNAME NFS mount point.\nTo ignore and remove a NFS mount point choose:\n  --  1) ${YELLOW}None${NC} - Ignore NFS share."
+msg "You have $(cat pvesm_nfs_export_list_var02 | wc -l)x NFS server mount points available on $NAS_HOSTNAME.\nNext you will be prompted to enter a numerical value (i.e 1-8) to identify\na media type for for each available $NAS_HOSTNAME NFS mount point.\nTo ignore and remove a NFS mount point choose:\n  --  1) ${YELLOW}None${NC} - Ignore NFS share."
 echo
 TYPE01="${YELLOW}None${NC} - Ignore NFS share."
 TYPE02="${YELLOW}Audio${NC} - Audiobooks and podcasts."
