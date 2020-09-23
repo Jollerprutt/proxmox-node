@@ -117,6 +117,25 @@ SECTION_HEAD="Proxmox NFS Storage Point Setup"
 #bash -c "$(wget -qLO - https://raw.githubusercontent.com/ahuacate/proxmox-node/master/scripts/pve_add_nfs_mounts.sh)"
 
 
+#### About PVE NFS Storage Mounts ####
+if [ -z "${ADD_NFS_MOUNTS+x}" ] && [ -z "${PARENT_EXEC_PVE_ADD_NFS_MOUNTS+x}" ]; then
+section "$SECTION_HEAD - About PVE NFS Storage Mounts."
+
+box_out '#### PLEASE READ CAREFULLY - NAS NFS SERVER EXPORTS ####' '' 'Proxmox can add storage by creating a NFS backend storage pool. Your NAS' 'server NFS properties must be configured so your PVE NFS backend (client)' 'can mount the NFS shares automatically. Your NFS server should support' 'NFSv3/v4. All NAS server exports must be permitted to your PVE nodes' 'IPv4 addresses (i.e 192.168.1.101-192.168.1.104).' '' 'We need to set some variables. The next steps requires your input. You can' 'accept our default values by pressing ENTER on your keyboard. Or overwrite our' 'default value by typing in your own value and then pressing ENTER to' 'accept and to continue to the next step.'
+echo
+read -p "Create PVE NFS storage mounts [y/n]? " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  ADD_NFS_MOUNTS=0 >/dev/null
+else
+  ADD_NFS_MOUNTS=1 >/dev/null
+  info "You have chosen to skip this step."
+  exit 0
+fi
+echo
+fi
+
+
 #### Checking PVE Host Prerequisites ####
 section "$SECTION_HEAD - Checking Prerequisites"
 
@@ -137,9 +156,6 @@ fi
 
 #### Checking NFS Server exports ####
 section "$SECTION_HEAD - Check NFS Server exports."
-
-box_out '#### PLEASE READ CAREFULLY - NAS NFS SERVER EXPORTS ####' '' 'Proxmox can add storage by creating a NFS backend storage pool. Your NAS' 'server NFS properties must be configured so your PVE NFS backend (client)' 'can mount the NFS shares automatically. Your NFS server should support' 'NFSv3/v4. All NAS server exports must be permitted to your PVE nodes' 'IPv4 addresses (i.e 192.168.1.101-192.168.1.104).' '' 'We need to set some variables. The next steps requires your input. You can' 'accept our default values by pressing ENTER on your keyboard. Or overwrite our' 'default value by typing in your own value and then pressing ENTER to' 'accept and to continue to the next step.'
-echo
 
 while true; do
 read -p "Enter your NFS Server IPv4 address: " -e -i 192.168.1.10 NAS_IP
@@ -188,6 +204,7 @@ else
   info "NAS Hostname is set: ${YELLOW}$NAS_HOSTNAME${NC}."
 fi
 echo
+
 
 #### Create PVE Storage Mounts ####
 section "$SECTION_HEAD - Create PVE Storage Mounts."
