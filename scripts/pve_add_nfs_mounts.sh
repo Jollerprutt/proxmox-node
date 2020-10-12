@@ -222,9 +222,9 @@ fi
 echo
 
 # Selecting and identifying exports
-msg "You have $(cat pvesm_nfs_export_list_var02 | wc -l)x NFS server mount points available on $NAS_HOSTNAME.\nNext you will be prompted to enter a numerical value (i.e 1-8) to identify\na media type for for each available $NAS_HOSTNAME NFS mount point.\nTo ignore and remove a NFS mount point choose:\n  --  1) ${YELLOW}None${NC} - Ignore NFS share."
+msg "You have $(cat pvesm_nfs_export_list_var02 | wc -l)x NFS server mount points available on $NAS_HOSTNAME.\nNext you will be prompted to enter a numerical value (i.e 1-14) to identify\na media type for for each available $NAS_HOSTNAME NFS mount point.\nTo ignore or remove a CIFS mount point select media type 1:\n  --  1) ${YELLOW}None${NC} - Ignore CIFS share."
 echo
-TYPE01="${YELLOW}None${NC} - Ignore NFS share."
+TYPE01="${YELLOW}None${NC} - Ignore CIFS share."
 TYPE02="${YELLOW}Audio${NC} - Audiobooks and podcasts."
 TYPE03="${YELLOW}Books${NC} - Ebooks and Magazines"
 TYPE04="${YELLOW}Backup${NC} - CT settings backup storage."
@@ -235,8 +235,9 @@ TYPE08="${YELLOW}Downloads${NC} - General Download folders."
 TYPE09="${YELLOW}Music${NC} - Music, Albums and Songs."
 TYPE10="${YELLOW}Photo${NC} - Photographic image collection."
 TYPE11="${YELLOW}Public${NC} - General public storage."
-TYPE12="${YELLOW}Transcode${NC} - Video transcoding disk (A must for transcoding)."
-TYPE13="${YELLOW}Video${NC} - Video - All video libraries (i.e movies, TV, homevideos)."
+TYPE12="${YELLOW}Timemachine${NC} - Apple Time machine folder."
+TYPE13="${YELLOW}Transcode${NC} - Video transcoding disk (A must for transcoding)."
+TYPE14="${YELLOW}Video${NC} - Video - All video libraries (i.e movies, TV, homevideos)."
 
 while IFS=, read -r line
 do
@@ -265,7 +266,7 @@ echo
 sed -i "/${NAS_HOSTNAME,,}-none/d" pvesm_nfs_export_list_var03
 
 # Checking for existing PVE storage mounts
-pvesm status | grep -E 'nfs|cifs' | awk '{print $1}' | grep -E '*-audio|*-books|*-cloudstorage|*-docker|*-downloads|*-music|*-photo|*-public|*-transcode|*-video' > pvesm_existing_mount_var01
+pvesm status | grep -E 'nfs|cifs' | awk '{print $1}' | grep -Ei "$NAS_HOSTNAME-audio|$NAS_HOSTNAME-books|$NAS_HOSTNAME-cloudstorage|$NAS_HOSTNAME-docker|$NAS_HOSTNAME-downloads|$NAS_HOSTNAME-music|$NAS_HOSTNAME-photo|$NAS_HOSTNAME-public|$NAS_HOSTNAME-timemachine|$NAS_HOSTNAME-transcode|$NAS_HOSTNAME-video" | tr '[:upper:]' '[:lower:]' || true > pvesm_existing_mount_var01
 IFS=' '
 while read -r w; do
   if [ $(grep $w pvesm_nfs_export_list_var03 >/dev/null; echo $?) == 0 ]; then
